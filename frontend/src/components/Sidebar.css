@@ -1,0 +1,62 @@
+/* Contenedor principal */
+.sidebar-container {
+  width: 250px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.logo-area {
+  background-color: white;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo img {
+  width: 220px; 
+  height: auto; 
+  object-fit: contain; 
+}
+
+
+.sidebar {
+  flex: 1;
+  background-color: #26a9e0;
+  color: white;
+  padding: 20px;
+  border-top-right-radius: 20px;
+}
+
+.menu-title {
+  margin-top: 0;
+  font-size: 20px;
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.menu-list li {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.menu-list li:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
