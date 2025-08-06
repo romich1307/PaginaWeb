@@ -1,4 +1,5 @@
 import './Sidebar.css';
+import { Link } from 'react-router-dom';
 
 function Sidebar() {
   return (
@@ -13,11 +14,11 @@ function Sidebar() {
       <div className="sidebar">
         <h3 className="menu-title">MENU</h3>
         <ul className="menu-list">
-          <li>Inicio</li>
-          <li>Mis cursos</li>
-          <li>Exámenes disponibles</li>
-          <li>Soporte</li>
-          <li>Cerrar sesión</li>
+          <li><Link to="/">Inicio</Link></li>
+          <li><Link to="/mis-cursos">Mis cursos</Link></li>
+          <li><Link to="/examenes">Exámenes disponibles</Link></li>
+          <li><Link to="/soporte">Soporte</Link></li>
+          <li><Link to="/logout">Cerrar sesión</Link></li>
         </ul>
       </div>
     </div>
