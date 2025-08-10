@@ -43,101 +43,83 @@ const Register = ({ onSwitchToLogin }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: '15px',
-      backgroundColor: '#F0FFF0',
-      padding: '20px',
-      borderRadius: '10px',
-      border: '2px solid #228B22'
-    }}>
-      <h2 style={{ textAlign: 'center', color: '#228B22', fontWeight: 'bold' }}>
-         Registrarse
-      </h2>
+    <div className="auth-form">
+      <h2 className="form-title">Crea tu cuenta</h2>
+      
+      <p className="form-subtitle">Completa tus datos para registrarte</p>
 
       {error && (
-        <div style={{ color: 'red', padding: '10px', backgroundColor: '#ffebee', borderRadius: '5px' }}>
+        <div className="error-message">
           {error}
         </div>
       )}
 
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={formData.email}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
+      <form onSubmit={handleSubmit} className="form">
+        <input
+          type="text"
+          name="nombres"
+          placeholder="Nombres"
+          value={formData.nombres}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
+        
+        <input
+          type="text"
+          name="apellidos"
+          placeholder="Apellidos"
+          value={formData.apellidos}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
+        
+        <input
+          type="text"
+          name="dni"
+          placeholder="DNI"
+          value={formData.dni}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
 
-      <input
-        type="text"
-        name="nombres"
-        placeholder="Nombres"
-        value={formData.nombres}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
-      
-      <input
-        type="text"
-        name="apellidos"
-        placeholder="Apellidos"
-        value={formData.apellidos}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
-      
-      <input
-        type="text"
-        name="dni"
-        placeholder="DNI"
-        value={formData.dni}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
 
-      <input
-        type="password"
-        name="password"
-        placeholder="Contraseña"
-        value={formData.password}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
+        <input
+          type="password"
+          name="password"
+          placeholder="Contraseña"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
 
-      <input
-        type="password"
-        name="confirmPassword"
-        placeholder="Confirmar Contraseña"
-        value={formData.confirmPassword}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirmar Contraseña"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
 
-      <button 
-        type="submit"
-        style={{ 
-          padding: '12px', 
-          backgroundColor: '#228B22', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          fontWeight: 'bold'
-        }}
-      >
-       Registrarse
-      </button>
-    </form>
+        <button type="submit" className="submit-btn">
+          Registrarse
+        </button>
+      </form>
+    </div>
   );
 };
 

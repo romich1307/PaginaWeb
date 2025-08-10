@@ -27,61 +27,45 @@ const Login = ({ onSwitchToRegister }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      gap: '15px',
-      backgroundColor: '#E6F3FF',
-      padding: '20px',
-      borderRadius: '10px',
-      border: '2px solid #0066CC'
-    }}>
-      <h2 style={{ textAlign: 'center', color: '#0066CC', fontWeight: 'bold' }}>
-         Iniciar Sesión
-      </h2>
+    <div className="auth-form">
+      <h2 className="form-title">Inicia Sesión</h2>
+      
+      <p className="form-subtitle">Ingresa tus datos para acceder</p>
 
       {error && (
-        <div style={{ color: 'red', padding: '10px', backgroundColor: '#ffebee', borderRadius: '5px' }}>
+        <div className="error-message">
           {error}
         </div>
       )}
 
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={formData.email}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
+      <form onSubmit={handleSubmit} className="form">
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
 
-      <input
-        type="password"
-        name="password"
-        placeholder="Contraseña"
-        value={formData.password}
-        onChange={handleChange}
-        required
-        style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-      />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
 
-      <button 
-        type="submit"
-        style={{ 
-          padding: '12px', 
-          backgroundColor: '#0066CC', 
-          color: 'white', 
-          border: 'none', 
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          fontWeight: 'bold'
-        }}
-      >
-         Iniciar Sesión
-      </button>
-    </form>
+        <a href="#" className="forgot-password">Forgot your password?</a>
+
+        <button type="submit" className="submit-btn">
+          SIGN IN
+        </button>
+      </form>
+    </div>
   );
 };
 

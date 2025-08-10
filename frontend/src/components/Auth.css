@@ -1,0 +1,294 @@
+/* Auth Container - Diseño Deslizante Hermoso */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  padding: 20px;
+  font-family: 'Jost', sans-serif;
+}
+
+.auth-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 650px;
+  position: relative;
+}
+
+.form-container {
+  display: flex;
+  height: 650px;
+  position: relative;
+  transition: transform 0.6s ease-in-out;
+  width: 200%;
+  min-height: 650px;
+}
+
+/* Estados del deslizamiento */
+.form-container.show-login {
+  transform: translateX(0%);
+}
+
+.form-container.show-register {
+  transform: translateX(-50%);
+}
+
+.form-panel {
+  width: 50%;
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Panel de Login */
+.login-panel {
+  background: white;
+}
+
+.login-panel .welcome-section {
+  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  color: white;
+  padding: 40px 50px 60px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 50%;
+  height: 100%;
+  min-height: 650px;
+}
+
+.login-panel .form-section {
+  padding: 80px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 50%;
+  background: white;
+  height: 100%;
+}
+
+/* Panel de Register */
+.register-panel {
+  background: white;
+}
+
+.register-panel .form-section {
+  padding: 80px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 50%;
+  background: white;
+  height: 100%;
+}
+
+.register-panel .welcome-section {
+  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  color: white;
+  padding: 40px 50px 60px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 50%;
+  height: 100%;
+  min-height: 650px;
+}
+
+/* Estilos de las secciones de bienvenida */
+.welcome-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  margin-top: -60px;
+  font-family: 'Kdam Thmor Pro', cursive;
+}
+
+.welcome-section p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  opacity: 0.9;
+  max-width: 280px;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+}
+
+.switch-btn {
+  background: transparent;
+  border: 2px solid white;
+  color: white;
+  padding: 15px 45px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-family: 'Jost', sans-serif;
+}
+
+.switch-btn:hover {
+  background: white;
+  color: #2DAAE1;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Estilos para los formularios */
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 35px;
+  font-weight: 400;
+  text-align: center;
+  font-family: 'Kdam Thmor Pro', cursive;
+}
+
+.form-subtitle {
+  color: #888;
+  font-size: 1rem;
+  margin-bottom: 30px;
+  text-align: center;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+}
+
+.form {
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-input {
+  padding: 15px 18px;
+  border: none;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+}
+
+.form-input:focus {
+  background: #ebebeb;
+  box-shadow: 0 0 0 2px rgba(45, 170, 225, 0.3);
+}
+
+.form-input::placeholder {
+  color: #999;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+}
+
+.forgot-password {
+  color: #2DAAE1;
+  font-size: 0.9rem;
+  text-decoration: none;
+  text-align: center;
+  margin: 10px 0;
+  transition: color 0.3s ease;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+}
+
+.forgot-password:hover {
+  color: #2DAAE1;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  color: white;
+  border: none;
+  padding: 15px 45px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  margin-top: 20px;
+  font-family: 'Jost', sans-serif;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(45, 170, 225, 0.3);
+}
+
+.error-message {
+  background: #ffebee;
+  color: #d32f2f;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 15px;
+  border: 1px solid #ffcdd2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .auth-card {
+    max-width: 450px;
+    margin: 20px;
+    min-height: 600px;
+  }
+  
+  .form-container {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .form-container.show-login {
+    transform: translateY(0);
+  }
+  
+  .form-container.show-register {
+    transform: translateY(-50%);
+  }
+  
+  .form-panel {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .login-panel .welcome-section,
+  .login-panel .form-section,
+  .register-panel .form-section,
+  .register-panel .welcome-section {
+    width: 100%;
+    padding: 50px 40px;
+    height: auto;
+  }
+  
+  .welcome-section h2 {
+    font-size: 2rem;
+  }
+  
+  .welcome-section p {
+    font-size: 1rem;
+    max-width: none;
+  }
+}
