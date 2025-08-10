@@ -5,57 +5,22 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './views/dashboard';
+import Login from './components/Login';
+import Register from './components/Register';
 
 function LoginRegisterForm() {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    nombres: '',
-    apellidos: '',
-    dni: '',
-    confirmPassword: ''
-  });
-  const [error, setError] = useState('');
-  const { login, register } = useAuth();
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (isLogin) {
-      const result = await login(formData.email, formData.password);
-      if (!result.success) {
-        setError(result.error);
-      }
-    } else {
-      if (formData.password !== formData.confirmPassword) {
-        setError('Las contraseñas no coinciden');
-        return;
-      }
-      const result = await register({
-        email: formData.email,
-        password: formData.password,
-        password_confirm: formData.confirmPassword,
-        nombres: formData.nombres,
-        apellidos: formData.apellidos,
-        dni: formData.dni
-      });
-      if (!result.success) {
-        setError(result.error);
-      }
-    }
-  };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto', fontFamily: 'Arial' }}>
+    <div style={{ 
+      padding: '20px', 
+      maxWidth: '400px', 
+      margin: '0 auto', 
+      fontFamily: 'Arial',
+      backgroundColor: '#FFD700',
+      minHeight: '100vh',
+      borderRadius: '10px'
+    }}>
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <button 
           onClick={() => setIsLogin(true)}
@@ -86,96 +51,7 @@ function LoginRegisterForm() {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <h2 style={{ textAlign: 'center', color: '#333' }}>
-          {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
-        </h2>
-
-        {error && (
-          <div style={{ color: 'red', padding: '10px', backgroundColor: '#ffebee', borderRadius: '5px' }}>
-            {error}
-          </div>
-        )}
-
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-        />
-
-        {!isLogin && (
-          <>
-            <input
-              type="text"
-              name="nombres"
-              placeholder="Nombres"
-              value={formData.nombres}
-              onChange={handleChange}
-              required
-              style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-            />
-            <input
-              type="text"
-              name="apellidos"
-              placeholder="Apellidos"
-              value={formData.apellidos}
-              onChange={handleChange}
-              required
-              style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-            />
-            <input
-              type="text"
-              name="dni"
-              placeholder="DNI"
-              value={formData.dni}
-              onChange={handleChange}
-              required
-              style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-            />
-          </>
-        )}
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-        />
-
-        {!isLogin && (
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirmar Contraseña"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
-          />
-        )}
-
-        <button 
-          type="submit"
-          style={{ 
-            padding: '12px', 
-            backgroundColor: '#28a745', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '16px'
-          }}
-        >
-          {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
-        </button>
-      </form>
+      {isLogin ? <Login /> : <Register />}
     </div>
   );
 }
