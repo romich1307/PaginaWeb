@@ -7,7 +7,7 @@
 body {
   height: 100vh;
   width: 100%;
-  background-color: #26a9e0;
+  background-color: #FFA500;
   font-family: Arial, sans-serif;
 }
 
@@ -27,4 +27,39 @@ body {
   padding: 20px;
   background-color:  #ffffff;
   overflow-y: auto;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.loading-spinner {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.welcome-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 40px;
+  border-radius: 12px;
+  margin: 20px 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-section h1 {
+  font-size: 32px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.welcome-section p {
+  font-size: 18px;
+  margin-bottom: 10px;
+  opacity: 0.9;
 }
