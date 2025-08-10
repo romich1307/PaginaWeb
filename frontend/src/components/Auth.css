@@ -4,20 +4,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  background: linear-gradient(135deg, #2DAAE1 0%, #4BC0F0 30%, #E8F6FC 100%);
   padding: 20px;
   font-family: 'Jost', sans-serif;
 }
 
 .auth-card {
-  background: white;
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 20px 60px rgba(45, 170, 225, 0.2);
   overflow: hidden;
   width: 100%;
   max-width: 1000px;
   min-height: 650px;
   position: relative;
+  border: 1px solid rgba(45, 170, 225, 0.1);
 }
 
 .form-container {
@@ -50,7 +51,7 @@
 }
 
 .login-panel .welcome-section {
-  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  background: linear-gradient(135deg, #2DAAE1 0%, #42a5f5 50%, #1e88e5 100%);
   color: white;
   padding: 40px 50px 60px 50px;
   display: flex;
@@ -89,7 +90,7 @@
 }
 
 .register-panel .welcome-section {
-  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  background: linear-gradient(135deg, #2DAAE1 0%, #42a5f5 50%, #1e88e5 100%);
   color: white;
   padding: 40px 50px 60px 50px;
   display: flex;
@@ -141,7 +142,7 @@
   background: white;
   color: #2DAAE1;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 5px 15px rgba(45, 170, 225, 0.3);
 }
 
 /* Estilos para los formularios */
@@ -175,7 +176,7 @@
   max-width: 350px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .password-container {
@@ -186,7 +187,7 @@
 }
 
 .password-container .form-input {
-  padding-right: 50px;
+  padding-right: 45px;
   width: 100%;
 }
 
@@ -218,11 +219,11 @@
 }
 
 .form-input {
-  padding: 15px 18px;
+  padding: 12px 15px;
   border: none;
   background: #f5f5f5;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
   outline: none;
   font-family: 'Jost', sans-serif;
@@ -232,6 +233,7 @@
 .form-input:focus {
   background: #ebebeb;
   box-shadow: 0 0 0 2px rgba(45, 170, 225, 0.3);
+  border: 2px solid #2DAAE1;
 }
 
 .form-input::placeholder {
@@ -256,7 +258,7 @@
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #2DAAE1 0%, #F9D122 100%);
+  background: linear-gradient(135deg, #2DAAE1 0%, #42a5f5 50%, #1e88e5 100%);
   color: white;
   border: none;
   padding: 15px 45px;
@@ -269,11 +271,13 @@
   text-transform: uppercase;
   margin-top: 20px;
   font-family: 'Jost', sans-serif;
+  box-shadow: 0 4px 15px rgba(45, 170, 225, 0.3);
 }
 
 .submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(45, 170, 225, 0.3);
+  box-shadow: 0 8px 25px rgba(45, 170, 225, 0.4);
+  background: linear-gradient(135deg, #42a5f5 0%, #2DAAE1 50%, #1976d2 100%);
 }
 
 .error-message {
