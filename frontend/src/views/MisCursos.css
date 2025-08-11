@@ -1,0 +1,559 @@
+/* Mis Cursos - Diseño Moderno con Degradados */
+.mis-cursos-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, #F9D122 25%, #E20713 70%, #2DAAE1 100%);
+  padding: 30px;
+  font-family: 'Jost', sans-serif;
+}
+
+.cursos-header {
+  text-align: center;
+  margin-bottom: 40px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+  padding: 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.cursos-header h1 {
+  font-size: 3rem;
+  font-family: 'Kdam Thmor Pro', cursive;
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 50%, #F9D122 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 15px;
+}
+
+.cursos-header p {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: 400;
+}
+
+.cursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.curso-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.curso-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.curso-imagen {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.curso-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.curso-card:hover .curso-imagen img {
+  transform: scale(1.05);
+}
+
+.curso-nivel {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.curso-info {
+  padding: 20px;
+}
+
+.curso-info h3 {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.curso-detalles {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.precio {
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.duracion {
+  color: #666;
+  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-radius: 25px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  z-index: 10;
+}
+
+.close-btn:hover {
+  color: #E20713;
+}
+
+.modal-header {
+  display: flex;
+  gap: 20px;
+  padding: 30px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.modal-header img {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 15px;
+}
+
+.modal-title h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-family: 'Kdam Thmor Pro', cursive;
+}
+
+.modal-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.badge.nivel {
+  text-transform: uppercase;
+}
+
+.badge.precio {
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 100%);
+}
+
+.badge.duracion {
+  background: #666;
+}
+
+.modal-body {
+  padding: 30px;
+}
+
+.modal-body h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modal-body p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.modal-body ul {
+  list-style: none;
+  padding: 0;
+}
+
+.modal-body li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  color: #555;
+  position: relative;
+  padding-left: 20px;
+}
+
+.modal-body li:before {
+  content: "✓";
+  color: #4CAF50;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.modal-footer {
+  padding: 30px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.enroll-btn {
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 50%, #F9D122 100%);
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.enroll-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #F9D122 0%, #E20713 50%, #2DAAE1 100%);
+}
+
+/* Payment Modal */
+.payment-modal {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-radius: 25px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+}
+
+.payment-header {
+  padding: 30px 30px 20px 30px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.payment-header h2 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-family: 'Kdam Thmor Pro', cursive;
+}
+
+.course-summary h3 {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.payment-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.payment-form {
+  padding: 30px;
+}
+
+.payment-form h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #555;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2DAAE1;
+  box-shadow: 0 0 0 3px rgba(45, 170, 225, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.payment-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 50%, #F9D122 100%);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.payment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #F9D122 0%, #E20713 50%, #2DAAE1 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .mis-cursos-container {
+    padding: 20px;
+  }
+
+  .cursos-header {
+    padding: 30px 20px;
+  }
+
+  .cursos-header h1 {
+    font-size: 2.2rem;
+  }
+
+  .cursos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .modal-content,
+  .payment-modal {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .modal-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .cursos-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .cursos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .curso-card {
+    margin: 0 10px;
+  }
+}
+
+/* Estilos Adicionales para Formulario de Pago Mejorado */
+.course-details {
+  background: rgba(45, 170, 225, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border-left: 4px solid #2DAAE1;
+}
+
+.course-details p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.payment-info {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  border: 1px solid rgba(45, 170, 225, 0.2);
+}
+
+.bank-details {
+  background: linear-gradient(135deg, rgba(45, 170, 225, 0.1), rgba(226, 7, 19, 0.1));
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.bank-details h4 {
+  color: #2DAAE1;
+  margin-bottom: 0.8rem;
+  font-size: 1.1rem;
+}
+
+.bank-details p {
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.bank-details hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, #2DAAE1, #E20713);
+  margin: 1rem 0;
+}
+
+.form-group input[type="file"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px dashed #2DAAE1;
+  padding: 1rem;
+  border-radius: 8px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-group input[type="file"]:hover {
+  border-color: #E20713;
+  background: rgba(226, 7, 19, 0.1);
+}
+
+.form-group small {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.form-group textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0.8rem;
+  color: #333;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.3s ease;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2DAAE1;
+  box-shadow: 0 0 0 2px rgba(45, 170, 225, 0.2);
+}
+
+.form-group textarea::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.payment-btn:disabled {
+  background: rgba(128, 128, 128, 0.3);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.payment-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.payment-note {
+  background: rgba(249, 209, 34, 0.1);
+  border: 1px solid rgba(249, 209, 34, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: #333;
+  text-align: center;
+  font-style: italic;
+}

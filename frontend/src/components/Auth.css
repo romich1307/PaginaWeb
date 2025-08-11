@@ -4,21 +4,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #2DAAE1 0%, #4BC0F0 30%, #E8F6FC 100%);
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, #F9D122 25%, #E20713 70%, #2DAAE1 100%);
   padding: 20px;
   font-family: 'Jost', sans-serif;
 }
 
 .auth-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  background: transparent;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(45, 170, 225, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   overflow: hidden;
   width: 100%;
   max-width: 1000px;
   min-height: 650px;
   position: relative;
-  border: 1px solid rgba(45, 170, 225, 0.1);
 }
 
 .form-container {
@@ -28,6 +29,7 @@
   transition: transform 0.6s ease-in-out;
   width: 200%;
   min-height: 650px;
+  overflow: hidden;
 }
 
 /* Estados del deslizamiento */
@@ -43,17 +45,23 @@
   width: 50%;
   display: flex;
   flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 /* Panel de Login */
 .login-panel {
-  background: white;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 .login-panel .welcome-section {
-  background: linear-gradient(135deg, #2DAAE1 0%, #42a5f5 50%, #1e88e5 100%);
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 50%, #F9D122 100%);
   color: white;
-  padding: 40px 50px 60px 50px;
+  padding: 20px 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -65,34 +73,43 @@
 }
 
 .login-panel .form-section {
-  padding: 80px 50px;
+  padding: 20px 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 50%;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   height: 100%;
+  position: relative;
+  min-height: 650px;
 }
 
 /* Panel de Register */
 .register-panel {
-  background: white;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 .register-panel .form-section {
-  padding: 80px 50px;
+  padding: 20px 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 50%;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   height: 100%;
+  position: relative;
+  min-height: 650px;
 }
 
 .register-panel .welcome-section {
-  background: linear-gradient(135deg, #2DAAE1 0%, #42a5f5 50%, #1e88e5 100%);
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 50%, #F9D122 100%);
   color: white;
-  padding: 40px 50px 60px 50px;
+  padding: 20px 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -109,7 +126,7 @@
   margin-bottom: 30px;
   font-weight: 400;
   letter-spacing: 1px;
-  margin-top: -60px;
+  margin-top: 0;
   font-family: 'Kdam Thmor Pro', cursive;
 }
 
@@ -136,13 +153,15 @@
   transition: all 0.3s ease;
   text-transform: uppercase;
   font-family: 'Jost', sans-serif;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .switch-btn:hover {
   background: white;
-  color: #2DAAE1;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(45, 170, 225, 0.3);
+  color: #E20713;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+  border: 2px solid white;
 }
 
 /* Estilos para los formularios */
@@ -153,10 +172,43 @@
   align-items: center;
 }
 
+/* Logo en formularios de autenticación */
+.logo-container {
+  position: absolute;
+  top: 20px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Logo en Login (esquina derecha) */
+.login-panel .form-section .logo-container {
+  right: 20px;
+}
+
+/* Logo en Register (esquina izquierda) */
+.register-panel .form-section .logo-container {
+  left: 20px;
+}
+
+.auth-logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+}
+
+.auth-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
+
 .form-title {
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: #333;
-  margin-bottom: 35px;
+  margin-bottom: 25px;
   font-weight: 400;
   text-align: center;
   font-family: 'Kdam Thmor Pro', cursive;
@@ -164,8 +216,8 @@
 
 .form-subtitle {
   color: #888;
-  font-size: 1rem;
-  margin-bottom: 30px;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
   text-align: center;
   font-family: 'Jost', sans-serif;
   font-weight: 400;
@@ -176,7 +228,7 @@
   max-width: 350px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .password-container {
@@ -219,65 +271,55 @@
 }
 
 .form-input {
-  padding: 12px 15px;
-  border: none;
-  background: #f5f5f5;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  font-size: 0.9rem;
   transition: all 0.3s ease;
   outline: none;
   font-family: 'Jost', sans-serif;
   font-weight: 400;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .form-input:focus {
-  background: #ebebeb;
-  box-shadow: 0 0 0 2px rgba(45, 170, 225, 0.3);
-  border: 2px solid #2DAAE1;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 15px rgba(45, 170, 225, 0.3);
+  border: 1px solid #2DAAE1;
+  transform: translateY(-1px);
 }
 
 .form-input::placeholder {
-  color: #999;
+  color: #666;
   font-family: 'Jost', sans-serif;
   font-weight: 400;
-}
-
-.forgot-password {
-  color: #2DAAE1;
-  font-size: 0.9rem;
-  text-decoration: none;
-  text-align: center;
-  margin: 10px 0;
-  transition: color 0.3s ease;
-  font-family: 'Jost', sans-serif;
-  font-weight: 400;
-}
-
-.forgot-password:hover {
-  color: #2DAAE1;
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #2DAAE1 0%, #42a5f5 50%, #1e88e5 100%);
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 50%, #F9D122 100%);
   color: white;
   border: none;
-  padding: 15px 45px;
-  border-radius: 30px;
-  font-size: 1rem;
+  padding: 12px 35px;
+  border-radius: 25px;
+  font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
-  margin-top: 20px;
+  margin-top: 15px;
   font-family: 'Jost', sans-serif;
-  box-shadow: 0 4px 15px rgba(45, 170, 225, 0.3);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(45, 170, 225, 0.4);
-  background: linear-gradient(135deg, #42a5f5 0%, #2DAAE1 50%, #1976d2 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #F9D122 0%, #E20713 50%, #2DAAE1 100%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .error-message {
@@ -333,5 +375,17 @@
   .welcome-section p {
     font-size: 1rem;
     max-width: none;
+  }
+  
+  /* Ajustar logos en móvil */
+  .auth-logo {
+    width: 80px;
+  }
+  
+  .login-panel .form-section .logo-container,
+  .register-panel .form-section .logo-container {
+    top: 15px;
+    right: 15px;
+    left: auto;
   }
 }

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from .models import CustomUser
+from .models import CustomUser, Curso, Inscripcion, Examen, Pregunta, OpcionRespuesta, IntentarExamen
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,3 +41,59 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         # Generate username from email
         validated_data['username'] = validated_data['email']
         return CustomUser.objects.create(**validated_data)
+
+
+# Serializers para el sistema de cursos e inscripciones
+class CursoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Curso
+        fields = '__all__'
+
+
+class InscripcionSerializer(serializers.ModelSerializer):
+    usuario_info = UserSerializer(source='usuario', read_only=True)
+    curso_info = CursoSerializer(source='curso', read_only=True)
+    
+    class Meta:
+        model = Inscripcion
+        fields = '__all__'
+
+
+class InscripcionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inscripcion
+        fields = [
+            'usuario', 'curso', 'metodo_pago', 'comprobante_pago', 
+            'comentarios', 'estado_pago', 'fecha_inicio', 'fecha_examen_teorico', 'fecha_examen_practico'
+        ]
+
+
+class ExamenSerializer(serializers.ModelSerializer):
+    curso_info = CursoSerializer(source='curso', read_only=True)
+    
+    class Meta:
+        model = Examen
+        fields = '__all__'
+
+
+class OpcionRespuestaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpcionRespuesta
+        fields = '__all__'
+
+
+class PreguntaSerializer(serializers.ModelSerializer):
+    opciones = OpcionRespuestaSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Pregunta
+        fields = '__all__'
+
+
+class IntentarExamenSerializer(serializers.ModelSerializer):
+    usuario_info = UserSerializer(source='usuario', read_only=True)
+    examen_info = ExamenSerializer(source='examen', read_only=True)
+    
+    class Meta:
+        model = IntentarExamen
+        fields = '__all__'

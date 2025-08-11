@@ -13,7 +13,11 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Email específico para el administrador
+  const ADMIN_EMAIL = 'jiji@gmail.com';
 
   // Verificar si hay un token guardado al cargar la aplicación
   useEffect(() => {
@@ -28,6 +32,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async (token) => {
     try {
+      console.log('AuthContext: Verificando estado de autenticación con token:', token);
       const response = await fetch('http://127.0.0.1:8000/api/profile/', {
         method: 'GET',
         headers: {
@@ -38,19 +43,34 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const userData = await response.json();
-        setUser(userData);
+        console.log('AuthContext: Datos del usuario obtenidos:', userData);
+        
+        setUser(userData.user); // Establecer solo userData.user, no userData completo
         setIsAuthenticated(true);
+        
+        // Debug detallado para verificar el email
+        console.log('AuthContext: Email del usuario recibido:', `"${userData.user.email}"`);
+        console.log('AuthContext: ADMIN_EMAIL configurado:', `"${ADMIN_EMAIL}"`);
+        console.log('AuthContext: is_staff del usuario:', userData.user.is_staff);
+        
+        // Verificación temporal: cualquier usuario con is_staff=True es admin
+        const isAdminUser = userData.user.email === ADMIN_EMAIL || userData.user.is_staff;
+        setIsAdmin(isAdminUser);
+        console.log('AuthContext: Usuario es admin (verificación temporal)?', isAdminUser);
       } else {
         // Token inválido, eliminarlo
+        console.log('AuthContext: Token inválido, eliminando...');
         localStorage.removeItem('authToken');
         setIsAuthenticated(false);
         setUser(null);
+        setIsAdmin(false);
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
       localStorage.removeItem('authToken');
       setIsAuthenticated(false);
       setUser(null);
+      setIsAdmin(false);
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('AuthContext: Intentando login con email:', email);
       const response = await fetch('http://127.0.0.1:8000/api/login/', {
         method: 'POST',
         headers: {
@@ -67,23 +88,38 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
+      console.log('AuthContext: Respuesta del servidor:', data);
 
       if (response.ok) {
+        console.log('AuthContext: Login exitoso, guardando token:', data.token);
         localStorage.setItem('authToken', data.token);
         setUser(data.user);
         setIsAuthenticated(true);
-        return { success: true };
+        
+        // Debug detallado para verificar el email
+        console.log('AuthContext: Email del usuario recibido:', `"${data.user.email}"`);
+        console.log('AuthContext: ADMIN_EMAIL configurado:', `"${ADMIN_EMAIL}"`);
+        console.log('AuthContext: Comparación exacta:', data.user.email === ADMIN_EMAIL);
+        
+        // Verificación temporal: cualquier usuario con is_staff=True es admin
+        const isAdminUser = data.user.email === ADMIN_EMAIL || data.user.is_staff;
+        setIsAdmin(isAdminUser);
+        console.log('AuthContext: Usuario es admin (verificación temporal)?', isAdminUser);
+        console.log('AuthContext: is_staff del usuario:', data.user.is_staff);
+        
+        return { success: true, isAdmin: isAdminUser };
       } else {
+        console.log('AuthContext: Error en login:', data);
         return { 
           success: false, 
           error: data.error || 'Error al iniciar sesión' 
         };
       }
     } catch (error) {
-      console.error('Error during login:', error);
+      console.error('AuthContext: Error en login:', error);
       return { 
         success: false, 
-        error: 'Error de conexión. Verifica que el servidor esté funcionando.' 
+        error: 'Error de conexión' 
       };
     }
   };
@@ -107,6 +143,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('authToken', data.token);
         setUser(data.user);
         setIsAuthenticated(true);
+        setIsAdmin(data.user.email === ADMIN_EMAIL);
         return { success: true };
       } else {
         console.error('Registration failed:', data);
@@ -142,12 +179,14 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('authToken');
       setUser(null);
       setIsAuthenticated(false);
+      setIsAdmin(false);
     }
   };
 
   const value = {
     user,
     isAuthenticated,
+    isAdmin,
     isLoading,
     login,
     register,

@@ -39,13 +39,20 @@ const Register = ({ onSwitchToLogin }) => {
       apellidos: formData.apellidos,
       dni: formData.dni
     });
-    if (!result.success) {
+    
+    if (result.success) {
+      // Redirección después del registro exitoso (usuarios normales van al home)
+      window.location.href = '/';
+    } else {
       setError(result.error);
     }
   };
 
   return (
     <div className="auth-form">
+      <div className="logo-container">
+        <img src="/LogoPagina.png" alt="Logo" className="auth-logo" />
+      </div>
       <h2 className="form-title">Crea tu cuenta</h2>
       
       <p className="form-subtitle">Completa tus datos para registrarte</p>

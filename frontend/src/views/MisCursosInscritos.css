@@ -1,0 +1,361 @@
+/* Cursos Inscritos */
+.cursos-inscritos-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2DAAE1, #E20713, #F9D122);
+  padding: 2rem;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: white;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.cursos-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cursos-header h1 {
+  font-size: 2.5rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.cursos-header p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+}
+
+/* Sin Cursos */
+.no-cursos {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.no-cursos-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.no-cursos h2 {
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.no-cursos p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Botones */
+.explorar-btn {
+  display: inline-block;
+  padding: 12px 30px;
+  background: linear-gradient(45deg, #2DAAE1, #E20713);
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.explorar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Grid de Cursos Inscritos */
+.cursos-inscritos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.curso-inscrito-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.curso-inscrito-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.curso-imagen {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.curso-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.estado-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.estado-badge.pagado {
+  background: linear-gradient(45deg, #4CAF50, #2E7D32);
+}
+
+.estado-badge.pendiente {
+  background: linear-gradient(45deg, #FF9800, #F57C00);
+}
+
+.estado-badge.rechazado {
+  background: linear-gradient(45deg, #F44336, #C62828);
+}
+
+.progreso-overlay {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+.progreso-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #2DAAE1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.curso-contenido {
+  padding: 1.5rem;
+}
+
+.curso-contenido h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* Detalles del Curso */
+.curso-detalles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detalle-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+}
+
+.icono {
+  font-size: 1.2rem;
+  min-width: 24px;
+}
+
+.detalle-item strong {
+  color: #333;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.detalle-item p {
+  color: #666;
+  font-size: 0.8rem;
+  margin: 0.2rem 0 0 0;
+}
+
+/* Información de Exámenes */
+.examenes-info {
+  background: rgba(45, 170, 225, 0.1);
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #2DAAE1;
+}
+
+.examenes-info h4 {
+  color: #2DAAE1;
+  margin-bottom: 0.8rem;
+  font-size: 1rem;
+}
+
+.examen-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.examen-tipo {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.examen-fecha {
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
+}
+
+/* Progreso Detallado */
+.progreso-detalle {
+  margin-bottom: 1.5rem;
+}
+
+.progreso-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.progreso-bar {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2DAAE1, #E20713);
+  transition: width 0.3s ease;
+}
+
+/* Acciones del Curso */
+.curso-acciones {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-acceder,
+.btn-materiales {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-acceder {
+  background: linear-gradient(45deg, #2DAAE1, #E20713);
+  color: white;
+}
+
+.btn-acceder:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(45, 170, 225, 0.4);
+}
+
+.btn-materiales {
+  background: rgba(45, 170, 225, 0.1);
+  color: #2DAAE1;
+  border: 1px solid #2DAAE1;
+}
+
+.btn-materiales:hover {
+  background: #2DAAE1;
+  color: white;
+}
+
+/* Explorar Más */
+.explorar-mas {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.explorar-mas h3 {
+  color: white;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.explorar-mas p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cursos-inscritos-container {
+    padding: 1rem;
+  }
+
+  .cursos-header h1 {
+    font-size: 2rem;
+  }
+
+  .cursos-inscritos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .curso-detalles {
+    grid-template-columns: 1fr;
+  }
+
+  .curso-acciones {
+    flex-direction: column;
+  }
+}

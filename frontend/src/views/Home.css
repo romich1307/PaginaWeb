@@ -1,0 +1,120 @@
+/* Home Component - Página de Bienvenida Elegante */
+.home-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, #F9D122 25%, #E20713 70%, #2DAAE1 100%);
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Jost', sans-serif;
+}
+
+.welcome-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.65) 100%);
+  border-radius: 25px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 60px 40px;
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+
+.welcome-header h1 {
+  font-size: 3rem;
+  color: #333;
+  margin-bottom: 20px;
+  font-family: 'Kdam Thmor Pro', cursive;
+  font-weight: 400;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-header h2 {
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, #2DAAE1 0%, #E20713 50%, #F9D122 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 15px;
+  font-family: 'Jost', sans-serif;
+  font-weight: 600;
+}
+
+.user-email {
+  font-size: 1.3rem;
+  color: #666;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  margin-bottom: 30px;
+}
+
+.welcome-message {
+  font-size: 1.2rem;
+  color: #555;
+  font-family: 'Jost', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .home-container {
+    padding: 20px;
+  }
+  
+  .welcome-card {
+    padding: 40px 25px;
+  }
+  
+  .welcome-header h1 {
+    font-size: 2.2rem;
+  }
+  
+  .welcome-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .user-email {
+    font-size: 1.1rem;
+  }
+  
+  .welcome-message {
+    font-size: 1.1rem;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-container {
+    padding: 15px;
+  }
+  
+  .welcome-card {
+    padding: 30px 20px;
+  }
+  
+  .welcome-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .welcome-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .user-email {
+    font-size: 1rem;
+  }
+  
+  .welcome-message {
+    font-size: 1rem;
+    padding: 15px;
+  }
+}

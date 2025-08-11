@@ -21,14 +21,33 @@ const Login = ({ onSwitchToRegister }) => {
     e.preventDefault();
     setError('');
 
+    console.log('Iniciando login con:', formData.email);
     const result = await login(formData.email, formData.password);
-    if (!result.success) {
+    console.log('Resultado del login:', result);
+    
+    if (result.success) {
+      console.log('Login exitoso, verificando token...');
+      const savedToken = localStorage.getItem('authToken');
+      console.log('Token guardado:', savedToken);
+      
+      // Redirección manual después del login exitoso
+      if (result.isAdmin) {
+        console.log('Usuario es admin, redirigiendo a admin panel...');
+        window.location.href = '/admin-panel';
+      } else {
+        console.log('Usuario normal, redirigiendo a home...');
+        window.location.href = '/';
+      }
+    } else {
       setError(result.error);
     }
   };
 
   return (
     <div className="auth-form">
+      <div className="logo-container">
+        <img src="/LogoPagina.png" alt="Logo" className="auth-logo" />
+      </div>
       <h2 className="form-title">Inicia Sesión</h2>
       
       <p className="form-subtitle">Ingresa tus datos para acceder</p>
@@ -123,8 +142,6 @@ const Login = ({ onSwitchToRegister }) => {
             </svg>
           </button>
         </div>
-
-        <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
 
         <button type="submit" className="submit-btn">
           INICIAR SESIÓN
