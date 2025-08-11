@@ -159,12 +159,12 @@ function MisCursosInscritos() {
               <div className="progreso-detalle">
                 <div className="progreso-header">
                   <span>Progreso del Curso</span>
-                  <span>{curso.progreso}%</span>
+                  <span>{inscripcion.progreso || 0}%</span>
                 </div>
                 <div className="progreso-bar">
                   <div 
                     className="progreso-fill" 
-                    style={{ width: `${curso.progreso}%` }}
+                    style={{ width: `${inscripcion.progreso || 0}%` }}
                   ></div>
                 </div>
               </div>
