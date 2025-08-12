@@ -12,6 +12,12 @@ urlpatterns = [
     path('inscripciones/', views.crear_inscripcion, name='crear_inscripcion'),
     path('mis-inscripciones/', views.mis_inscripciones, name='mis_inscripciones'),
     
+    # Examen URLs
+    path('cursos/<int:curso_id>/examenes/', views.examenes_disponibles, name='examenes_disponibles'),
+    path('examenes/<int:examen_id>/iniciar/', views.iniciar_examen, name='iniciar_examen'),
+    path('intentos/<int:intento_id>/preguntas/', views.obtener_preguntas_examen, name='obtener_preguntas_examen'),
+    path('intentos/<int:intento_id>/enviar/', views.enviar_respuestas_examen, name='enviar_respuestas_examen'),
+    
     # Admin panel URLs
     path('admin/is-admin/', views.is_admin_user, name='is_admin_user'),
     path('admin/inscripciones/', views.admin_inscripciones, name='admin_inscripciones'),
@@ -19,4 +25,15 @@ urlpatterns = [
     path('admin/cursos/', views.admin_cursos, name='admin_cursos'),
     path('admin/cursos/<int:pk>/', views.admin_curso_detail, name='admin_curso_detail'),
     path('admin/estudiantes/', views.admin_estudiantes, name='admin_estudiantes'),
+    
+    # Admin exam URLs
+    path('admin/examenes/', views.admin_examenes, name='admin_examenes'),
+    path('admin/examenes/<int:examen_id>/', views.admin_examen_detalle, name='admin_examen_detalle'),
+    path('admin/preguntas/', views.admin_preguntas, name='admin_preguntas'),
+    path('admin/preguntas/<int:pregunta_id>/', views.admin_pregunta_detalle, name='admin_pregunta_detalle'),
+    path('admin/intentos-examen/', views.admin_intentos_examen, name='admin_intentos_examen'),
+    
+    # Admin practical exam URLs
+    path('admin/examenes-practicos/pendientes/', views.admin_examenes_practicos_pendientes, name='admin_examenes_practicos_pendientes'),
+    path('admin/examen-practico/resultado/<int:intento_id>/', views.admin_examen_practico_resultado, name='admin_examen_practico_resultado'),
 ]

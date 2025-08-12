@@ -1,0 +1,128 @@
+[
+{
+  "model": "authentication.customuser",
+  "pk": 1,
+  "fields": {
+    "last_login": null,
+    "is_superuser": false,
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "username": "rcamargoh@unsa.edu.pe",
+    "email": "rcamargoh@unsa.edu.pe",
+    "nombres": "Romina Giuliana",
+    "apellidos": "Camargo Hilachoque",
+    "dni": "60967272",
+    "password": "pbkdf2_sha256$1000000$fWaXP4IwaVDO7uTWyG91gM$XyOnyxB3GE7MJIHR7jn4pdjSIwil/5gJ6nmD1Ir93z8=",
+    "date_joined": "2025-08-10T05:16:37.505Z",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "authentication.customuser",
+  "pk": 2,
+  "fields": {
+    "last_login": "2025-08-10T05:18:54.891Z",
+    "is_superuser": true,
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "username": "admin",
+    "email": "rcamrgoh@unsa.edu.pe",
+    "nombres": "sadas",
+    "apellidos": "dasd",
+    "dni": "sadad",
+    "password": "pbkdf2_sha256$1000000$zBQeHbRY7yG7q81lHawTh4$9hrWbfXEe37nwiJOTNqTpoRswNsG9F8WND8AFyiD3pU=",
+    "date_joined": "2025-08-10T05:18:34.910Z",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "authentication.customuser",
+  "pk": 3,
+  "fields": {
+    "last_login": null,
+    "is_superuser": false,
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "username": "senorpez@gmail.com",
+    "email": "senorpez@gmail.com",
+    "nombres": "SEÑOR",
+    "apellidos": "pez",
+    "dni": "48759632",
+    "password": "pbkdf2_sha256$1000000$Nd8rb7Jk5tr0oKIlMhGB1d$VtFX+EXXt5wBvIRdSkXsP75189Ix50WXkE+SJ4eaNh0=",
+    "date_joined": "2025-08-11T03:17:38.215Z",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "authentication.customuser",
+  "pk": 4,
+  "fields": {
+    "last_login": null,
+    "is_superuser": true,
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "username": "luciahilachoquellerena@gmail.com",
+    "email": "luciahilachoquellerena@gmail.com",
+    "nombres": "pipipi",
+    "apellidos": "runrun",
+    "dni": "45698712",
+    "password": "pbkdf2_sha256$1000000$xHdaR3XNatst7b1Ml2Jw5W$C7SqerqycnQ/3/TFspF0zY7sDqVADpq/J/X8jnx4l24=",
+    "date_joined": "2025-08-11T03:40:03.121Z",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "authentication.customuser",
+  "pk": 5,
+  "fields": {
+    "last_login": "2025-08-11T03:57:56.890Z",
+    "is_superuser": true,
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "username": "jojojo",
+    "email": "jojo@gmail.com",
+    "nombres": "jojoj",
+    "apellidos": "jojojo",
+    "dni": "609554",
+    "password": "pbkdf2_sha256$1000000$ia5PEOuz2YEdnN8R1KZ6r7$XE2GV2A+z9U42reyqE6ZXqdJJjGuWoGeSsSyHch8qis=",
+    "date_joined": "2025-08-11T03:57:34.599Z",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "authentication.customuser",
+  "pk": 6,
+  "fields": {
+    "last_login": null,
+    "is_superuser": true,
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "username": "jiji@gmail.com",
+    "email": "jiji@gmail.com",
+    "nombres": "Admin",
+    "apellidos": "User",
+    "dni": "12345678",
+    "password": "pbkdf2_sha256$1000000$LXvqv7b1gvxKVo0Sdt5qOp$1Nd2TRiJEuui1m3L+WCqwJzf04bL61xLelcSFSGGio0=",
+    "date_joined": "2025-08-11T04:22:35.328Z",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]

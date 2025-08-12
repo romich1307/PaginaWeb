@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(vg7gr-vt*ry)uhyk0d8v^s&efqd3-%f%91%c$*-a7%s1f5el)'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-(vg7gr-vt*ry)uhyk0d8v^s&efqd3-%f%91%c$*-a7%s1f5el)')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -77,25 +82,34 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Configuración temporal con SQLite (cambiar a PostgreSQL cuando lo tengas instalado)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+import dj_database_url
 
-# Configuración para PostgreSQL (descomenta cuando tengas PostgreSQL instalado)
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'pagina_web_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'admin123',  # Cambiar por tu contraseña de PostgreSQL
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
+# Configuración para usar SQLite localmente o PostgreSQL en producción
+if os.getenv('DATABASE_URL'):
+    # Configuración para PostgreSQL (Supabase) usando DATABASE_URL
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+    }
+elif os.getenv('DB_HOST'):
+    # Configuración alternativa usando variables individuales
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
+else:
+    # Configuración temporal con SQLite para desarrollo local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
