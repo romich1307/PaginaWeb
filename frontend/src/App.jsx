@@ -3,7 +3,6 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
-import Dashboard from './views/dashboard';
 import Home from './views/Home';
 import MisCursos from './views/MisCursos';
 import MisCursosInscritos from './views/MisCursosInscritos';
