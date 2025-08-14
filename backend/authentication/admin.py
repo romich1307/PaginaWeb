@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
-    CustomUser, Curso, Inscripcion, Examen, 
+    CustomUser, Curso, Inscripcion, Examen, ExamenUsuario,
     Pregunta, OpcionRespuesta, IntentarExamen
 )
 
@@ -111,11 +111,117 @@ class PreguntaAdmin(admin.ModelAdmin):
     texto_pregunta_corto.short_description = "Pregunta"
 
 
+@admin.register(ExamenUsuario)
+class ExamenUsuarioAdmin(admin.ModelAdmin):
+    list_display = ['usuario', 'examen', 'fecha_programada', 'hora_inicio', 'estado', 'resultado', 'nota_final']
+    list_filter = ['estado', 'resultado', 'fecha_programada', 'examen__curso']
+    search_fields = ['usuario__nombres', 'usuario__apellidos', 'examen__nombre']
+    ordering = ['fecha_programada', 'hora_inicio']
+    
+    fieldsets = (
+        ('Asignación', {
+            'fields': ('usuario', 'examen')
+        }),
+        ('Programación', {
+            'fields': ('fecha_programada', 'hora_inicio', 'duracion_minutos')
+        }),
+        ('Estado y Resultados', {
+            'fields': ('estado', 'resultado', 'nota_final')
+        }),
+        ('Fechas de Control', {
+            'fields': ('fecha_asignacion', 'fecha_realizacion'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    readonly_fields = ['fecha_asignacion', 'fecha_realizacion']
+    
+    # Acciones simplificadas
+    actions = ['marcar_aprobado', 'marcar_desaprobado']
+    
+    def marcar_aprobado(self, request, queryset):
+        """Marca los exámenes seleccionados como aprobados"""
+        updated = queryset.update(resultado='aprobado')
+        self.message_user(request, f'{updated} exámenes marcados como aprobados.')
+    marcar_aprobado.short_description = "Marcar como Aprobado"
+    
+    def marcar_desaprobado(self, request, queryset):
+        """Marca los exámenes seleccionados como desaprobados"""
+        updated = queryset.update(resultado='desaprobado')
+        self.message_user(request, f'{updated} exámenes marcados como desaprobados.')
+    marcar_desaprobado.short_description = "Marcar como Desaprobado"
+
+
 @admin.register(IntentarExamen)
 class IntentarExamenAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'examen', 'estado', 'puntaje_obtenido', 'aprobado', 'fecha_inicio', 'fecha_finalizacion']
-    list_filter = ['estado', 'aprobado', 'examen__curso', 'fecha_inicio']
+    list_display = ['usuario', 'examen', 'get_tipo_examen', 'estado', 'puntaje_obtenido', 'aprobado', 'fecha_inicio', 'fecha_finalizacion']
+    list_filter = ['estado', 'aprobado', 'examen__tipo', 'examen__curso', 'fecha_inicio']
     search_fields = ['usuario__nombres', 'usuario__apellidos', 'examen__nombre']
     ordering = ['-fecha_inicio']
+    list_editable = ['aprobado']  # Permite editar directamente desde la lista
     
     readonly_fields = ['fecha_inicio', 'tiempo_utilizado', 'respuestas']
+    
+    def get_tipo_examen(self, obj):
+        return "Teórico" if obj.examen.tipo == 'teorico' else "Práctico"
+    get_tipo_examen.short_description = 'Tipo de Examen'
+    
+    # Filtrar por tipo de examen
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('usuario', 'examen', 'examen__curso')
+    
+    # Organizar los campos en el formulario de edición
+    fieldsets = (
+        ('Información del Intento', {
+            'fields': ('usuario', 'examen', 'estado', 'fecha_inicio', 'fecha_finalizacion')
+        }),
+        ('Resultados', {
+            'fields': ('puntaje_obtenido', 'aprobado', 'tiempo_utilizado')
+        }),
+        ('Detalles', {
+            'fields': ('respuestas',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    # Acciones personalizadas
+    actions = ['marcar_como_aprobado', 'marcar_como_desaprobado']
+    
+    def marcar_como_aprobado(self, request, queryset):
+        updated = queryset.update(aprobado=True, estado='completado')
+        self.message_user(request, f'{updated} intentos marcados como aprobados.')
+    marcar_como_aprobado.short_description = "Marcar como aprobado"
+    
+    def marcar_como_desaprobado(self, request, queryset):
+        updated = queryset.update(aprobado=False, estado='completado')
+        self.message_user(request, f'{updated} intentos marcados como desaprobados.')
+    marcar_como_desaprobado.short_description = "Marcar como desaprobado"
+
+
+# Personalización adicional para el admin
+class ExamenesPracticosFilter(admin.SimpleListFilter):
+    title = 'Exámenes Prácticos Pendientes'
+    parameter_name = 'practicos_pendientes'
+    
+    def lookups(self, request, model_admin):
+        return (
+            ('pendientes', 'Prácticos Pendientes de Calificación'),
+            ('practicos', 'Todos los Exámenes Prácticos'),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'pendientes':
+            return queryset.filter(
+                examen__tipo='practico',
+                estado='iniciado',
+                aprobado=False
+            )
+        if self.value() == 'practicos':
+            return queryset.filter(examen__tipo='practico')
+        return queryset
+
+
+# Agregar el filtro personalizado al admin de IntentarExamen
+IntentarExamenAdmin.list_filter = [
+    'estado', 'aprobado', 'examen__tipo', 'examen__curso', 'fecha_inicio', ExamenesPracticosFilter
+]

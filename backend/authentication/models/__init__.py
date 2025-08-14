@@ -2,7 +2,7 @@
 from .user import CustomUser
 from .curso import Curso
 from .inscripcion import Inscripcion
-from .examen import Examen, Pregunta, OpcionRespuesta, IntentarExamen
+from .examen import Examen, ExamenUsuario, Pregunta, OpcionRespuesta, IntentarExamen
 
 # Exportamos todos los modelos
 __all__ = [
@@ -10,6 +10,7 @@ __all__ = [
     'Curso', 
     'Inscripcion',
     'Examen',
+    'ExamenUsuario',
     'Pregunta',
     'OpcionRespuesta',
     'IntentarExamen',

@@ -281,18 +281,32 @@
 /* Acciones del Curso */
 .curso-acciones {
   display: flex;
-  gap: 1rem;
+  gap: 0.8rem;
+  flex-wrap: wrap;
 }
 
+.btn-examenes,
 .btn-acceder,
 .btn-materiales {
   flex: 1;
-  padding: 12px;
+  padding: 10px 12px;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 0.9rem;
+  min-width: 90px;
+}
+
+.btn-examenes {
+  background: linear-gradient(45deg, #28a745, #20c997);
+  color: white;
+}
+
+.btn-examenes:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
 }
 
 .btn-acceder {

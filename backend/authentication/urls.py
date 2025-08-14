@@ -14,9 +14,15 @@ urlpatterns = [
     
     # Examen URLs
     path('cursos/<int:curso_id>/examenes/', views.examenes_disponibles, name='examenes_disponibles'),
+    path('mis-examenes-programados/', views.mis_examenes_programados, name='mis_examenes_programados'),
+    path('cursos/<int:curso_id>/examenes-lista/', views.obtener_examenes_curso, name='obtener_examenes_curso'),
     path('examenes/<int:examen_id>/iniciar/', views.iniciar_examen, name='iniciar_examen'),
     path('intentos/<int:intento_id>/preguntas/', views.obtener_preguntas_examen, name='obtener_preguntas_examen'),
     path('intentos/<int:intento_id>/enviar/', views.enviar_respuestas_examen, name='enviar_respuestas_examen'),
+    
+    # Nuevas URLs para exámenes asignados
+    path('mis-examenes-asignados/', views.obtener_examenes_asignados, name='obtener_examenes_asignados'),
+    path('examenes-asignados/<int:examen_asignado_id>/iniciar/', views.iniciar_examen_asignado, name='iniciar_examen_asignado'),
     
     # Admin panel URLs
     path('admin/is-admin/', views.is_admin_user, name='is_admin_user'),
@@ -35,5 +41,11 @@ urlpatterns = [
     
     # Admin practical exam URLs
     path('admin/examenes-practicos/pendientes/', views.admin_examenes_practicos_pendientes, name='admin_examenes_practicos_pendientes'),
+    path('admin/examenes-practicos/programar/', views.programar_examen_practico, name='programar_examen_practico'),
+    path('admin/examenes-practicos/activar/', views.activar_examen_para_curso, name='activar_examen_para_curso'),
     path('admin/examen-practico/resultado/<int:intento_id>/', views.admin_examen_practico_resultado, name='admin_examen_practico_resultado'),
+    
+    # New admin URLs
+    path('admin/crear-intento-practico/', views.crear_intento_examen_practico, name='crear_intento_examen_practico'),
+    path('admin/usuarios-examenes/', views.lista_usuarios_examenes, name='lista_usuarios_examenes'),
 ]

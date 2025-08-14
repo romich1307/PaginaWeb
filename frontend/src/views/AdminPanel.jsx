@@ -541,6 +541,64 @@ function AdminPanel() {
     actualizarResultadoPractico(intentoId, resultado, observaciones, evaluador);
   };
 
+  // Función para programar examen práctico individual
+  const programarExamenPractico = async (intentoId, fechaProgramada, horaProgramada = '', duracionProgramada = '') => {
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/admin/examenes-practicos/programar/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          intento_id: intentoId,
+          fecha_programada: fechaProgramada,
+          hora_programada: horaProgramada,
+          duracion_programada: duracionProgramada
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Examen programado exitosamente: ${data.message}`);
+        
+        // Recargar datos de exámenes pendientes
+        loadData();
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error('Error al programar examen:', error);
+      alert('Error al programar examen');
+    }
+  };
+
+  // Función para activar examen para todos los inscritos en un curso
+  const activarExamenParaCurso = async (examenId, fechaProgramada, horaProgramada, duracionProgramada) => {
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/admin/examenes-practicos/activar/`, {
+        method: 'POST',
+        body: JSON.stringify({
+          examen_id: examenId,
+          fecha_programada: fechaProgramada,
+          hora_programada: horaProgramada,
+          duracion_programada: duracionProgramada
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`¡Examen activado exitosamente!\n${data.message}\nIntentos creados: ${data.intentos_creados}\nIntentos actualizados: ${data.intentos_actualizados}`);
+        
+        // Recargar datos
+        loadData();
+      } else {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error}`);
+      }
+    } catch (error) {
+      console.error('Error al activar examen:', error);
+      alert('Error al activar examen para el curso');
+    }
+  };
+
   // Mostrar loading mientras se verifica la autenticación
   if (isLoading) {
     return (
@@ -1031,7 +1089,7 @@ function AdminPanel() {
           borderRadius: '10px',
           border: '1px solid #dee2e6'
         }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#dc3545' }}>📊 Total Intentos</h3>
+          <h3 style={{ margin: '0 0 10px 0', color: '#dc3545' }}>Total Intentos</h3>
           <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
             {examenes.reduce((total, curso) => 
               total + curso.examenes.reduce((subTotal, examen) => subTotal + examen.total_intentos, 0), 0
@@ -1044,8 +1102,19 @@ function AdminPanel() {
           borderRadius: '10px',
           border: '1px solid #dee2e6'
         }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#ff6b35' }}>🎯 Prácticos Pendientes</h3>
+          <h3 style={{ margin: '0 0 10px 0', color: '#ff6b35' }}>Prácticos Pendientes</h3>
           <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{examenesPracticosPendientes.length}</p>
+        </div>
+        <div style={{ 
+          backgroundColor: '#e8f5e8', 
+          padding: '20px', 
+          borderRadius: '10px',
+          border: '1px solid #28a745'
+        }}>
+          <h3 style={{ margin: '0 0 10px 0', color: '#28a745' }}>Programados Hoy</h3>
+          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
+            {examenesPracticosPendientes.filter(examen => examen.es_programado_hoy).length}
+          </p>
         </div>
       </div>
 
@@ -1077,7 +1146,21 @@ function AdminPanel() {
             cursor: 'pointer'
           }}
         >
-          ❓ Preguntas
+          Preguntas
+        </button>
+        <button
+          onClick={() => setSubActiveTab('programados_hoy')}
+          style={{
+            padding: '10px 15px',
+            marginRight: '10px',
+            backgroundColor: subActiveTab === 'programados_hoy' ? '#28a745' : '#f8f9fa',
+            color: subActiveTab === 'programados_hoy' ? 'white' : '#333',
+            border: '1px solid #dee2e6',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Programados Hoy
         </button>
       </div>
 
@@ -1230,43 +1313,74 @@ function AdminPanel() {
                           </td>
                           <td>
                             {examen.tipo === 'practico' ? (
-                              // Para exámenes prácticos: mostrar evaluación presencial
-                              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                              // Para exámenes prácticos: mostrar evaluación presencial y activación masiva
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {/* Botón para activar examen para todos los inscritos */}
+                                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                                  <button
+                                    onClick={() => {
+                                      const fecha = prompt('Fecha del examen (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+                                      if (fecha) {
+                                        const hora = prompt('Hora del examen (HH:MM):', '08:00');
+                                        const duracion = prompt('Duración en minutos:', '60');
+                                        if (hora && duracion) {
+                                          activarExamenParaCurso(examen.id, fecha, hora, duracion);
+                                        }
+                                      }
+                                    }}
+                                    style={{
+                                      padding: '6px 12px',
+                                      fontSize: '11px',
+                                      backgroundColor: '#007bff',
+                                      color: 'white',
+                                      border: 'none',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer'
+                                    }}
+                                    title="Activar examen para todos los estudiantes inscritos"
+                                  >
+                                    🚀 Activar para Todos
+                                  </button>
+                                </div>
+                                
+                                {/* Evaluaciones individuales */}
                                 {examen.examenes_practicos_pendientes && examen.examenes_practicos_pendientes.length > 0 ? (
-                                  examen.examenes_practicos_pendientes.map(intento => (
-                                    <div key={intento.id} style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}>
-                                      <button
-                                        onClick={() => evaluarExamenPractico(intento.id, 'aprobado')}
-                                        style={{
-                                          padding: '3px 6px',
-                                          fontSize: '10px',
-                                          backgroundColor: '#28a745',
-                                          color: 'white',
-                                          border: 'none',
-                                          borderRadius: '3px',
-                                          cursor: 'pointer'
-                                        }}
-                                        title={`Aprobar a ${intento.usuario_nombre}`}
-                                      >
-                                        ✅ Aprobar
-                                      </button>
-                                      <button
-                                        onClick={() => evaluarExamenPractico(intento.id, 'desaprobado')}
-                                        style={{
-                                          padding: '3px 6px',
-                                          fontSize: '10px',
-                                          backgroundColor: '#dc3545',
-                                          color: 'white',
-                                          border: 'none',
-                                          borderRadius: '3px',
-                                          cursor: 'pointer'
-                                        }}
-                                        title={`Desaprobar a ${intento.usuario_nombre}`}
-                                      >
-                                        ❌ Desaprobar
-                                      </button>
-                                    </div>
-                                  ))
+                                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                                    {examen.examenes_practicos_pendientes.map(intento => (
+                                      <div key={intento.id} style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}>
+                                        <button
+                                          onClick={() => evaluarExamenPractico(intento.id, 'aprobado')}
+                                          style={{
+                                            padding: '3px 6px',
+                                            fontSize: '10px',
+                                            backgroundColor: '#28a745',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '3px',
+                                            cursor: 'pointer'
+                                          }}
+                                          title={`Aprobar a ${intento.usuario_nombre}`}
+                                        >
+                                          ✅ Aprobar
+                                        </button>
+                                        <button
+                                          onClick={() => evaluarExamenPractico(intento.id, 'desaprobado')}
+                                          style={{
+                                            padding: '3px 6px',
+                                            fontSize: '10px',
+                                            backgroundColor: '#dc3545',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '3px',
+                                            cursor: 'pointer'
+                                          }}
+                                          title={`Desaprobar a ${intento.usuario_nombre}`}
+                                        >
+                                          ❌ Desaprobar
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
                                 ) : (
                                   <div style={{ fontSize: '11px', color: '#6c757d', textAlign: 'center' }}>
                                     Sin evaluaciones pendientes
@@ -1468,6 +1582,133 @@ function AdminPanel() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {subActiveTab === 'programados_hoy' && (
+        <div>
+          <h2>Exámenes Prácticos Programados para Hoy</h2>
+          
+          {examenesPracticosPendientes.filter(examen => examen.es_programado_hoy).length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', backgroundColor: '#f8f9fa', borderRadius: '10px' }}>
+              <h3>No hay exámenes programados para hoy</h3>
+              <p>Los exámenes que se programen para hoy aparecerán aquí.</p>
+            </div>
+          ) : (
+            <div className="table-container">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Estudiante</th>
+                    <th>Curso</th>
+                    <th>Examen</th>
+                    <th>Fecha Programada</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {examenesPracticosPendientes
+                    .filter(examen => examen.es_programado_hoy)
+                    .map(intento => (
+                    <tr key={intento.id}>
+                      <td>{intento.usuario_nombre}</td>
+                      <td>{intento.curso_nombre}</td>
+                      <td>{intento.examen_titulo}</td>
+                      <td>{new Date(intento.fecha_programada).toLocaleDateString()}</td>
+                      <td>
+                        <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          backgroundColor: '#28a745',
+                          color: 'white',
+                          fontSize: '12px'
+                        }}>
+                          Programado Hoy
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => {
+                            const resultado = prompt('Resultado del examen (aprobado/desaprobado):');
+                            if (resultado && ['aprobado', 'desaprobado'].includes(resultado.toLowerCase())) {
+                              const observaciones = prompt('Observaciones del examen:') || '';
+                              const evaluador = prompt('Nombre del evaluador:') || 'Admin';
+                              manejarResultadoPractico(intento.id, resultado.toLowerCase(), observaciones, evaluador);
+                            }
+                          }}
+                          style={{
+                            padding: '5px 10px',
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            fontSize: '12px'
+                          }}
+                        >
+                          Evaluar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '10px' }}>
+            <h3>Programar Nuevo Examen Práctico</h3>
+            <p>Selecciona un estudiante pendiente para programar su examen práctico:</p>
+            
+            {examenesPracticosPendientes.filter(examen => !examen.fecha_programada).length === 0 ? (
+              <p>No hay estudiantes pendientes de programación.</p>
+            ) : (
+              <div className="table-container">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Estudiante</th>
+                      <th>Curso</th>
+                      <th>Examen</th>
+                      <th>Fecha Inicio</th>
+                      <th>Programar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {examenesPracticosPendientes
+                      .filter(examen => !examen.fecha_programada)
+                      .map(intento => (
+                      <tr key={intento.id}>
+                        <td>{intento.usuario_nombre}</td>
+                        <td>{intento.curso_nombre}</td>
+                        <td>{intento.examen_titulo}</td>
+                        <td>{new Date(intento.fecha_inicio).toLocaleDateString()}</td>
+                        <td>
+                          <input
+                            type="date"
+                            min={new Date().toISOString().split('T')[0]}
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                if (confirm(`¿Programar examen para ${e.target.value}?`)) {
+                                  programarExamenPractico(intento.id, e.target.value);
+                                }
+                              }
+                            }}
+                            style={{
+                              padding: '5px',
+                              borderRadius: '3px',
+                              border: '1px solid #ddd'
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

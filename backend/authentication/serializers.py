@@ -49,6 +49,38 @@ class CursoSerializer(serializers.ModelSerializer):
         model = Curso
         fields = '__all__'
 
+# Serializers para exámenes
+class OpcionRespuestaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpcionRespuesta
+        fields = ['id', 'texto_opcion', 'orden']
+
+class PreguntaSerializer(serializers.ModelSerializer):
+    opciones = OpcionRespuestaSerializer(many=True, read_only=True, source='opcionrespuesta_set')
+    
+    class Meta:
+        model = Pregunta
+        fields = ['id', 'texto_pregunta', 'tipo', 'orden', 'opciones']
+
+class ExamenSerializer(serializers.ModelSerializer):
+    preguntas = PreguntaSerializer(many=True, read_only=True, source='pregunta_set')
+    
+    class Meta:
+        model = Examen
+        fields = ['id', 'nombre', 'descripcion', 'tipo', 'tiempo_limite', 'puntaje_minimo', 'fecha_creacion', 'preguntas']
+
+class ExamenListSerializer(serializers.ModelSerializer):
+    """Serializer para listar exámenes sin incluir las preguntas"""
+    class Meta:
+        model = Examen
+        fields = ['id', 'nombre', 'descripcion', 'tipo', 'tiempo_limite', 'puntaje_minimo', 'fecha_creacion']
+
+class IntentarExamenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IntentarExamen
+        fields = ['id', 'examen', 'usuario', 'fecha_inicio', 'fecha_finalizacion', 'puntaje_obtenido', 'aprobado', 'respuestas_json']
+        read_only_fields = ['id', 'fecha_inicio', 'puntaje_obtenido', 'aprobado']
+
 
 class InscripcionSerializer(serializers.ModelSerializer):
     usuario_info = UserSerializer(source='usuario', read_only=True)
