@@ -1,0 +1,539 @@
+/* ExamenComponent.css */
+
+.examenes-container, .examen-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.examenes-header, .examen-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.btn-volver {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-volver:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+.curso-info h2, .examen-info h2 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.curso-info p, .examen-info p {
+  color: #6c757d;
+  margin: 5px 0 0 0;
+}
+
+/* Lista de exámenes */
+.examenes-lista {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+.examen-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.examen-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.examen-card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.examen-card-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.estado-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.estado-no-realizado {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.estado-aprobado {
+  background: #28a745;
+  color: white;
+}
+
+.estado-reprobado {
+  background: #dc3545;
+  color: white;
+}
+
+.estado-abandonado {
+  background: #6c757d;
+  color: white;
+}
+
+.estado-en-progreso {
+  background: #ffc107;
+  color: #212529;
+}
+
+.examen-card-body {
+  padding: 20px;
+}
+
+.examen-descripcion {
+  color: #6c757d;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.examen-detalles {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.detalle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.detalle-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.detalle-valor {
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.ultimo-intento {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+.ultimo-intento h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.ultimo-intento p {
+  margin: 5px 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.examen-card-footer {
+  padding: 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-iniciar-examen {
+  width: 100%;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-iniciar-examen:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.examen-practico-info {
+  text-align: center;
+  color: #6c757d;
+}
+
+.examen-practico-info p {
+  margin: 5px 0;
+}
+
+.badge-aprobado {
+  background: #28a745;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 10px;
+  display: inline-block;
+}
+
+/* Vista del examen en curso */
+.examen-header {
+  justify-content: space-between;
+}
+
+.examen-timer {
+  display: flex;
+  align-items: center;
+}
+
+.timer {
+  background: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  min-width: 120px;
+  text-align: center;
+}
+
+.timer-warning {
+  background: #dc3545;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.examen-progreso {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progreso-info {
+  color: #6c757d;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.progreso-barra {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progreso-completado {
+  height: 100%;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  transition: width 0.3s ease;
+}
+
+.preguntas-container {
+  display: grid;
+  gap: 20px;
+}
+
+.pregunta-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.pregunta-numero {
+  background: #667eea;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.pregunta-texto {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.opciones-container {
+  display: grid;
+  gap: 12px;
+}
+
+.opcion-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.opcion-label:hover {
+  border-color: #667eea;
+  background: white;
+}
+
+.opcion-label input[type="radio"] {
+  margin: 0;
+  width: 20px;
+  height: 20px;
+  accent-color: #667eea;
+}
+
+.opcion-label input[type="radio"]:checked + .opcion-texto {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.opcion-texto {
+  flex: 1;
+  line-height: 1.5;
+  color: #495057;
+}
+
+.examen-acciones {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.btn-finalizar {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-finalizar:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+.btn-finalizar:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Vista de resultado */
+.resultado-examen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.resultado-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.resultado-card.aprobado {
+  border-top: 6px solid #28a745;
+}
+
+.resultado-card.reprobado {
+  border-top: 6px solid #dc3545;
+}
+
+.resultado-card h3 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.resultado-card.aprobado h3 {
+  color: #28a745;
+}
+
+.resultado-card.reprobado h3 {
+  color: #dc3545;
+}
+
+.resultado-detalles {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.resultado-detalles p {
+  margin: 10px 0;
+  font-size: 1.1rem;
+  color: #495057;
+}
+
+.resultado-acciones {
+  margin-top: 20px;
+}
+
+.btn-continuar {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-continuar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* Estados y utilidades */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: #6c757d;
+}
+
+.no-examenes {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.no-examenes p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .examenes-container, .examen-container {
+    padding: 10px;
+  }
+  
+  .examenes-lista {
+    grid-template-columns: 1fr;
+  }
+  
+  .examenes-header, .examen-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .curso-info h2, .examen-info h2 {
+    font-size: 1.5rem;
+  }
+  
+  .pregunta-card {
+    padding: 20px;
+  }
+  
+  .pregunta-texto {
+    font-size: 1rem;
+  }
+  
+  .resultado-card {
+    padding: 30px 20px;
+  }
+  
+  .resultado-card h3 {
+    font-size: 1.6rem;
+  }
+}
+
+/* Estilos para exámenes completados */
+.examen-completado-info {
+  text-align: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.mensaje-completado {
+  margin: 0 0 10px 0;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.estado-final {
+  margin: 0;
+}
+
+.aprobado {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.no-aprobado {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 1.1rem;
+}

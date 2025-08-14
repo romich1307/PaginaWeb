@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import ExamenComponent from '../components/ExamenComponent';
 import './MisCursosInscritos.css';
 
 function MisCursosInscritos() {
   const { user } = useAuth();
   const [cursosInscritos, setCursosInscritos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [vistaExamen, setVistaExamen] = useState(null); // {cursoId, curso}
 
   const API_BASE_URL = 'http://localhost:8000/api';
 
@@ -51,6 +53,25 @@ function MisCursosInscritos() {
 
     cargarInscripciones();
   }, [user]);
+
+  const abrirExamenes = (cursoId, curso) => {
+    setVistaExamen({ cursoId, curso });
+  };
+
+  const volverACursos = () => {
+    setVistaExamen(null);
+  };
+
+  // Si estamos en vista de examen, mostrar el componente de exámenes
+  if (vistaExamen) {
+    return (
+      <ExamenComponent 
+        cursoId={vistaExamen.cursoId}
+        curso={vistaExamen.curso}
+        onVolver={volverACursos}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -170,6 +191,12 @@ function MisCursosInscritos() {
               </div>
 
               <div className="curso-acciones">
+                <button 
+                  className="btn-examenes"
+                  onClick={() => abrirExamenes(inscripcion.curso, inscripcion.curso_info)}
+                >
+                  Exámenes
+                </button>
                 <button className="btn-acceder">
                   Acceder al Curso
                 </button>

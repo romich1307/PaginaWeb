@@ -34,6 +34,49 @@ class Examen(models.Model):
         return f"{self.curso.nombre} - {self.nombre} ({self.tipo})"
 
 
+class ExamenUsuario(models.Model):
+    """Modelo para asociar usuarios específicos con exámenes y programar su horario"""
+    ESTADO_CHOICES = [
+        ('programado', 'Programado'),
+        ('activo', 'Activo'),
+        ('completado', 'Completado'),
+        ('expirado', 'Expirado'),
+    ]
+    
+    RESULTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('aprobado', 'Aprobado'),
+        ('desaprobado', 'Desaprobado'),
+    ]
+    
+    usuario = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Usuario")
+    examen = models.ForeignKey(Examen, on_delete=models.CASCADE, verbose_name="Examen")
+    
+    # Programación del examen
+    fecha_programada = models.DateField(verbose_name="Fecha Programada")
+    hora_inicio = models.TimeField(verbose_name="Hora de Inicio")
+    duracion_minutos = models.PositiveIntegerField(verbose_name="Duración (minutos)")
+    
+    # Estado y resultados
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='programado', verbose_name="Estado")
+    resultado = models.CharField(max_length=20, choices=RESULTADO_CHOICES, default='pendiente', verbose_name="Resultado")
+    nota_final = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, verbose_name="Nota Final")
+    
+    # Fechas de control
+    fecha_asignacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Asignación")
+    fecha_realizacion = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de Realización")
+    
+    class Meta:
+        verbose_name = "Examen Asignado"
+        verbose_name_plural = "Exámenes Asignados"
+        db_table = "examenes_usuarios"
+        unique_together = ['usuario', 'examen']
+        ordering = ['fecha_programada', 'hora_inicio']
+    
+    def __str__(self):
+        return f"{self.usuario.get_full_name()} - {self.examen.nombre} ({self.estado})"
+
+
 class Pregunta(models.Model):
     TIPO_PREGUNTA_CHOICES = [
         ('multiple', 'Opción Múltiple'),
@@ -135,6 +178,21 @@ class IntentarExamen(models.Model):
         blank=True, 
         null=True, 
         verbose_name="Fecha de Evaluación Práctica"
+    )
+    fecha_programada_practica = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name="Fecha Programada para Examen Práctico"
+    )
+    hora_programada_practica = models.TimeField(
+        blank=True,
+        null=True,
+        verbose_name="Hora Programada para Examen Práctico"
+    )
+    duracion_programada = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name="Duración Programada (minutos)"
     )
     
     class Meta:

@@ -113,6 +113,18 @@ function Sidebar() {
           </li>
           
           <li className="menu-item">
+            <Link to="/examenes-asignados" className="menu-link">
+              <span className="menu-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 11H15M9 15H15M17 21L20 18V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 6.5V17.5C4 18.6046 4.89543 19.5 6 19.5H17V21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 7H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              {!isCollapsed && <span className="menu-text">Exámenes Asignados</span>}
+            </Link>
+          </li>
+          
+          <li className="menu-item">
             <Link to="/soporte" className="menu-link">
               <span className="menu-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

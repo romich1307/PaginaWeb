@@ -7,8 +7,16 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
-from .models import CustomUser, Curso, Inscripcion
-from .serializers import UserSerializer, UserRegistrationSerializer, CursoSerializer, InscripcionCreateSerializer, InscripcionSerializer
+from .models import CustomUser, Curso, Inscripcion, Examen, ExamenUsuario, Pregunta, OpcionRespuesta, IntentarExamen
+from .serializers import (
+    UserSerializer, UserRegistrationSerializer, CursoSerializer, 
+    InscripcionCreateSerializer, InscripcionSerializer,
+    ExamenSerializer, ExamenListSerializer, PreguntaSerializer, 
+    OpcionRespuestaSerializer, IntentarExamenSerializer
+)
+import json
+from django.db import transaction
+import random
 
 # Create your views here.
 
@@ -640,16 +648,29 @@ def admin_examenes_practicos_pendientes(request):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
     
     from .models import IntentarExamen
+    from django.utils import timezone
+    from django.db import models
+    from django.db.models import Q
+    from datetime import date
     
-    # Obtener intentos de exámenes prácticos pendientes
+    # Obtener la fecha de hoy
+    hoy = date.today()
+    
+    # Obtener intentos de exámenes prácticos pendientes o programados para hoy
     intentos_pendientes = IntentarExamen.objects.select_related('usuario', 'examen', 'examen__curso').filter(
         examen__tipo='practico',
         resultado_practico__in=['pendiente', None],
         estado__in=['iniciado', 'en_progreso']
+    ).filter(
+        Q(fecha_programada_practica=hoy) | 
+        Q(fecha_programada_practica__isnull=True)
     ).order_by('-fecha_inicio')
     
     intentos_data = []
     for intento in intentos_pendientes:
+        # Determinar si es programado para hoy
+        es_hoy = intento.fecha_programada_practica == hoy if intento.fecha_programada_practica else False
+        
         intentos_data.append({
             'id': intento.id,
             'usuario_id': intento.usuario.id,
@@ -659,11 +680,190 @@ def admin_examenes_practicos_pendientes(request):
             'examen_titulo': intento.examen.nombre,
             'curso_nombre': intento.examen.curso.nombre,
             'fecha_inicio': intento.fecha_inicio,
+            'fecha_programada': intento.fecha_programada_practica,
+            'es_programado_hoy': es_hoy,
             'resultado_practico': intento.resultado_practico or 'pendiente',
             'evaluador': intento.evaluador,
         })
     
     return Response(intentos_data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def programar_examen_practico(request):
+    """
+    Programar un examen práctico para una fecha específica
+    """
+    # Verificar si es admin
+    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+        return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
+    
+    from .models import IntentarExamen
+    from datetime import datetime, time
+    
+    try:
+        intento_id = request.data.get('intento_id')
+        fecha_programada = request.data.get('fecha_programada')
+        hora_programada = request.data.get('hora_programada')  # Format: "HH:MM"
+        duracion_programada = request.data.get('duracion_programada')  # En minutos
+        
+        if not intento_id or not fecha_programada:
+            return Response({
+                'error': 'Se requiere intento_id y fecha_programada'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Obtener el intento
+        intento = IntentarExamen.objects.get(
+            id=intento_id,
+            examen__tipo='practico'
+        )
+        
+        # Convertir fecha string a date object
+        fecha_obj = datetime.strptime(fecha_programada, '%Y-%m-%d').date()
+        
+        # Convertir hora string a time object si se proporciona
+        hora_obj = None
+        if hora_programada:
+            try:
+                hora_obj = datetime.strptime(hora_programada, '%H:%M').time()
+            except ValueError:
+                return Response({
+                    'error': 'Formato de hora inválido. Use HH:MM'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Actualizar los campos
+        intento.fecha_programada_practica = fecha_obj
+        if hora_obj:
+            intento.hora_programada_practica = hora_obj
+        if duracion_programada:
+            intento.duracion_programada = int(duracion_programada)
+        intento.save()
+        
+        return Response({
+            'message': f'Examen práctico programado para {fecha_programada}' + 
+                      (f' a las {hora_programada}' if hora_programada else '') +
+                      (f' por {duracion_programada} minutos' if duracion_programada else ''),
+            'intento_id': intento_id,
+            'fecha_programada': fecha_programada,
+            'hora_programada': hora_programada,
+            'duracion_programada': duracion_programada
+        }, status=status.HTTP_200_OK)
+        
+    except IntentarExamen.DoesNotExist:
+        return Response({
+            'error': 'Intento de examen no encontrado'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({
+            'error': 'Formato de fecha inválido. Use YYYY-MM-DD'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': f'Error al programar examen: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def activar_examen_para_curso(request):
+    """
+    Activar examen para todos los estudiantes inscritos en un curso
+    """
+    # Verificar si es admin
+    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+        return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
+    
+    from .models import Examen, IntentarExamen, Inscripcion
+    from datetime import datetime, time
+    
+    try:
+        examen_id = request.data.get('examen_id')
+        fecha_programada = request.data.get('fecha_programada')
+        hora_programada = request.data.get('hora_programada')  # Format: "HH:MM"
+        duracion_programada = request.data.get('duracion_programada')  # En minutos
+        
+        if not examen_id or not fecha_programada:
+            return Response({
+                'error': 'Se requiere examen_id y fecha_programada'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Obtener el examen
+        examen = Examen.objects.get(id=examen_id, tipo='practico')
+        
+        # Convertir fecha string a date object
+        fecha_obj = datetime.strptime(fecha_programada, '%Y-%m-%d').date()
+        
+        # Convertir hora string a time object si se proporciona
+        hora_obj = None
+        if hora_programada:
+            try:
+                hora_obj = datetime.strptime(hora_programada, '%H:%M').time()
+            except ValueError:
+                return Response({
+                    'error': 'Formato de hora inválido. Use HH:MM'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Obtener todos los estudiantes inscritos en el curso
+        inscripciones = Inscripcion.objects.filter(
+            curso=examen.curso,
+            estado='aprobado'
+        )
+        
+        intentos_creados = 0
+        intentos_actualizados = 0
+        
+        for inscripcion in inscripciones:
+            # Verificar si ya existe un intento para este estudiante y examen
+            intento_existente = IntentarExamen.objects.filter(
+                usuario=inscripcion.usuario,
+                examen=examen
+            ).first()
+            
+            if intento_existente:
+                # Actualizar intento existente
+                intento_existente.fecha_programada_practica = fecha_obj
+                if hora_obj:
+                    intento_existente.hora_programada_practica = hora_obj
+                if duracion_programada:
+                    intento_existente.duracion_programada = int(duracion_programada)
+                intento_existente.save()
+                intentos_actualizados += 1
+            else:
+                # Crear nuevo intento
+                nuevo_intento = IntentarExamen.objects.create(
+                    usuario=inscripcion.usuario,
+                    examen=examen,
+                    estado='iniciado',
+                    fecha_programada_practica=fecha_obj,
+                    hora_programada_practica=hora_obj,
+                    duracion_programada=int(duracion_programada) if duracion_programada else None,
+                    resultado_practico='pendiente'
+                )
+                intentos_creados += 1
+        
+        return Response({
+            'message': f'Examen activado para {inscripciones.count()} estudiantes',
+            'intentos_creados': intentos_creados,
+            'intentos_actualizados': intentos_actualizados,
+            'fecha_programada': fecha_programada,
+            'hora_programada': hora_programada,
+            'duracion_programada': duracion_programada,
+            'curso': examen.curso.nombre,
+            'examen': examen.nombre
+        }, status=status.HTTP_200_OK)
+        
+    except Examen.DoesNotExist:
+        return Response({
+            'error': 'Examen no encontrado'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({
+            'error': 'Formato de fecha inválido. Use YYYY-MM-DD'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': f'Error al activar examen: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ============= VISTAS DE EXÁMENES =============
@@ -714,6 +914,48 @@ def examenes_disponibles(request, curso_id):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def mis_examenes_programados(request):
+    """
+    Obtener todos los exámenes programados para el usuario
+    """
+    try:
+        from .models import IntentarExamen
+        
+        # Obtener intentos de examen del usuario con información de programación
+        intentos = IntentarExamen.objects.filter(
+            usuario=request.user
+        ).select_related('examen', 'examen__curso')
+        
+        examenes_data = []
+        for intento in intentos:
+            examen_info = {
+                'id': intento.id,
+                'examen_id': intento.examen.id,
+                'examen_nombre': intento.examen.nombre,
+                'curso_nombre': intento.examen.curso.nombre,
+                'tipo': intento.examen.tipo,
+                'estado': intento.estado,
+                'resultado_practico': intento.resultado_practico,
+                'fecha_inicio': intento.fecha_inicio,
+                'fecha_finalizacion': intento.fecha_finalizacion,
+                'puntaje_obtenido': intento.puntaje_obtenido,
+                'aprobado': intento.aprobado,
+                'fecha_programada_practica': intento.fecha_programada_practica,
+                'hora_programada_practica': intento.hora_programada_practica,
+                'duracion_programada': intento.duracion_programada,
+            }
+            examenes_data.append(examen_info)
+        
+        return Response(examenes_data, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Error al obtener exámenes programados: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def iniciar_examen(request, examen_id):
@@ -738,18 +980,52 @@ def iniciar_examen(request, examen_id):
                 'error': 'No estás inscrito en este curso'
             }, status=status.HTTP_403_FORBIDDEN)
         
-        # Verificar si ya tiene un intento activo
-        intento_activo = IntentarExamen.objects.filter(
-            usuario=request.user,
-            examen=examen,
-            estado='iniciado'
-        ).first()
+        # Verificar si ya tiene un intento completado
+        from django.utils import timezone
+        from datetime import timedelta
         
-        if intento_activo:
-            return Response({
-                'error': 'Ya tienes un intento activo para este examen',
-                'intento_id': intento_activo.id
-            }, status=status.HTTP_400_BAD_REQUEST)
+        intento_existente = IntentarExamen.objects.filter(
+            usuario=request.user,
+            examen=examen
+        ).order_by('-fecha_inicio').first()
+        
+        if intento_existente:
+            # Si ya tiene un intento completado, no permitir otro
+            if intento_existente.estado == 'completado':
+                return Response({
+                    'error': 'Ya has completado este examen. No se permiten múltiples intentos.',
+                    'resultado': {
+                        'aprobado': intento_existente.aprobado,
+                        'puntaje': intento_existente.puntaje_obtenido,
+                        'fecha_finalizacion': intento_existente.fecha_finalizacion
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Si el intento es reciente (menos de 24 horas) y está iniciado
+            elif (intento_existente.estado == 'iniciado' and 
+                  timezone.now() - intento_existente.fecha_inicio < timedelta(hours=24)):
+                
+                return Response({
+                    'intento': {
+                        'id': intento_existente.id,
+                        'estado': intento_existente.estado,
+                        'fecha_inicio': intento_existente.fecha_inicio
+                    },
+                    'examen': {
+                        'id': examen.id,
+                        'nombre': examen.nombre,
+                        'descripcion': examen.descripcion,
+                        'tiempo_limite': examen.tiempo_limite,
+                        'tipo': examen.tipo
+                    },
+                    'message': 'Continuando con intento existente'
+                }, status=status.HTTP_200_OK)
+            
+            # Si el intento anterior está iniciado pero es muy antiguo, marcar como abandonado
+            elif intento_existente.estado == 'iniciado':
+                intento_existente.estado = 'abandonado'
+                intento_existente.fecha_finalizacion = timezone.now()
+                intento_existente.save()
         
         # Crear nuevo intento
         nuevo_intento = IntentarExamen.objects.create(
@@ -761,11 +1037,18 @@ def iniciar_examen(request, examen_id):
         preguntas_seleccionadas = nuevo_intento.seleccionar_preguntas_aleatorias()
         
         return Response({
-            'intento_id': nuevo_intento.id,
-            'examen_nombre': examen.nombre,
-            'tiempo_limite': examen.tiempo_limite,
-            'cantidad_preguntas': len(preguntas_seleccionadas),
-            'fecha_inicio': nuevo_intento.fecha_inicio.isoformat(),
+            'intento': {
+                'id': nuevo_intento.id,
+                'estado': nuevo_intento.estado,
+                'fecha_inicio': nuevo_intento.fecha_inicio
+            },
+            'examen': {
+                'id': examen.id,
+                'nombre': examen.nombre,
+                'descripcion': examen.descripcion,
+                'tiempo_limite': examen.tiempo_limite,
+                'tipo': examen.tipo
+            },
             'message': f'Examen iniciado. Se han seleccionado {len(preguntas_seleccionadas)} preguntas.'
         }, status=status.HTTP_201_CREATED)
         
@@ -811,7 +1094,7 @@ def obtener_preguntas_examen(request, intento_id):
             }
             
             # Agregar opciones si es pregunta de opción múltiple
-            if pregunta.tipo == 'multiple':
+            if pregunta.tipo in ['multiple', 'multiple_choice']:
                 opciones = OpcionRespuesta.objects.filter(pregunta=pregunta).order_by('orden')
                 for opcion in opciones:
                     pregunta_info['opciones'].append({
@@ -933,4 +1216,352 @@ def enviar_respuestas_examen(request, intento_id):
     except Exception as e:
         return Response({
             'error': f'Error al procesar respuestas: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def obtener_examenes_curso(request, curso_id):
+    """
+    Obtener los exámenes disponibles para un curso específico
+    """
+    try:
+        # Verificar que el usuario está inscrito en el curso
+        inscripcion = Inscripcion.objects.get(
+            usuario=request.user, 
+            curso_id=curso_id, 
+            estado_pago='verificado'
+        )
+        
+        # Obtener los exámenes del curso
+        examenes = Examen.objects.filter(curso_id=curso_id).order_by('tipo', 'fecha_creacion')
+        
+        # Obtener intentos previos del usuario
+        intentos = IntentarExamen.objects.filter(
+            usuario=request.user,
+            examen__curso_id=curso_id
+        ).values('examen_id', 'aprobado', 'puntaje_obtenido', 'fecha_finalizacion')
+        
+        # Crear un diccionario de intentos por examen
+        intentos_dict = {}
+        for intento in intentos:
+            if intento['examen_id'] not in intentos_dict or intento['fecha_finalizacion'] > intentos_dict[intento['examen_id']]['fecha_finalizacion']:
+                intentos_dict[intento['examen_id']] = intento
+        
+        # Serializar exámenes con información de intentos
+        examenes_data = []
+        for examen in examenes:
+            examen_serializer = ExamenListSerializer(examen)
+            examen_data = examen_serializer.data
+            
+            # Agregar información del último intento
+            if examen.id in intentos_dict:
+                examen_data['ultimo_intento'] = intentos_dict[examen.id]
+            else:
+                examen_data['ultimo_intento'] = None
+                
+            examenes_data.append(examen_data)
+        
+        return Response({
+            'curso': CursoSerializer(inscripcion.curso).data,
+            'examenes': examenes_data
+        }, status=status.HTTP_200_OK)
+        
+    except Inscripcion.DoesNotExist:
+        return Response({
+            'error': 'No estás inscrito en este curso o tu pago no ha sido verificado'
+        }, status=status.HTTP_403_FORBIDDEN)
+    except Exception as e:
+        return Response({
+            'error': f'Error al obtener exámenes: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def obtener_examenes_asignados(request):
+    """
+    Obtiene los exámenes asignados al usuario autenticado
+    """
+    try:
+        usuario = request.user
+        examenes_asignados = ExamenUsuario.objects.filter(usuario=usuario).order_by('fecha_programada', 'hora_inicio')
+        
+        examenes_data = []
+        for examen_asignado in examenes_asignados:
+            examen_data = {
+                'id': examen_asignado.id,
+                'examen': {
+                    'id': examen_asignado.examen.id,
+                    'nombre': examen_asignado.examen.nombre,
+                    'descripcion': examen_asignado.examen.descripcion,
+                    'tipo': examen_asignado.examen.tipo,
+                    'curso': examen_asignado.examen.curso.nombre
+                },
+                'fecha_programada': examen_asignado.fecha_programada,
+                'hora_inicio': examen_asignado.hora_inicio,
+                'duracion_minutos': examen_asignado.duracion_minutos,
+                'estado': examen_asignado.estado,
+                'resultado': examen_asignado.resultado,
+                'nota_final': examen_asignado.nota_final,
+                'fecha_realizacion': examen_asignado.fecha_realizacion
+            }
+            examenes_data.append(examen_data)
+        
+        return Response({
+            'examenes_asignados': examenes_data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Error al obtener exámenes asignados: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def iniciar_examen_asignado(request, examen_asignado_id):
+    """
+    Inicia un examen asignado específico si está en el horario programado
+    """
+    try:
+        from datetime import datetime, time
+        
+        usuario = request.user
+        examen_asignado = ExamenUsuario.objects.get(id=examen_asignado_id, usuario=usuario)
+        
+        # Verificar si es el momento correcto para realizar el examen
+        ahora = timezone.now()
+        fecha_actual = ahora.date()
+        hora_actual = ahora.time()
+        
+        # Verificar fecha
+        if fecha_actual != examen_asignado.fecha_programada:
+            return Response({
+                'error': f'El examen está programado para {examen_asignado.fecha_programada}, no para hoy.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar hora (permitir un margen de 10 minutos antes)
+        hora_limite = time(
+            examen_asignado.hora_inicio.hour,
+            max(0, examen_asignado.hora_inicio.minute - 10)
+        )
+        
+        if hora_actual < hora_limite:
+            return Response({
+                'error': f'El examen inicia a las {examen_asignado.hora_inicio}. Puedes acceder 10 minutos antes.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar si el examen ya fue realizado
+        if examen_asignado.estado == 'completado':
+            return Response({
+                'error': 'Ya has completado este examen.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Marcar como activo y crear intento
+        examen_asignado.estado = 'activo'
+        examen_asignado.save()
+        
+        # Crear o obtener intento de examen
+        intento, created = IntentarExamen.objects.get_or_create(
+            usuario=usuario,
+            examen=examen_asignado.examen,
+            defaults={
+                'fecha_inicio': timezone.now(),
+                'tiempo_limite': examen_asignado.duracion_minutos,
+                'estado': 'en_progreso'
+            }
+        )
+        
+        if not created and intento.estado == 'finalizado':
+            return Response({
+                'error': 'Ya has completado este examen.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Seleccionar preguntas aleatorias si es un nuevo intento
+        if created:
+            intento.seleccionar_preguntas_aleatorias()
+        
+        # Obtener las preguntas del intento
+        preguntas = intento.obtener_preguntas_del_intento()
+        
+        # Serializar preguntas con opciones
+        preguntas_data = []
+        for pregunta in preguntas:
+            opciones_data = []
+            for opcion in pregunta.opciones.all():
+                opciones_data.append({
+                    'id': opcion.id,
+                    'texto': opcion.texto_opcion
+                })
+            
+            preguntas_data.append({
+                'id': pregunta.id,
+                'texto': pregunta.texto_pregunta,
+                'opciones': opciones_data
+            })
+        
+        return Response({
+            'intento_id': intento.id,
+            'examen': {
+                'id': examen_asignado.examen.id,
+                'nombre': examen_asignado.examen.nombre,
+                'descripcion': examen_asignado.examen.descripcion,
+                'duracion': examen_asignado.duracion_minutos
+            },
+            'preguntas': preguntas_data,
+            'tiempo_limite': examen_asignado.duracion_minutos
+        }, status=status.HTTP_200_OK)
+        
+    except ExamenUsuario.DoesNotExist:
+        return Response({
+            'error': 'Examen asignado no encontrado.'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Error al iniciar examen: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def crear_intento_examen_practico(request):
+    """
+    Crear un intento de examen práctico para un usuario (solo admin)
+    """
+    # Verificar que el usuario sea admin/staff
+    if not request.user.is_staff:
+        return Response({
+            'error': 'Solo los administradores pueden crear intentos de exámenes prácticos.'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        usuario_id = request.data.get('usuario_id')
+        examen_id = request.data.get('examen_id')
+        
+        # Validar que existan el usuario y el examen
+        usuario = CustomUser.objects.get(id=usuario_id)
+        examen = Examen.objects.get(id=examen_id, tipo='practico')
+        
+        # Verificar que no exista ya un intento para este examen
+        intento_existente = IntentarExamen.objects.filter(
+            usuario=usuario,
+            examen=examen
+        ).first()
+        
+        if intento_existente:
+            return Response({
+                'error': f'El usuario {usuario.get_full_name()} ya tiene un intento registrado para este examen.',
+                'intento_existente': {
+                    'id': intento_existente.id,
+                    'estado': intento_existente.estado,
+                    'aprobado': intento_existente.aprobado,
+                    'fecha_inicio': intento_existente.fecha_inicio
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Crear el intento de examen práctico
+        intento = IntentarExamen.objects.create(
+            usuario=usuario,
+            examen=examen,
+            estado='iniciado',
+            fecha_inicio=timezone.now(),
+            puntaje_obtenido=0,
+            aprobado=False
+        )
+        
+        return Response({
+            'message': f'Intento de examen práctico creado exitosamente para {usuario.get_full_name()}',
+            'intento': {
+                'id': intento.id,
+                'usuario': usuario.get_full_name(),
+                'examen': examen.nombre,
+                'estado': intento.estado,
+                'fecha_inicio': intento.fecha_inicio
+            }
+        }, status=status.HTTP_201_CREATED)
+        
+    except CustomUser.DoesNotExist:
+        return Response({
+            'error': 'Usuario no encontrado.'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Examen.DoesNotExist:
+        return Response({
+            'error': 'Examen práctico no encontrado.'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'error': f'Error al crear intento de examen: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def lista_usuarios_examenes(request):
+    """
+    Obtener lista de usuarios con sus exámenes y notas (solo admin)
+    """
+    if not request.user.is_staff:
+        return Response({
+            'error': 'Solo los administradores pueden acceder a esta información.'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        # Obtener todos los usuarios con sus intentos de examen
+        usuarios_data = []
+        usuarios = CustomUser.objects.all().order_by('apellidos', 'nombres')
+        
+        for usuario in usuarios:
+            # Obtener cursos en los que está inscrito
+            inscripciones = Inscripcion.objects.filter(usuario=usuario, activa=True)
+            cursos_inscritos = [inscripcion.curso for inscripcion in inscripciones]
+            
+            # Obtener intentos de examen del usuario
+            intentos = IntentarExamen.objects.filter(usuario=usuario).order_by('-fecha_inicio')
+            
+            intentos_data = []
+            for intento in intentos:
+                intentos_data.append({
+                    'id': intento.id,
+                    'examen': {
+                        'id': intento.examen.id,
+                        'nombre': intento.examen.nombre,
+                        'tipo': intento.examen.tipo,
+                        'curso': intento.examen.curso.nombre
+                    },
+                    'estado': intento.estado,
+                    'puntaje_obtenido': intento.puntaje_obtenido,
+                    'aprobado': intento.aprobado,
+                    'fecha_inicio': intento.fecha_inicio,
+                    'fecha_finalizacion': intento.fecha_finalizacion
+                })
+            
+            cursos_data = []
+            for curso in cursos_inscritos:
+                cursos_data.append({
+                    'id': curso.id,
+                    'nombre': curso.nombre,
+                    'nivel': curso.nivel
+                })
+            
+            usuarios_data.append({
+                'id': usuario.id,
+                'nombres': usuario.nombres,
+                'apellidos': usuario.apellidos,
+                'email': usuario.email,
+                'dni': usuario.dni,
+                'cursos_inscritos': cursos_data,
+                'intentos_examenes': intentos_data,
+                'total_examenes': len(intentos_data),
+                'examenes_aprobados': len([i for i in intentos_data if i['aprobado']]),
+                'examenes_reprobados': len([i for i in intentos_data if not i['aprobado'] and i['estado'] == 'completado'])
+            })
+        
+        return Response({
+            'usuarios': usuarios_data,
+            'total_usuarios': len(usuarios_data)
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Error al obtener información de usuarios: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

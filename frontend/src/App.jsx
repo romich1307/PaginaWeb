@@ -6,6 +6,9 @@ import Sidebar from './components/Sidebar';
 import Home from './views/Home';
 import MisCursos from './views/MisCursos';
 import MisCursosInscritos from './views/MisCursosInscritos';
+import Examenes from './views/Examenes';
+import ExamenesAsignados from './views/ExamenesAsignados';
+import ExamenPrueba from './views/ExamenPrueba';
 import AdminPanel from './views/AdminPanel';
 import Auth from './components/Auth';
 
@@ -27,6 +30,9 @@ function AppContent() {
       <Routes>
         {/* Ruta de login accesible siempre */}
         <Route path="/login" element={<Auth />} />
+        
+        {/* Ruta de examen de prueba - SIN AUTENTICACIÓN */}
+        <Route path="/examen-prueba" element={<ExamenPrueba />} />
         
         {/* Rutas protegidas */}
         {!isAuthenticated ? (
@@ -66,7 +72,15 @@ function AppContent() {
               <div className="app-container">
                 <Sidebar />
                 <div className="main-content">
-                  <h1>Exámenes Disponibles</h1>
+                  <Examenes />
+                </div>
+              </div>
+            } />
+            <Route path="/examenes-asignados" element={
+              <div className="app-container">
+                <Sidebar />
+                <div className="main-content">
+                  <ExamenesAsignados />
                 </div>
               </div>
             } />
