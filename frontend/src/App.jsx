@@ -11,6 +11,7 @@ import ExamenesAsignados from './views/ExamenesAsignados';
 import ExamenPrueba from './views/ExamenPrueba';
 import AdminPanel from './views/AdminPanel';
 import Auth from './components/Auth';
+import Soporte from './components/Soporte'; 
 
 function AppContent() {
   const { isAuthenticated, isLoading, isAdmin, user } = useAuth();
@@ -88,7 +89,7 @@ function AppContent() {
               <div className="app-container">
                 <Sidebar />
                 <div className="main-content">
-                  <h1>Soporte</h1>
+                  <Soporte/>
                 </div>
               </div>
             } />
