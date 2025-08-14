@@ -17,7 +17,7 @@ function AppContent() {
   if (isLoading) {
     return (
       <div style={{ padding: '20px', fontSize: '24px', color: 'blue', textAlign: 'center' }}>
-        <h1>Cargando...</h1>
+        <h2>Cargando...</h2>
       </div>
     );
   }

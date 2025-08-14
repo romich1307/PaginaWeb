@@ -29,8 +29,7 @@ class Inscripcion(models.Model):
     estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='pendiente', verbose_name="Estado del Pago")
     fecha_inscripcion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Inscripción")
     fecha_verificacion = models.DateTimeField(blank=True, null=True, verbose_name="Fecha de Verificación")
-    verificado_por = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, 
-                                     related_name='verificaciones', verbose_name="Verificado por")
+    verificado_por = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='verificaciones', verbose_name="Verificado por")
     
     # Fechas del curso
     fecha_inicio = models.DateField(blank=True, null=True, verbose_name="Fecha de Inicio")
@@ -38,8 +37,7 @@ class Inscripcion(models.Model):
     fecha_examen_practico = models.DateField(blank=True, null=True, verbose_name="Fecha Examen Práctico")
     
     # Progreso del estudiante
-    progreso = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)], 
-                                         verbose_name="Progreso (%)")
+    progreso = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)], verbose_name="Progreso (%)")
     certificado_otorgado = models.BooleanField(default=False, verbose_name="Certificado Otorgado")
     fecha_certificado = models.DateTimeField(blank=True, null=True, verbose_name="Fecha del Certificado")
     
