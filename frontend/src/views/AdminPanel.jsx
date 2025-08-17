@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import './AdminPanel.css';
 
 function AdminPanel() {
@@ -16,6 +18,16 @@ function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mostrarFormularioCurso, setMostrarFormularioCurso] = useState(false);
+  
+  // Estados para la gestión de estudiantes
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [busqueda, setBusqueda] = useState('');
+  const [ordenPor, setOrdenPor] = useState('fecha_desc');
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [estudiantesSeleccionados, setEstudiantesSeleccionados] = useState([]);
+  const [estudianteDetalle, setEstudianteDetalle] = useState(null);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  
   const [nuevoCurso, setNuevoCurso] = useState({
     nombre: '',
     descripcion: '',
@@ -280,7 +292,7 @@ function AdminPanel() {
       });
 
       if (response.ok) {
-        console.log(`✅ Curso actualizado: ${campo} = ${valor}`);
+        console.log(`Curso actualizado: ${campo} = ${valor}`);
         // Mostrar notificación sutil
         const notification = document.createElement('div');
         notification.style.cssText = `
@@ -295,7 +307,7 @@ function AdminPanel() {
           font-size: 0.9rem;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         `;
-        notification.textContent = `✅ ${campo} actualizado correctamente`;
+        notification.textContent = `${campo} actualizado correctamente`;
         document.body.appendChild(notification);
         setTimeout(() => document.body.removeChild(notification), 3000);
       } else {
@@ -349,7 +361,7 @@ function AdminPanel() {
       });
 
       if (response.ok) {
-        console.log(`✅ Examen actualizado: ${campo} = ${valor}`);
+        console.log(`Examen actualizado: ${campo} = ${valor}`);
         // Mostrar notificación
         const notification = document.createElement('div');
         notification.style.cssText = `
@@ -364,7 +376,7 @@ function AdminPanel() {
           font-size: 0.9rem;
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         `;
-        notification.textContent = `✅ ${campo} del examen actualizado`;
+        notification.textContent = `${campo} del examen actualizado`;
         document.body.appendChild(notification);
         setTimeout(() => document.body.removeChild(notification), 3000);
       } else {
@@ -395,7 +407,7 @@ function AdminPanel() {
       });
 
       if (response.ok) {
-        console.log(`✅ Pregunta actualizada: ${campo} = ${valor}`);
+        console.log(`Pregunta actualizada: ${campo} = ${valor}`);
       } else {
         console.error('Error al actualizar pregunta');
         loadData();
@@ -457,17 +469,17 @@ function AdminPanel() {
       ? ((examenEncontrado.intentos_completados / examenEncontrado.total_intentos) * 100).toFixed(1)
       : '0';
 
-    alert(`📊 Resultados del Examen: ${examenEncontrado.titulo}
-📚 Curso: ${cursoNombre}
+    alert(`Resultados del Examen: ${examenEncontrado.titulo}
+Curso: ${cursoNombre}
     
-📈 Total de intentos: ${examenEncontrado.total_intentos}
-✅ Intentos completados: ${examenEncontrado.intentos_completados}
-� Porcentaje de finalización: ${porcentajeFinalizacion}%
-� Preguntas configuradas: ${examenEncontrado.numero_preguntas} de ${examenEncontrado.total_preguntas_creadas} disponibles
-⏱️ Duración: ${examenEncontrado.duracion_minutos} minutos
-🎯 Estado: ${examenEncontrado.activo ? 'Activo' : 'Inactivo'}
+Total de intentos: ${examenEncontrado.total_intentos}
+Intentos completados: ${examenEncontrado.intentos_completados}
+Porcentaje de finalización: ${porcentajeFinalizacion}%
+Preguntas configuradas: ${examenEncontrado.numero_preguntas} de ${examenEncontrado.total_preguntas_creadas} disponibles
+Duración: ${examenEncontrado.duracion_minutos} minutos
+Estado: ${examenEncontrado.activo ? 'Activo' : 'Inactivo'}
 
-💡 Tip: Ve a la pestaña "Intentos" para ver detalles específicos de cada estudiante.`);
+Tip: Ve a la pestaña "Intentos" para ver detalles específicos de cada estudiante.`);
   };
 
   // Función para ver detalle del intento
@@ -479,16 +491,16 @@ function AdminPanel() {
       ? Math.round((new Date(intento.fecha_finalizacion) - new Date(intento.fecha_inicio)) / 60000)
       : 'N/A';
 
-    alert(`📋 Detalle del Intento:
+    alert(`Detalle del Intento:
 
-👤 Usuario: ${intento.usuario_nombre}
-📝 Examen: ${intento.examen_titulo}
-🕐 Inicio: ${new Date(intento.fecha_inicio).toLocaleString()}
-🕐 Fin: ${intento.fecha_finalizacion ? new Date(intento.fecha_finalizacion).toLocaleString() : 'En progreso'}
-⏱️ Duración: ${duracion} minutos
-📊 Puntaje: ${intento.puntaje !== null ? intento.puntaje : 'Pendiente'}
-❓ Preguntas: ${intento.preguntas_seleccionadas?.length || 0}
-✅ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
+Usuario: ${intento.usuario_nombre}
+Examen: ${intento.examen_titulo}
+Inicio: ${new Date(intento.fecha_inicio).toLocaleString()}
+Fin: ${intento.fecha_finalizacion ? new Date(intento.fecha_finalizacion).toLocaleString() : 'En progreso'}
+Duración: ${duracion} minutos
+Puntaje: ${intento.puntaje !== null ? intento.puntaje : 'Pendiente'}
+Preguntas: ${intento.preguntas_seleccionadas?.length || 0}
+Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
   };
 
   // Función para actualizar resultado de examen práctico
@@ -520,7 +532,7 @@ function AdminPanel() {
           }))
         })));
         
-        alert(`✅ Resultado actualizado: ${resultado.toUpperCase()}`);
+        alert(`Resultado actualizado: ${resultado.toUpperCase()}`);
       } else {
         console.error('Error al actualizar resultado práctico');
         alert('Error al actualizar el resultado');
@@ -648,39 +660,754 @@ function AdminPanel() {
     );
   }
 
-  const renderEstudiantes = () => (
-    <div className="tab-content">
-      <h2>Gestión de Estudiantes</h2>
-      <div className="table-container">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>DNI</th>
-              <th>Fecha de Registro</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {estudiantes.map(estudiante => (
-              <tr key={estudiante.id}>
-                <td>{estudiante.nombres} {estudiante.apellidos}</td>
-                <td>{estudiante.email}</td>
-                <td>{estudiante.dni}</td>
-                <td>{new Date(estudiante.date_joined).toLocaleDateString()}</td>
-                <td>
-                  <span className={`status ${estudiante.is_active ? 'active' : 'inactive'}`}>
-                    {estudiante.is_active ? 'Activo' : 'Inactivo'}
-                  </span>
-                </td>
+  const renderEstudiantes = () => {
+    const elementosPorPagina = 10;
+
+    // Función para verificar si un estudiante tiene cursos comprados
+    const tieneCompraVerificada = (estudianteId) => {
+      return inscripciones.some(inscripcion => 
+        inscripcion.usuario === estudianteId && 
+        (inscripcion.estado_pago === 'verificado' || inscripcion.estado_pago === 'pagado')
+      );
+    };
+
+    // Función para obtener cursos del estudiante
+    const obtenerCursosEstudiante = (estudianteId) => {
+      return inscripciones
+        .filter(inscripcion => 
+          inscripcion.usuario === estudianteId && 
+          (inscripcion.estado_pago === 'verificado' || inscripcion.estado_pago === 'pagado')
+        )
+        .map(inscripcion => inscripcion.curso_info?.nombre || 'Curso no disponible');
+    };
+
+    // Filtrar y ordenar estudiantes
+    const estudiantesFiltrados = estudiantes
+      .filter(estudiante => {
+        const esActivo = tieneCompraVerificada(estudiante.id);
+        const coincideBusqueda = `${estudiante.nombres} ${estudiante.apellidos} ${estudiante.email} ${estudiante.dni}`
+          .toLowerCase()
+          .includes(busqueda.toLowerCase());
+        
+        if (filtroEstado === 'activos') return esActivo && coincideBusqueda;
+        if (filtroEstado === 'inactivos') return !esActivo && coincideBusqueda;
+        return coincideBusqueda;
+      })
+      .sort((a, b) => {
+        switch (ordenPor) {
+          case 'nombre_asc':
+            return `${a.nombres} ${a.apellidos}`.localeCompare(`${b.nombres} ${b.apellidos}`);
+          case 'nombre_desc':
+            return `${b.nombres} ${b.apellidos}`.localeCompare(`${a.nombres} ${a.apellidos}`);
+          case 'fecha_asc':
+            return new Date(a.date_joined) - new Date(b.date_joined);
+          case 'fecha_desc':
+            return new Date(b.date_joined) - new Date(a.date_joined);
+          case 'email_asc':
+            return a.email.localeCompare(b.email);
+          case 'email_desc':
+            return b.email.localeCompare(a.email);
+          default:
+            return 0;
+        }
+      });
+
+    // Paginación
+    const totalPaginas = Math.ceil(estudiantesFiltrados.length / elementosPorPagina);
+    const indiceInicio = (paginaActual - 1) * elementosPorPagina;
+    const estudiantesPaginados = estudiantesFiltrados.slice(indiceInicio, indiceInicio + elementosPorPagina);
+
+    // Estadísticas
+    const estudiantesActivos = estudiantes.filter(est => tieneCompraVerificada(est.id));
+    const estudiantesInactivos = estudiantes.filter(est => !tieneCompraVerificada(est.id));
+
+    // Función para exportar datos a PDF mejorado
+    const exportarDatos = () => {
+      try {
+        // Determinar qué estudiantes exportar
+        const estudiantesParaExportar = estudiantesSeleccionados.length > 0 
+          ? estudiantes.filter(est => estudiantesSeleccionados.includes(est.id))
+          : estudiantesFiltrados;
+
+        // Verificar que hay datos para exportar
+        if (!estudiantesParaExportar || estudiantesParaExportar.length === 0) {
+          const mensaje = estudiantesSeleccionados.length > 0 
+            ? 'No hay estudiantes seleccionados para exportar'
+            : 'No hay estudiantes para exportar';
+          alert(mensaje);
+          return;
+        }
+
+        console.log('Iniciando generación de PDF mejorado...');
+        const doc = new jsPDF();
+        
+        // Configurar fuente para caracteres especiales
+        doc.setFont('helvetica');
+        
+        // ENCABEZADO PROFESIONAL
+        // Fondo azul para el encabezado
+        doc.setFillColor(45, 170, 225);
+        doc.rect(0, 0, 210, 50, 'F');
+        
+        // Título principal
+        doc.setFontSize(24);
+        doc.setTextColor(255, 255, 255);
+        const tituloReporte = estudiantesSeleccionados.length > 0 
+          ? 'REPORTE DE ESTUDIANTES SELECCIONADOS'
+          : 'REPORTE DE ESTUDIANTES';
+        doc.text(tituloReporte, 20, 25);
+        
+        // Subtítulo
+        doc.setFontSize(12);
+        doc.text('Sistema de Gestión Académica', 20, 35);
+        
+        // Fecha de generación
+        doc.setFontSize(10);
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        doc.text(`Generado: ${fechaActual}`, 20, 43);
+        
+        // SECCIÓN DE ESTADÍSTICAS
+        let yPosition = 65;
+        doc.setTextColor(33, 37, 41);
+        doc.setFontSize(16);
+        doc.text('RESUMEN EJECUTIVO', 20, yPosition);
+        
+        // Línea decorativa
+        doc.setDrawColor(45, 170, 225);
+        doc.setLineWidth(2);
+        doc.line(20, yPosition + 3, 190, yPosition + 3);
+        
+        yPosition += 15;
+        
+        // Estadísticas en cajas basadas en los estudiantes a exportar
+        const estudiantesActivosCount = estudiantesParaExportar.filter(est => tieneCompraVerificada(est.id)).length;
+        const estudiantesInactivosCount = estudiantesParaExportar.filter(est => !tieneCompraVerificada(est.id)).length;
+        
+        // Caja 1: Total en reporte
+        doc.setFillColor(248, 249, 250);
+        doc.rect(20, yPosition, 40, 25, 'F');
+        doc.setDrawColor(233, 236, 239);
+        doc.rect(20, yPosition, 40, 25);
+        doc.setFontSize(20);
+        doc.setTextColor(45, 170, 225);
+        doc.text(String(estudiantesParaExportar.length), 35, yPosition + 15);
+        doc.setFontSize(8);
+        doc.setTextColor(108, 117, 125);
+        const etiquetaTotal = estudiantesSeleccionados.length > 0 ? 'SELECCIONADOS' : 'EN REPORTE';
+        doc.text(etiquetaTotal, 25, yPosition + 22);
+        
+        // Caja 2: Activos
+        doc.setFillColor(248, 249, 250);
+        doc.rect(70, yPosition, 40, 25, 'F');
+        doc.rect(70, yPosition, 40, 25);
+        doc.setFontSize(20);
+        doc.setTextColor(76, 175, 80);
+        doc.text(String(estudiantesActivosCount), 85, yPosition + 15);
+        doc.setFontSize(8);
+        doc.setTextColor(108, 117, 125);
+        doc.text('ACTIVOS', 85, yPosition + 22);
+        
+        // Caja 3: Inactivos
+        doc.setFillColor(248, 249, 250);
+        doc.rect(120, yPosition, 40, 25, 'F');
+        doc.rect(120, yPosition, 40, 25);
+        doc.setFontSize(20);
+        doc.setTextColor(244, 67, 54);
+        doc.text(String(estudiantesInactivosCount), 135, yPosition + 15);
+        doc.setFontSize(8);
+        doc.setTextColor(108, 117, 125);
+        doc.text('INACTIVOS', 135, yPosition + 22);
+        
+        // Caja 4: Porcentaje de activos
+        doc.setFillColor(248, 249, 250);
+        doc.rect(170, yPosition, 40, 25, 'F');
+        doc.rect(170, yPosition, 40, 25);
+        doc.setFontSize(20);
+        doc.setTextColor(45, 170, 225);
+        const porcentajeActivos = estudiantesParaExportar.length > 0 
+          ? Math.round((estudiantesActivosCount / estudiantesParaExportar.length) * 100)
+          : 0;
+        doc.text(`${porcentajeActivos}%`, 185, yPosition + 15);
+        doc.setFontSize(8);
+        doc.setTextColor(108, 117, 125);
+        doc.text('% ACTIVOS', 180, yPosition + 22);
+        
+        yPosition += 40;
+        
+        // Información de filtros si aplica
+        if (filtroEstado !== 'todos' || busqueda !== '') {
+          doc.setFillColor(255, 243, 205);
+          doc.rect(20, yPosition, 170, 12, 'F');
+          doc.setDrawColor(255, 193, 7);
+          doc.rect(20, yPosition, 170, 12);
+          
+          doc.setFontSize(9);
+          doc.setTextColor(133, 100, 4);
+          let filtrosTexto = 'FILTROS APLICADOS: ';
+          if (filtroEstado !== 'todos') {
+            filtrosTexto += `Estado: ${filtroEstado.toUpperCase()}`;
+          }
+          if (busqueda !== '') {
+            filtrosTexto += `${filtroEstado !== 'todos' ? ' | ' : ''}Búsqueda: "${busqueda}"`;
+          }
+          doc.text(filtrosTexto, 25, yPosition + 7);
+          yPosition += 20;
+        }
+        
+        // TABLA DE DATOS
+        doc.setFontSize(14);
+        doc.setTextColor(33, 37, 41);
+        doc.text('DETALLE DE ESTUDIANTES', 20, yPosition);
+        
+        // Línea decorativa
+        doc.setDrawColor(45, 170, 225);
+        doc.setLineWidth(1);
+        doc.line(20, yPosition + 3, 190, yPosition + 3);
+        
+        yPosition += 10;
+        
+        // Preparar datos para la tabla
+        console.log('Preparando datos para la tabla...');
+        const datosTabla = estudiantesParaExportar.map(estudiante => {
+          const esActivo = tieneCompraVerificada(estudiante.id);
+          const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
+          
+          return [
+            `${estudiante.nombres || ''} ${estudiante.apellidos || ''}`.trim(),
+            estudiante.email || 'No disponible',
+            estudiante.dni || 'N/A',
+            estudiante.date_joined ? new Date(estudiante.date_joined).toLocaleDateString('es-ES') : 'N/A',
+            esActivo ? 'ACTIVO' : 'INACTIVO',
+            cursosEstudiante.length > 0 ? `${cursosEstudiante.length} curso(s)` : 'Sin cursos'
+          ];
+        });
+        
+        console.log('Datos preparados:', datosTabla.length, 'filas');
+        
+        // Configurar la tabla con diseño mejorado
+        autoTable(doc, {
+          startY: yPosition,
+          head: [['NOMBRE', 'EMAIL', 'DNI', 'REGISTRO', 'ESTADO', 'CURSOS']],
+          body: datosTabla,
+          theme: 'striped',
+          styles: {
+            fontSize: 8,
+            cellPadding: 4,
+            halign: 'left',
+            valign: 'middle',
+            textColor: [33, 37, 41],
+            lineColor: [233, 236, 239],
+            lineWidth: 0.5
+          },
+          headStyles: {
+            fillColor: [45, 170, 225],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 9,
+            cellPadding: 5,
+            halign: 'center'
+          },
+          alternateRowStyles: {
+            fillColor: [248, 249, 250]
+          },
+          rowStyles: {
+            fillColor: [255, 255, 255]
+          },
+          columnStyles: {
+            0: { cellWidth: 35, fontStyle: 'bold' }, // Nombre
+            1: { cellWidth: 40 }, // Email
+            2: { cellWidth: 18, halign: 'center' }, // DNI
+            3: { cellWidth: 22, halign: 'center' }, // Fecha
+            4: { 
+              cellWidth: 20,
+              halign: 'center',
+              fontStyle: 'bold'
+            }, // Estado
+            5: { cellWidth: 25, halign: 'center' } // Cursos
+          },
+          didParseCell: function(data) {
+            // Colorear la columna de estado
+            if (data.column.index === 4) {
+              if (data.cell.text[0] === 'ACTIVO') {
+                data.cell.styles.textColor = [76, 175, 80];
+                data.cell.styles.fillColor = [232, 245, 233];
+              } else {
+                data.cell.styles.textColor = [244, 67, 54];
+                data.cell.styles.fillColor = [255, 235, 238];
+              }
+            }
+            // Resaltar nombres
+            if (data.column.index === 0) {
+              data.cell.styles.textColor = [45, 170, 225];
+            }
+          },
+          margin: { top: 10, right: 15, bottom: 30, left: 15 },
+          pageBreak: 'auto',
+          showHead: 'everyPage'
+        });
+        
+        // PIE DE PÁGINA PROFESIONAL
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+          
+          const pageHeight = doc.internal.pageSize.height;
+          
+          // Fondo del pie
+          doc.setFillColor(248, 249, 250);
+          doc.rect(0, pageHeight - 25, 210, 25, 'F');
+          
+          // Línea superior
+          doc.setDrawColor(45, 170, 225);
+          doc.setLineWidth(1);
+          doc.line(15, pageHeight - 25, 195, pageHeight - 25);
+          
+          // Información del pie
+          doc.setFontSize(8);
+          doc.setTextColor(108, 117, 125);
+          doc.text('Sistema de Gestión de Estudiantes | Reporte Generado Automáticamente', 15, pageHeight - 15);
+          doc.text(`Página ${i} de ${totalPages}`, 165, pageHeight - 15);
+          doc.text(`Total de registros: ${estudiantesFiltrados.length}`, 15, pageHeight - 8);
+          doc.text(new Date().toLocaleString('es-ES'), 165, pageHeight - 8);
+        }
+        
+        console.log('PDF generado exitosamente');
+        
+        // Descargar el PDF
+        const tipoReporte = estudiantesSeleccionados.length > 0 ? 'Seleccionados' : 'Todos';
+        const nombreArchivo = `Reporte_Estudiantes_${tipoReporte}_${new Date().toISOString().split('T')[0]}.pdf`;
+        console.log('Descargando archivo:', nombreArchivo);
+        
+        doc.save(nombreArchivo);
+        
+        // Mostrar mensaje de éxito
+        const mensaje = estudiantesSeleccionados.length > 0 
+          ? `PDF generado con ${estudiantesParaExportar.length} estudiantes seleccionados: ${nombreArchivo}`
+          : `PDF profesional generado: ${nombreArchivo}`;
+        alert(mensaje);
+        
+      } catch (error) {
+        console.error('Error al generar PDF:', error);
+        alert(`Error al generar el PDF: ${error.message}`);
+      }
+    };
+
+    // Función para mostrar detalles del estudiante
+    const mostrarDetalles = (estudiante) => {
+      const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
+      const inscripcionesEstudiante = inscripciones.filter(ins => ins.usuario === estudiante.id);
+      
+      setEstudianteDetalle({
+        ...estudiante,
+        cursos: cursosEstudiante,
+        inscripciones: inscripcionesEstudiante,
+        esActivo: tieneCompraVerificada(estudiante.id)
+      });
+      setMostrarModal(true);
+    };
+
+    const cerrarModal = () => {
+      setMostrarModal(false);
+      setEstudianteDetalle(null);
+    };
+    const exportarDatosAlternativo = () => {
+      try {
+        // Determinar qué estudiantes exportar
+        const estudiantesParaExportar = estudiantesSeleccionados.length > 0 
+          ? estudiantes.filter(est => estudiantesSeleccionados.includes(est.id))
+          : estudiantesFiltrados;
+
+        // Verificar que hay datos para exportar
+        if (!estudiantesParaExportar || estudiantesParaExportar.length === 0) {
+          const mensaje = estudiantesSeleccionados.length > 0 
+            ? 'No hay estudiantes seleccionados para exportar'
+            : 'No hay estudiantes para exportar';
+          alert(mensaje);
+          return;
+        }
+
+        const datos = estudiantesParaExportar.map(estudiante => {
+          const esActivo = tieneCompraVerificada(estudiante.id);
+          const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
+          
+          return [
+            `${estudiante.nombres || ''} ${estudiante.apellidos || ''}`.trim(),
+            estudiante.email || 'No disponible',
+            estudiante.dni || 'No disponible',
+            estudiante.date_joined ? new Date(estudiante.date_joined).toLocaleDateString('es-ES') : 'No disponible',
+            esActivo ? 'Activo' : 'Inactivo',
+            cursosEstudiante.length > 0 ? cursosEstudiante.join(' | ') : 'Sin cursos'
+          ];
+        });
+        
+        // Usar punto y coma como delimitador (mejor para Excel en español)
+        const delimiter = ';';
+        const headers = ['Nombre', 'Email', 'DNI', 'Fecha de Registro', 'Estado', 'Cursos Comprados'];
+        
+        // Función para escapar celdas correctamente
+        const escaparCelda = (valor) => {
+          if (valor == null) return '';
+          let valorStr = String(valor).trim();
+          
+          // Escapar comillas dobles duplicándolas
+          valorStr = valorStr.replace(/"/g, '""');
+          
+          // Encerrar en comillas si contiene delimitador, comillas o saltos de línea
+          if (valorStr.includes(delimiter) || valorStr.includes('"') || valorStr.includes('\n') || valorStr.includes('\r')) {
+            valorStr = `"${valorStr}"`;
+          }
+          
+          return valorStr;
+        };
+        
+        // Construir el CSV línea por línea
+        let csvContent = headers.map(escaparCelda).join(delimiter) + '\r\n';
+        
+        datos.forEach(fila => {
+          csvContent += fila.map(escaparCelda).join(delimiter) + '\r\n';
+        });
+        
+        // Agregar BOM para UTF-8 y crear blob
+        const BOM = '\uFEFF';
+        const blob = new Blob([BOM + csvContent], { 
+          type: 'text/csv;charset=utf-8;' 
+        });
+        
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const tipoReporte = estudiantesSeleccionados.length > 0 ? 'seleccionados' : 'todos';
+        a.download = `estudiantes_${tipoReporte}_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        // Mostrar mensaje de éxito
+        const mensaje = estudiantesSeleccionados.length > 0 
+          ? `CSV generado con ${estudiantesParaExportar.length} estudiantes seleccionados`
+          : `CSV generado correctamente con ${estudiantesParaExportar.length} estudiantes`;
+        alert(mensaje);
+        
+        alert('Archivo CSV descargado exitosamente');
+      } catch (error) {
+        console.error('Error al exportar CSV:', error);
+        alert('Error al exportar los datos');
+      }
+    };
+    const toggleSeleccionEstudiante = (estudianteId) => {
+      setEstudiantesSeleccionados(prev => 
+        prev.includes(estudianteId) 
+          ? prev.filter(id => id !== estudianteId)
+          : [...prev, estudianteId]
+      );
+    };
+
+    const seleccionarTodos = () => {
+      if (estudiantesSeleccionados.length === estudiantesPaginados.length) {
+        setEstudiantesSeleccionados([]);
+      } else {
+        setEstudiantesSeleccionados(estudiantesPaginados.map(est => est.id));
+      }
+    };
+
+    return (
+      <div className="tab-content">
+        <div className="estudiantes-header">
+          <h2>Gestión de Estudiantes</h2>
+          <div className="header-actions">
+            <div className="export-buttons">
+              <button className="btn-export btn-pdf" onClick={exportarDatos}>
+                {estudiantesSeleccionados.length > 0 
+                  ? `Exportar PDF (${estudiantesSeleccionados.length} seleccionados)`
+                  : `Exportar PDF (${estudiantesFiltrados.length} estudiantes)`
+                }
+              </button>
+              <button className="btn-export btn-csv" onClick={exportarDatosAlternativo}>
+                {estudiantesSeleccionados.length > 0 
+                  ? `Exportar CSV (${estudiantesSeleccionados.length} seleccionados)`
+                  : `Exportar CSV (${estudiantesFiltrados.length} estudiantes)`
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Estadísticas */}
+        <div className="stats-container">
+          <div className="stat-item">
+            <span className="stat-number">{estudiantes.length}</span>
+            <span className="stat-label">Total</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number active">{estudiantesActivos.length}</span>
+            <span className="stat-label">Activos</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number inactive">{estudiantesInactivos.length}</span>
+            <span className="stat-label">Inactivos</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">{estudiantesFiltrados.length}</span>
+            <span className="stat-label">Filtrados</span>
+          </div>
+        </div>
+
+        {/* Controles de filtrado y búsqueda */}
+        <div className="controls-container">
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Buscar por nombre, email o DNI..."
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+                setPaginaActual(1);
+              }}
+              className="search-input"
+            />
+          </div>
+          
+          <div className="filters-container">
+            <select 
+              value={filtroEstado} 
+              onChange={(e) => {
+                setFiltroEstado(e.target.value);
+                setPaginaActual(1);
+              }}
+              className="filter-select"
+            >
+              <option value="todos">Todos los Estados</option>
+              <option value="activos">Solo Activos</option>
+              <option value="inactivos">Solo Inactivos</option>
+            </select>
+            
+            <select 
+              value={ordenPor} 
+              onChange={(e) => setOrdenPor(e.target.value)}
+              className="filter-select"
+            >
+              <option value="fecha_desc">Más Recientes</option>
+              <option value="fecha_asc">Más Antiguos</option>
+              <option value="nombre_asc">Nombre A-Z</option>
+              <option value="nombre_desc">Nombre Z-A</option>
+              <option value="email_asc">Email A-Z</option>
+              <option value="email_desc">Email Z-A</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Acciones por lotes */}
+        {estudiantesSeleccionados.length > 0 && (
+          <div className="batch-actions">
+            <span className="selection-count">
+              {estudiantesSeleccionados.length} estudiante(s) seleccionado(s)
+            </span>
+            <button 
+              className="btn-clear-selection"
+              onClick={() => setEstudiantesSeleccionados([])}
+            >
+              Limpiar Selección
+            </button>
+          </div>
+        )}
+
+        {/* Vista de tabla */}
+        <div className="table-container">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    checked={estudiantesSeleccionados.length === estudiantesPaginados.length && estudiantesPaginados.length > 0}
+                    onChange={seleccionarTodos}
+                  />
+                </th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>DNI</th>
+                <th>Fecha de Registro</th>
+                <th>Estado</th>
+                <th>Cursos</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {estudiantesPaginados.map(estudiante => {
+                const esActivo = tieneCompraVerificada(estudiante.id);
+                const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
+                
+                return (
+                  <tr key={estudiante.id} className={estudiantesSeleccionados.includes(estudiante.id) ? 'selected' : ''}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={estudiantesSeleccionados.includes(estudiante.id)}
+                        onChange={() => toggleSeleccionEstudiante(estudiante.id)}
+                      />
+                    </td>
+                    <td className="student-name">
+                      <div className="name-container">
+                        <span className="full-name">{estudiante.nombres} {estudiante.apellidos}</span>
+                        <span className="student-id">ID: {estudiante.id}</span>
+                      </div>
+                    </td>
+                    <td>{estudiante.email}</td>
+                    <td>{estudiante.dni}</td>
+                    <td>{new Date(estudiante.date_joined).toLocaleDateString()}</td>
+                    <td>
+                      <span className={`status-badge ${esActivo ? 'active' : 'inactive'}`}>
+                        {esActivo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="courses-info">
+                        {cursosEstudiante.length > 0 ? (
+                          <span className="courses-count">{cursosEstudiante.length} curso(s)</span>
+                        ) : (
+                          <span className="no-courses">Sin cursos</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <button 
+                        className="btn-details"
+                        onClick={() => mostrarDetalles(estudiante)}
+                      >
+                        Ver Detalles
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Paginación */}
+        {totalPaginas > 1 && (
+          <div className="pagination">
+            <button 
+              className="pagination-btn"
+              onClick={() => setPaginaActual(prev => Math.max(prev - 1, 1))}
+              disabled={paginaActual === 1}
+            >
+              Anterior
+            </button>
+            
+            <div className="pagination-info">
+              <span>
+                Página {paginaActual} de {totalPaginas}
+              </span>
+              <span>
+                ({estudiantesFiltrados.length} estudiantes total)
+              </span>
+            </div>
+            
+            <button 
+              className="pagination-btn"
+              onClick={() => setPaginaActual(prev => Math.min(prev + 1, totalPaginas))}
+              disabled={paginaActual === totalPaginas}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
+        
+        {/* Modal de detalles del estudiante */}
+        {mostrarModal && estudianteDetalle && (
+          <div className="modal-overlay" onClick={cerrarModal}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Detalles del Estudiante</h3>
+                <button className="modal-close" onClick={cerrarModal}>×</button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="student-info-grid">
+                  <div className="info-section">
+                    <h4>Información Personal</h4>
+                    <div className="info-item">
+                      <span className="label">Nombre Completo:</span>
+                      <span className="value">{estudianteDetalle.nombres} {estudianteDetalle.apellidos}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="label">Email:</span>
+                      <span className="value">{estudianteDetalle.email}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="label">DNI:</span>
+                      <span className="value">{estudianteDetalle.dni || 'No disponible'}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="label">ID:</span>
+                      <span className="value">{estudianteDetalle.id}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="label">Fecha de Registro:</span>
+                      <span className="value">{new Date(estudianteDetalle.date_joined).toLocaleDateString()}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="label">Estado:</span>
+                      <span className={`status-badge ${estudianteDetalle.esActivo ? 'active' : 'inactive'}`}>
+                        {estudianteDetalle.esActivo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="courses-section-modal">
+                    <h4>Trayectoria de Cursos</h4>
+                    {estudianteDetalle.inscripciones.length > 0 ? (
+                      <div className="inscripciones-list">
+                        {estudianteDetalle.inscripciones.map((inscripcion, index) => (
+                          <div key={index} className="inscripcion-item">
+                            <div className="curso-nombre">
+                              {inscripcion.curso_info?.nombre || 'Curso no disponible'}
+                            </div>
+                            <div className="inscripcion-detalles">
+                              <span className="fecha">
+                                Inscrito: {new Date(inscripcion.fecha_inscripcion).toLocaleDateString()}
+                              </span>
+                              <span className={`estado-pago ${inscripcion.estado_pago}`}>
+                                {inscripcion.estado_pago}
+                              </span>
+                              <span className="metodo-pago">
+                                {inscripcion.metodo_pago}
+                              </span>
+                            </div>
+                            {inscripcion.fecha_inicio && (
+                              <div className="fechas-importantes">
+                                <span>Inicio: {new Date(inscripcion.fecha_inicio).toLocaleDateString()}</span>
+                                {inscripcion.fecha_examen_teorico && (
+                                  <span>Examen Teórico: {new Date(inscripcion.fecha_examen_teorico).toLocaleDateString()}</span>
+                                )}
+                                {inscripcion.fecha_examen_practico && (
+                                  <span>Examen Práctico: {new Date(inscripcion.fecha_examen_practico).toLocaleDateString()}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="no-inscripciones">Este estudiante no tiene inscripciones registradas.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderInscripciones = () => (
     <div className="tab-content">
@@ -1006,8 +1733,8 @@ function AdminPanel() {
                       fontWeight: 'bold'
                     }}
                   >
-                    <option value={true}>✅ Activo</option>
-                    <option value={false}>❌ Inactivo</option>
+                    <option value={true}>Activo</option>
+                    <option value={false}>Inactivo</option>
                   </select>
                 </td>
                 <td>
