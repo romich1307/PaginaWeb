@@ -155,6 +155,8 @@ function AdminPanel() {
       const inscripcionesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/`);
       if (inscripcionesResponse.ok) {
         const inscripcionesData = await inscripcionesResponse.json();
+        console.log('📋 Inscripciones cargadas:', inscripcionesData.length);
+        console.log('📋 Inscripciones más recientes:', inscripcionesData.slice(0, 3));
         setInscripciones(inscripcionesData);
       }
 
@@ -212,6 +214,279 @@ function AdminPanel() {
       console.error('Error:', error);
       setError('Error al actualizar el estado de pago');
     }
+  };
+
+  // Función para actualizar una fecha específica de inscripción
+  const actualizarFechaInscripcion = async (inscripcionId, campo, valor) => {
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/${inscripcionId}/`, {
+        method: 'PUT',
+        body: JSON.stringify({ [campo]: valor }),
+      });
+
+      if (response.ok) {
+        // Actualizar solo la inscripción específica en el estado local
+        setInscripciones(prev => 
+          prev.map(inscripcion => 
+            inscripcion.id === inscripcionId 
+              ? { ...inscripcion, [campo]: valor }
+              : inscripcion
+          )
+        );
+        
+        // Mostrar notificación sutil
+        mostrarNotificacion(`${campo.replace('_', ' ')} actualizada correctamente`);
+      } else {
+        alert('Error al actualizar la fecha');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al actualizar la fecha');
+    }
+  };
+
+  // Función para construir URL completa del comprobante
+  const construirUrlComprobante = (comprobante) => {
+    if (!comprobante) return null;
+    
+    // Si ya es una URL completa, usarla tal como está
+    if (comprobante.startsWith('http://') || comprobante.startsWith('https://')) {
+      return comprobante;
+    }
+    
+    // Si ya empieza con /media/, solo agregar el dominio base
+    if (comprobante.startsWith('/media/')) {
+      const baseUrl = API_BASE_URL.replace('/api', ''); // Remover /api para archivos media
+      return `${baseUrl}${comprobante}`;
+    }
+    
+    // Si es una ruta relativa que empieza con 'comprobantes/', construir URL completa
+    if (comprobante.startsWith('comprobantes/')) {
+      const baseUrl = API_BASE_URL.replace('/api', ''); // Remover /api para archivos media
+      return `${baseUrl}/media/${comprobante}`;
+    }
+    
+    // Si es solo un nombre de archivo, asumir que está en comprobantes/
+    const baseUrl = API_BASE_URL.replace('/api', ''); // Remover /api para archivos media
+    return `${baseUrl}/media/comprobantes/${comprobante}`;
+  };
+
+  // Función para ver comprobante de pago
+  const verComprobante = async (urlComprobante) => {
+    console.log('🔍 DEBUG: verComprobante llamado con:', urlComprobante);
+    
+    if (!urlComprobante) {
+      alert('No hay comprobante disponible');
+      return;
+    }
+
+    const urlCompleta = construirUrlComprobante(urlComprobante);
+    console.log('🔍 DEBUG: URL construida:', urlCompleta);
+    
+    if (!urlCompleta) {
+      alert('Error al construir la URL del comprobante');
+      return;
+    }
+
+    // Verificar si el archivo existe antes de abrir el modal
+    try {
+      console.log('🔍 DEBUG: Verificando archivo...');
+      const response = await fetch(urlCompleta, { method: 'HEAD' });
+      console.log('🔍 DEBUG: Respuesta HEAD:', response.status, response.ok);
+      if (!response.ok) {
+        console.warn(`Archivo no encontrado: ${urlCompleta}`);
+        // Aún así mostramos el modal para que el usuario vea la información de error
+      }
+    } catch (error) {
+      console.warn(`Error al verificar archivo: ${error.message}`);
+      // Continuamos mostrando el modal con información de error
+    }
+
+    console.log('🔍 DEBUG: Creando modal...');
+
+    // Remover cualquier modal existente
+    const existingModal = document.querySelector('.comprobante-modal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Crear modal para mostrar el comprobante
+    const modal = document.createElement('div');
+    modal.className = 'comprobante-modal';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'comprobante-modal-content';
+    
+    const header = document.createElement('div');
+    header.className = 'comprobante-header';
+    header.innerHTML = `
+      <h3>Comprobante de Pago</h3>
+      <button class="close-comprobante">×</button>
+    `;
+    
+    const viewer = document.createElement('div');
+    viewer.className = 'comprobante-viewer';
+    viewer.innerHTML = getComprobanteViewer(urlCompleta, urlComprobante);
+    
+    const actions = document.createElement('div');
+    actions.className = 'comprobante-actions';
+    actions.innerHTML = `
+      <button class="btn-download">Abrir en nueva pestaña</button>
+      <button class="btn-copy">Copiar URL</button>
+      <button class="btn-info">Ver información técnica</button>
+    `;
+    
+    modalContent.appendChild(header);
+    modalContent.appendChild(viewer);
+    modalContent.appendChild(actions);
+    modal.appendChild(modalContent);
+    
+    // Event listeners
+    const closeBtn = header.querySelector('.close-comprobante');
+    closeBtn.addEventListener('click', () => modal.remove());
+    
+    const downloadBtn = actions.querySelector('.btn-download');
+    downloadBtn.addEventListener('click', () => window.open(urlCompleta, '_blank'));
+    
+    const copyBtn = actions.querySelector('.btn-copy');
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(urlCompleta).then(() => {
+        mostrarNotificacion('URL copiada al portapapeles');
+      });
+    });
+    
+    const infoBtn = actions.querySelector('.btn-info');
+    infoBtn.addEventListener('click', () => {
+      const infoModal = `
+        Información del Comprobante:
+        
+        Archivo original: ${urlComprobante}
+        URL construida: ${urlCompleta}
+        API Base: ${API_BASE_URL}
+        
+        Pruebas para diagnosticar:
+        1. ¿Django está corriendo? → http://localhost:8000/
+        2. ¿Archivos media funcionan? → http://localhost:8000/media/test.txt
+        3. ¿Esta URL específica? → ${urlCompleta}
+        
+        Si alguna falla:
+        - Verificar que Django esté corriendo en puerto 8000
+        - Verificar configuración de MEDIA_URL y MEDIA_ROOT
+        - Verificar que el archivo existe en backend/media/comprobantes/
+        - Verificar configuración de CORS y X-Frame-Options
+      `;
+      alert(infoModal);
+    });
+    
+    // Cerrar modal al hacer clic fuera
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+    
+    // Cerrar con tecla Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    
+    document.body.appendChild(modal);
+  };
+
+  // Función para obtener el visor apropiado según el tipo de archivo
+  const getComprobanteViewer = (url, archivoOriginal) => {
+    const extension = url.split('.').pop().toLowerCase();
+    const fileName = url.split('/').pop();
+    
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+      return `
+        <div class="image-container">
+          <img src="${url}" alt="Comprobante" 
+               style="max-width: 100%; height: auto; max-height: 500px; display: block;" 
+               onload="this.nextElementSibling.style.display='none';"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+          <div class="error-fallback">
+            <div class="file-preview">
+              <div class="file-icon-large">IMG</div>
+              <p><strong>Archivo de imagen:</strong></p>
+              <p class="file-name">${fileName}</p>
+              <p class="file-original">Original: ${archivoOriginal}</p>
+              <p class="error-msg">No se pudo cargar la imagen. Verifica que el archivo existe en el servidor.</p>
+              <p class="help-msg">💡 Usa "Ver información técnica" para más detalles</p>
+            </div>
+          </div>
+        </div>`;
+    } else if (extension === 'pdf') {
+      return `
+        <div class="pdf-container">
+          <embed src="${url}" type="application/pdf" style="width: 100%; height: 500px; display: block;"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+          <div class="error-fallback">
+            <div class="file-preview">
+              <div class="file-icon-large">PDF</div>
+              <p><strong>Archivo PDF:</strong></p>
+              <p class="file-name">${fileName}</p>
+              <p class="file-original">Original: ${archivoOriginal}</p>
+              <p class="error-msg">No se pudo cargar el PDF. Intenta abrirlo en nueva pestaña.</p>
+              <p class="help-msg">💡 Usa "Ver información técnica" para más detalles</p>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      return `<div class="file-preview">
+        <div class="file-icon-large">${extension.toUpperCase()}</div>
+        <p><strong>Archivo:</strong></p>
+        <p class="file-name">${fileName}</p>
+        <p class="file-original">Original: ${archivoOriginal}</p>
+        <p><strong>Tipo:</strong> ${extension.toUpperCase()}</p>
+        <p class="info-msg">Haz clic en "Abrir en nueva pestaña" para ver el archivo.</p>
+      </div>`;
+    }
+  };
+
+  // Función para obtener el icono del archivo
+  const getFileIcon = (url) => {
+    if (!url) return <span className="no-file">Sin archivo</span>;
+    
+    const extension = url.split('.').pop().toLowerCase();
+    
+    switch (extension) {
+      case 'pdf':
+        return <span className="file-icon pdf" title="PDF">PDF</span>;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        return <span className="file-icon image" title="Imagen">IMG</span>;
+      case 'doc':
+      case 'docx':
+        return <span className="file-icon doc" title="Documento">DOC</span>;
+      default:
+        return <span className="file-icon unknown" title="Archivo">FILE</span>;
+    }
+  };
+
+  // Función para mostrar notificaciones sutiles
+  const mostrarNotificacion = (mensaje) => {
+    const notificacion = document.createElement('div');
+    notificacion.className = 'notificacion-sutil';
+    notificacion.textContent = mensaje;
+    
+    document.body.appendChild(notificacion);
+    
+    // Animación de entrada
+    setTimeout(() => notificacion.classList.add('mostrar'), 100);
+    
+    // Remover después de 3 segundos
+    setTimeout(() => {
+      notificacion.classList.remove('mostrar');
+      setTimeout(() => notificacion.remove(), 300);
+    }, 3000);
   };
 
   // Función para manejar el envío del formulario de nuevo curso
@@ -1419,9 +1694,12 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
               <th>Estudiante</th>
               <th>Curso</th>
               <th>Método de Pago</th>
+              <th>Comprobante</th>
               <th>Estado de Pago</th>
               <th>Fecha de Inscripción</th>
-              <th>Acciones</th>
+              <th>Fecha Inicio</th>
+              <th>Fecha Examen Teórico</th>
+              <th>Fecha Examen Práctico</th>
             </tr>
           </thead>
           <tbody>
@@ -1439,7 +1717,30 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                     'Curso no encontrado'
                   }
                 </td>
-                <td>{inscripcion.metodo_pago}</td>
+                <td>
+                  <span className={`payment-method ${inscripcion.metodo_pago?.toLowerCase()}`}>
+                    {inscripcion.metodo_pago}
+                  </span>
+                </td>
+                <td>
+                  {inscripcion.comprobante_pago ? (
+                    <div className="comprobante-container">
+                      <button 
+                        className="btn-view-comprobante"
+                        onClick={() => verComprobante(inscripcion.comprobante_pago)}
+                        title="Ver comprobante"
+                      >
+                        Ver Comprobante
+                      </button>
+                      <div className="comprobante-preview">
+                        {/* Mostrar preview del tipo de archivo */}
+                        {getFileIcon(inscripcion.comprobante_pago)}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="no-comprobante">Sin comprobante</span>
+                  )}
+                </td>
                 <td>
                   <select 
                     value={inscripcion.estado_pago} 
@@ -1453,27 +1754,31 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 </td>
                 <td>{new Date(inscripcion.fecha_inscripcion).toLocaleDateString()}</td>
                 <td>
-                  <div className="action-buttons">
-                    <button 
-                      className="btn-edit"
-                      onClick={() => {
-                        const fechaInicio = prompt('Fecha de inicio (YYYY-MM-DD):', inscripcion.fecha_inicio || '');
-                        const fechaExamenTeorico = prompt('Fecha examen teórico (YYYY-MM-DD):', inscripcion.fecha_examen_teorico || '');
-                        const fechaExamenPractico = prompt('Fecha examen práctico (YYYY-MM-DD):', inscripcion.fecha_examen_practico || '');
-                        
-                        if (fechaInicio || fechaExamenTeorico || fechaExamenPractico) {
-                          const fechas = {};
-                          if (fechaInicio) fechas.fecha_inicio = fechaInicio;
-                          if (fechaExamenTeorico) fechas.fecha_examen_teorico = fechaExamenTeorico;
-                          if (fechaExamenPractico) fechas.fecha_examen_practico = fechaExamenPractico;
-                          
-                          actualizarFechasInscripcion(inscripcion.id, fechas);
-                        }
-                      }}
-                    >
-                      Editar Fechas
-                    </button>
-                  </div>
+                  <input
+                    type="date"
+                    value={inscripcion.fecha_inicio || ''}
+                    onChange={(e) => actualizarFechaInscripcion(inscripcion.id, 'fecha_inicio', e.target.value)}
+                    className="inline-date-edit"
+                    placeholder="Sin definir"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="date"
+                    value={inscripcion.fecha_examen_teorico || ''}
+                    onChange={(e) => actualizarFechaInscripcion(inscripcion.id, 'fecha_examen_teorico', e.target.value)}
+                    className="inline-date-edit"
+                    placeholder="Sin definir"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="date"
+                    value={inscripcion.fecha_examen_practico || ''}
+                    onChange={(e) => actualizarFechaInscripcion(inscripcion.id, 'fecha_examen_practico', e.target.value)}
+                    className="inline-date-edit"
+                    placeholder="Sin definir"
+                  />
                 </td>
               </tr>
             ))}

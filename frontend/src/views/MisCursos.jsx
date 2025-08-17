@@ -17,13 +17,21 @@ function MisCursos() {
   // Función para hacer peticiones autenticadas
   const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('authToken');
+    
+    // Configurar headers por defecto
+    const defaultHeaders = {
+      'Authorization': `Token ${token}`,
+      ...options.headers,
+    };
+    
+    // Solo agregar Content-Type si no es FormData
+    if (!(options.body instanceof FormData)) {
+      defaultHeaders['Content-Type'] = 'application/json';
+    }
+    
     return fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Token ${token}`,
-        ...options.headers,
-      },
+      headers: defaultHeaders,
     });
   };
 
@@ -93,21 +101,21 @@ function MisCursos() {
     }
 
     try {
-      // Crear la inscripción en el backend
-      const inscripcionData = {
-        curso: courseToEnroll.id,
-        metodo_pago: paymentMethod,
-        comprobante_pago: receiptFile ? receiptFile.name : '',
-        comentarios: '',
-        estado_pago: 'pendiente'
-      };
+      // Crear FormData para enviar archivo
+      const formData = new FormData();
+      formData.append('curso', courseToEnroll.id);
+      formData.append('metodo_pago', paymentMethod);
+      formData.append('comprobante_pago', receiptFile);
+      formData.append('comentarios', '');
+      formData.append('estado_pago', 'pendiente');
 
-      console.log('Datos de inscripción a enviar:', inscripcionData);
+      console.log('FormData creado con archivo:', receiptFile.name);
       console.log('URL del endpoint:', `${API_BASE_URL}/inscripciones/`);
 
       const response = await fetchWithAuth(`${API_BASE_URL}/inscripciones/`, {
         method: 'POST',
-        body: JSON.stringify(inscripcionData),
+        body: formData, // Enviar FormData en lugar de JSON
+        // No incluir Content-Type header, se establece automáticamente para FormData
       });
 
       console.log('Respuesta del servidor:', response.status);
