@@ -40,6 +40,9 @@ class Inscripcion(models.Model):
     progreso = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)], verbose_name="Progreso (%)")
     certificado_otorgado = models.BooleanField(default=False, verbose_name="Certificado Otorgado")
     fecha_certificado = models.DateTimeField(blank=True, null=True, verbose_name="Fecha del Certificado")
+
+    # Estado de aprobación por el admin
+    aceptado_admin = models.BooleanField(null=True, blank=True, default=None, verbose_name="Aprobado por el Admin")
     
     class Meta:
         verbose_name = "Inscripción"

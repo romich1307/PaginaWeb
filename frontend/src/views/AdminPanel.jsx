@@ -5,6 +5,61 @@ import autoTable from 'jspdf-autotable';
 import './AdminPanel.css';
 
 function AdminPanel() {
+  // Devuelve estudiantes inscritos, pagados y aceptados por el admin para un curso
+  const getEstudiantesInscritosPagadosAceptados = (cursoId) => {
+    return inscripciones
+      .filter(
+        insc =>
+          insc.curso_info?.id === cursoId &&
+          insc.estado_pago === 'verificado' &&
+          insc.aceptado_admin === true
+      )
+      .map(insc => ({
+        id: insc.usuario_info?.id,
+        nombre: `${insc.usuario_info?.nombres || ''} ${insc.usuario_info?.apellidos || ''}`.trim()
+      }));
+  };
+
+  // Devuelve estudiantes inscritos y pagados pero NO aceptados aún (para mostrar en el modal para aprobar)
+  const getEstudiantesPendientesAceptacion = (cursoId) => {
+    return inscripciones
+      .filter(
+        insc =>
+          insc.curso_info?.id === cursoId &&
+          insc.estado_pago === 'verificado' &&
+          insc.aceptado_admin !== true
+      )
+      .map(insc => ({
+        id: insc.usuario_info?.id,
+        nombre: `${insc.usuario_info?.nombres || ''} ${insc.usuario_info?.apellidos || ''}`.trim()
+      }));
+  };
+
+  // Aprobar estudiante (actualiza aceptado_admin en backend)
+  const aprobarEstudiante = async (usuarioId, cursoId) => {
+    const insc = inscripciones.find(
+      i => i.usuario_info?.id === usuarioId && i.curso_info?.id === cursoId
+    );
+    if (!insc) return;
+    await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/${insc.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify({ aceptado_admin: true })
+    });
+    loadData();
+  };
+
+  // Desaprobar estudiante (actualiza aceptado_admin en backend)
+  const desaprobarEstudiante = async (usuarioId, cursoId) => {
+    const insc = inscripciones.find(
+      i => i.usuario_info?.id === usuarioId && i.curso_info?.id === cursoId
+    );
+    if (!insc) return;
+    await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/${insc.id}/`, {
+      method: 'PUT',
+      body: JSON.stringify({ aceptado_admin: false })
+    });
+    loadData();
+  };
   const { logout, user, isAuthenticated, isAdmin, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('estudiantes');
   const [subActiveTab, setSubActiveTab] = useState('examenes');
@@ -27,6 +82,7 @@ function AdminPanel() {
   const [estudiantesSeleccionados, setEstudiantesSeleccionados] = useState([]);
   const [estudianteDetalle, setEstudianteDetalle] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [modalListaEstudiantes, setModalListaEstudiantes] = useState({ abierto: false, estudiantes: [], cursoId: null });
   
   const [nuevoCurso, setNuevoCurso] = useState({
     nombre: '',
@@ -432,7 +488,7 @@ function AdminPanel() {
               <p class="file-name">${fileName}</p>
               <p class="file-original">Original: ${archivoOriginal}</p>
               <p class="error-msg">No se pudo cargar el PDF. Intenta abrirlo en nueva pestaña.</p>
-              <p class="help-msg">💡 Usa "Ver información técnica" para más detalles</p>
+              <p class="help-msg"> Usa "Ver información técnica" para más detalles</p>
             </div>
           </div>
         </div>`;
@@ -1547,7 +1603,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                         {cursosEstudiante.length > 0 ? (
                           <span className="courses-count">{cursosEstudiante.length} curso(s)</span>
                         ) : (
-                          <span className="no-courses">Sin cursos</span>
+                          <span className="no-cursos">Sin cursos</span>
                         )}
                       </div>
                     </td>
@@ -2228,230 +2284,166 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 </div>
               </div>
 
-              {/* Lista de exámenes del curso */}
-              {curso.examenes.length === 0 ? (
-                <div style={{ 
-                  padding: '40px', 
-                  textAlign: 'center', 
-                  color: '#6c757d' 
-                }}>
-                  <p style={{ margin: 0, fontSize: '16px' }}>
-                    📝 No hay exámenes creados para este curso
-                  </p>
-                  <button
-                    style={{
-                      marginTop: '15px',
-                      padding: '10px 20px',
-                      backgroundColor: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => alert('Funcionalidad para crear examen próximamente')}
-                  >
-                    ➕ Crear primer examen
-                  </button>
-                </div>
-              ) : (
-                <div className="table-container" style={{ padding: '0' }}>
-                  <table className="admin-table" style={{ margin: 0 }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#e9ecef' }}>
-                        <th>Título del Examen</th>
-                        <th>Tipo</th>
-                        <th>Duración</th>
-                        <th>Preguntas</th>
-                        <th>Intentos</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {curso.examenes.map(examen => (
-                        <tr key={examen.id}>
-                          <td>
-                            <div>
-                              <input 
-                                type="text" 
-                                value={examen.titulo || ''} 
-                                onChange={(e) => actualizarExamen(examen.id, 'titulo', e.target.value)}
-                                className="inline-edit"
-                                style={{ fontWeight: 'bold', fontSize: '14px' }}
-                              />
-                              <div style={{ fontSize: '12px', color: '#6c757d', marginTop: '2px' }}>
-                                {examen.descripcion ? examen.descripcion.substring(0, 50) + '...' : 'Sin descripción'}
-                              </div>
+              {/* Tabla de exámenes */}
+              <table className="admin-table" style={{ margin: 0 }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#e9ecef' }}>
+                    <th>Título del Examen</th>
+                    <th>Tipo</th>
+                    <th>Duración</th>
+                    <th>Preguntas</th>
+                    <th>Intentos</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {curso.examenes.map(examen => (
+                    <tr key={examen.id}>
+                      <td>
+                        <div>
+                          {examen.titulo}
+                          <div style={{ fontSize: '12px', color: '#6c757d', marginTop: '2px' }}>
+                            {examen.descripcion ? examen.descripcion.substring(0, 50) + '...' : 'Sin descripción'}
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          backgroundColor: examen.tipo === 'teorico' ? '#d1ecf1' : '#d4edda',
+                          color: examen.tipo === 'teorico' ? '#0c5460' : '#155724'
+                        }}>
+                          {examen.tipo === 'teorico' ? '📖 Teórico' : '🔧 Práctico'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>{examen.duracion_minutos} min</td>
+                      <td style={{ textAlign: 'center' }}>{examen.numero_preguntas} de {examen.total_preguntas_creadas} total</td>
+                      <td style={{ textAlign: 'center' }}>{examen.intentos_completados}/{examen.total_intentos} completados</td>
+                      <td>
+                        <select 
+                          value={examen.activo} 
+                          onChange={(e) => actualizarExamen(examen.id, 'activo', e.target.value === 'true')}
+                          className="status-select"
+                          style={{ color: examen.activo ? '#28a745' : '#dc3545', fontWeight: 'bold', fontSize: '12px' }}
+                        >
+                          <option value={true}>✅ Activo</option>
+                          <option value={false}>❌ Inactivo</option>
+                        </select>
+                      </td>
+                      <td>
+                        {examen.tipo === 'practico' ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {/* Botón para abrir la tarjeta/modal de estudiantes */}
+                            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                              <button
+                                onClick={() => {
+                                  // Mostrar todos los estudiantes inscritos y pagados, con su estado actual
+                                  const estudiantesInscritosPagados = inscripciones
+                                    .filter(
+                                      insc =>
+                                        insc.curso_info?.id === curso.id &&
+                                        insc.estado_pago === 'verificado'
+                                    )
+                                    .map(insc => ({
+                                      id: insc.usuario_info?.id,
+                                      nombre: `${insc.usuario_info?.nombres || ''} ${insc.usuario_info?.apellidos || ''}`.trim(),
+                                      aceptado_admin: insc.aceptado_admin
+                                    }));
+                                  setModalListaEstudiantes({ abierto: true, estudiantes: estudiantesInscritosPagados, cursoId: curso.id });
+                                }}
+                                style={{
+                                  padding: '6px 12px',
+                                  fontSize: '11px',
+                                  backgroundColor: '#17a2b8',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                                }}
+                                title="Ver lista de estudiantes para aprobar/desaprobar"
+                              >
+                                👥 Lista de Estudiantes
+                              </button>
                             </div>
-                          </td>
-                          <td>
-                            <span style={{
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              fontWeight: 'bold',
-                              backgroundColor: examen.tipo === 'teorico' ? '#d1ecf1' : '#d4edda',
-                              color: examen.tipo === 'teorico' ? '#0c5460' : '#155724'
-                            }}>
-                              {examen.tipo === 'teorico' ? '📖 Teórico' : '🔧 Práctico'}
-                            </span>
-                          </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <input 
-                              type="number" 
-                              value={examen.duracion_minutos || ''} 
-                              onChange={(e) => actualizarExamen(examen.id, 'duracion_minutos', parseInt(e.target.value) || 0)}
-                              className="inline-edit"
-                              style={{ textAlign: 'center', width: '70px' }}
-                            />
-                            <div style={{ fontSize: '11px', color: '#6c757d' }}>min</div>
-                          </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                              <input 
-                                type="number" 
-                                value={examen.numero_preguntas || ''} 
-                                onChange={(e) => actualizarExamen(examen.id, 'numero_preguntas', parseInt(e.target.value) || 0)}
-                                className="inline-edit"
-                                style={{ textAlign: 'center', width: '60px', marginBottom: '2px' }}
-                              />
-                              <div style={{ fontSize: '11px', color: '#6c757d' }}>
-                                de {examen.total_preguntas_creadas} total
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                              {examen.intentos_completados}/{examen.total_intentos}
-                            </div>
-                            <div style={{ fontSize: '11px', color: '#6c757d' }}>
-                              completados
-                            </div>
-                          </td>
-                          <td>
-                            <select 
-                              value={examen.activo} 
-                              onChange={(e) => actualizarExamen(examen.id, 'activo', e.target.value === 'true')}
-                              className="status-select"
-                              style={{ 
-                                color: examen.activo ? '#28a745' : '#dc3545',
-                                fontWeight: 'bold',
-                                fontSize: '12px'
-                              }}
-                            >
-                              <option value={true}>✅ Activo</option>
-                              <option value={false}>❌ Inactivo</option>
-                            </select>
-                          </td>
-                          <td>
-                            {examen.tipo === 'practico' ? (
-                              // Para exámenes prácticos: mostrar evaluación presencial y activación masiva
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {/* Botón para activar examen para todos los inscritos */}
-                                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                                  <button
-                                    onClick={() => {
-                                      const fecha = prompt('Fecha del examen (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-                                      if (fecha) {
-                                        const hora = prompt('Hora del examen (HH:MM):', '08:00');
-                                        const duracion = prompt('Duración en minutos:', '60');
-                                        if (hora && duracion) {
-                                          activarExamenParaCurso(examen.id, fecha, hora, duracion);
-                                        }
-                                      }
-                                    }}
-                                    style={{
-                                      padding: '6px 12px',
-                                      fontSize: '11px',
-                                      backgroundColor: '#007bff',
-                                      color: 'white',
-                                      border: 'none',
-                                      borderRadius: '4px',
-                                      cursor: 'pointer'
-                                    }}
-                                    title="Activar examen para todos los estudiantes inscritos"
-                                  >
-                                    🚀 Activar para Todos
-                                  </button>
-                                </div>
-                                
-                                {/* Evaluaciones individuales */}
-                                {examen.examenes_practicos_pendientes && examen.examenes_practicos_pendientes.length > 0 ? (
-                                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                                    {examen.examenes_practicos_pendientes.map(intento => (
-                                      <div key={intento.id} style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}>
-                                        <button
-                                          onClick={() => evaluarExamenPractico(intento.id, 'aprobado')}
-                                          style={{
-                                            padding: '3px 6px',
-                                            fontSize: '10px',
-                                            backgroundColor: '#28a745',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer'
-                                          }}
-                                          title={`Aprobar a ${intento.usuario_nombre}`}
-                                        >
-                                          ✅ Aprobar
-                                        </button>
-                                        <button
-                                          onClick={() => evaluarExamenPractico(intento.id, 'desaprobado')}
-                                          style={{
-                                            padding: '3px 6px',
-                                            fontSize: '10px',
-                                            backgroundColor: '#dc3545',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer'
-                                          }}
-                                          title={`Desaprobar a ${intento.usuario_nombre}`}
-                                        >
-                                          ❌ Desaprobar
-                                        </button>
-                                      </div>
-                                    ))}
+                            {/* Evaluaciones individuales */}
+                            {examen.examenes_practicos_pendientes && examen.examenes_practicos_pendientes.length > 0 ? (
+                              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                                {examen.examenes_practicos_pendientes.map(intento => (
+                                  <div key={intento.id} style={{ display: 'flex', gap: '3px', marginBottom: '3px' }}>
+                                    <button
+                                      onClick={() => evaluarExamenPractico(intento.id, 'aprobado')}
+                                      style={{
+                                        padding: '3px 6px',
+                                        fontSize: '10px',
+                                        backgroundColor: '#28a745',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '3px',
+                                        cursor: 'pointer'
+                                      }}
+                                      title={`Aprobar a ${intento.usuario_nombre}`}
+                                    >
+                                     Aprobar
+                                    </button>
+                                    <button
+                                      onClick={() => evaluarExamenPractico(intento.id, 'desaprobado')}
+                                      style={{
+                                        padding: '3px 6px',
+                                        fontSize: '10px',
+                                        backgroundColor: '#dc3545',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '3px',
+                                        cursor: 'pointer'
+                                      }}
+                                      title={`Desaprobar a ${intento.usuario_nombre}`}
+                                    >
+                                       Desaprobar
+                                    </button>
                                   </div>
-                                ) : (
-                                  <div style={{ fontSize: '11px', color: '#6c757d', textAlign: 'center' }}>
-                                    Sin evaluaciones pendientes
-                                  </div>
-                                )}
+                                ))}
                               </div>
                             ) : (
-                              // Para exámenes teóricos: botones normales
-                              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                                <button 
-                                  className="btn-view"
-                                  onClick={() => verResultadosExamen(examen.id)}
-                                  title="Ver resultados"
-                                  style={{ fontSize: '11px', padding: '5px 8px' }}
-                                >
-                                  📊 Resultados
-                                </button>
-                                <button 
-                                  className="btn-edit"
-                                  onClick={() => {
-                                    const nuevaDescripcion = prompt(`Editar descripción del examen "${examen.titulo}":`, examen.descripcion || '');
-                                    if (nuevaDescripcion !== null) {
-                                      actualizarExamen(examen.id, 'descripcion', nuevaDescripcion);
-                                    }
-                                  }}
-                                  title="Editar descripción"
-                                  style={{ fontSize: '11px', padding: '5px 8px' }}
-                                >
-                                  ✏️ Editar
-                                </button>
+                              <div style={{ fontSize: '11px', color: '#6c757d', textAlign: 'center' }}>
+                                Sin evaluaciones pendientes
                               </div>
                             )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                          </div>
+                        ) : (
+                          // Para exámenes teóricos: botones normales
+                          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                            <button 
+                              className="btn-view"
+                              onClick={() => verResultadosExamen(examen.id)}
+                              title="Ver resultados"
+                              style={{ fontSize: '11px', padding: '5px 8px' }}
+                            >
+                              📊 Resultados
+                            </button>
+                            <button 
+                              className="btn-edit"
+                              onClick={() => {
+                                const nuevaDescripcion = prompt(`Editar descripción del examen "${examen.titulo}":`, examen.descripcion || '');
+                                if (nuevaDescripcion !== null) {
+                                  actualizarExamen(examen.id, 'descripcion', nuevaDescripcion);
+                                }
+                              }}
+                              title="Editar descripción"
+                              style={{ fontSize: '11px', padding: '5px 8px' }}
+                            >
+                              ✏️ Editar
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ))}
           
@@ -2607,7 +2599,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                       onClick={() => verDetalleIntento(intento.id)}
                       title="Ver detalle"
                     >
-                      👁️ Ver Detalle
+                      Ver Detalle
                     </button>
                   </td>
                 </tr>
@@ -2619,6 +2611,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
 
       {subActiveTab === 'programados_hoy' && (
         <div>
+
           <h2>Exámenes Prácticos Programados para Hoy</h2>
           
           {examenesPracticosPendientes.filter(examen => examen.es_programado_hoy).length === 0 ? (
@@ -2805,6 +2798,59 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
         {activeTab === 'cursos' && renderCursos()}
         {activeTab === 'examenes' && renderExamenes()}
       </div>
+
+      {/* Modal/tarjeta de estudiantes */}
+      {modalListaEstudiantes.abierto && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>
+          <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', padding: '32px', minWidth: '350px', maxWidth: '90vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginBottom: '18px', textAlign: 'center', color: '#007bff' }}>Estudiantes inscritos</h2>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {modalListaEstudiantes.estudiantes.map(est => (
+                <li key={est.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
+                  <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {/* Estado actual de aprobación */}
+                    {typeof est.aceptado_admin !== 'undefined' && (
+                      <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
+                        {est.aceptado_admin === true && <span style={{ color: 'green' }}>Aprobado</span>}
+                        {est.aceptado_admin === false && <span style={{ color: 'red' }}>Desaprobado</span>}
+                        {(est.aceptado_admin === null || est.aceptado_admin === undefined) && <span style={{ color: 'orange' }}>Pendiente</span>}
+                      </span>
+                    )}
+                    <button
+                      style={{ padding: '6px 14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                      onClick={async () => {
+                        await aprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
+                        setModalListaEstudiantes(prev => ({
+                          ...prev,
+                          estudiantes: prev.estudiantes.map(e =>
+                            e.id === est.id ? { ...e, aceptado_admin: true } : e
+                          )
+                        }));
+                      }}
+                    >Aprobar</button>
+                    <button
+                      style={{ padding: '6px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                      onClick={async () => {
+                        await desaprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
+                        setModalListaEstudiantes(prev => ({
+                          ...prev,
+                          estudiantes: prev.estudiantes.map(e =>
+                            e.id === est.id ? { ...e, aceptado_admin: false } : e
+                          )
+                        }));
+                      }}
+                    >Desaprobar</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div style={{ textAlign: 'center', marginTop: '18px' }}>
+              <button style={{ padding: '8px 22px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

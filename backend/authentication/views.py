@@ -930,23 +930,35 @@ def mis_examenes_programados(request):
         
         examenes_data = []
         for intento in intentos:
-            examen_info = {
-                'id': intento.id,
-                'examen_id': intento.examen.id,
-                'examen_nombre': intento.examen.nombre,
-                'curso_nombre': intento.examen.curso.nombre,
-                'tipo': intento.examen.tipo,
-                'estado': intento.estado,
-                'resultado_practico': intento.resultado_practico,
-                'fecha_inicio': intento.fecha_inicio,
-                'fecha_finalizacion': intento.fecha_finalizacion,
-                'puntaje_obtenido': intento.puntaje_obtenido,
-                'aprobado': intento.aprobado,
-                'fecha_programada_practica': intento.fecha_programada_practica,
-                'hora_programada_practica': intento.hora_programada_practica,
-                'duracion_programada': intento.duracion_programada,
-            }
-            examenes_data.append(examen_info)
+                # Obtener la inscripción del usuario para el curso de este examen
+                inscripcion = None
+                try:
+                    inscripcion = Inscripcion.objects.get(usuario=request.user, curso=intento.examen.curso)
+                except Inscripcion.DoesNotExist:
+                    pass
+
+                examen_info = {
+                    'id': intento.id,
+                    'examen_id': intento.examen.id,
+                    'examen_nombre': intento.examen.nombre,
+                    'curso_id': intento.examen.curso.id,
+                    'curso_nombre': intento.examen.curso.nombre,
+                    'tipo': intento.examen.tipo,
+                    'estado': intento.estado,
+                    'resultado_practico': intento.resultado_practico,
+                    'fecha_inicio': intento.fecha_inicio,
+                    'fecha_finalizacion': intento.fecha_finalizacion,
+                    'puntaje_obtenido': intento.puntaje_obtenido,
+                    'aprobado': intento.aprobado,
+                    'fecha_programada_practica': intento.fecha_programada_practica,
+                    'hora_programada_practica': intento.hora_programada_practica,
+                    'duracion_programada': intento.duracion_programada,
+                    # Fechas de la inscripción (para mostrar igual que MisCursosInscritos)
+                    'fecha_examen_teorico': inscripcion.fecha_examen_teorico if inscripcion else None,
+                    'fecha_examen_practico': inscripcion.fecha_examen_practico if inscripcion else None,
+                    'aceptado_admin': getattr(inscripcion, 'aceptado_admin', None) if inscripcion else None,
+                }
+                examenes_data.append(examen_info)
         
         return Response(examenes_data, status=status.HTTP_200_OK)
         

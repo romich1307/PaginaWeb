@@ -179,14 +179,13 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
     if (!examen.ultimo_intento) {
       return { estado: 'No realizado', clase: 'estado-no-realizado' };
     }
-    
     const intentoEstado = examen.ultimo_intento.estado;
-    
     if (intentoEstado === 'completado') {
+      const puntaje = typeof examen.ultimo_intento.puntaje_obtenido === 'number' ? examen.ultimo_intento.puntaje_obtenido : 0;
       if (examen.ultimo_intento.aprobado) {
-        return { estado: 'EXAMEN FINALIZADO - APROBADO', clase: 'estado-aprobado' };
+        return { estado: `APROBADO (${puntaje}%)`, clase: 'estado-aprobado' };
       } else {
-        return { estado: 'EXAMEN FINALIZADO - NO APROBADO', clase: 'estado-reprobado' };
+        return { estado: `NO APROBADO (${puntaje}%)`, clase: 'estado-reprobado' };
       }
     } else if (intentoEstado === 'abandonado') {
       return { estado: 'EXAMEN ABANDONADO', clase: 'estado-abandonado' };
@@ -626,8 +625,8 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
                   {examen.ultimo_intento && (
                     <div className="ultimo-intento">
                       <h4>Último Intento:</h4>
-                      <p>Puntaje: {examen.ultimo_intento.puntaje_obtenido} / {examen.puntaje_total}</p>
-                      <p>Fecha: {new Date(examen.ultimo_intento.fecha_finalizacion).toLocaleDateString()}</p>
+                      <p>Puntaje: {typeof examen.ultimo_intento.puntaje_obtenido === 'number' ? examen.ultimo_intento.puntaje_obtenido : 0}%</p>
+                      <p>Fecha: {examen.ultimo_intento.fecha_finalizacion ? new Date(examen.ultimo_intento.fecha_finalizacion).toLocaleDateString() : '---'}</p>
                     </div>
                   )}
                 </div>
@@ -661,8 +660,14 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
                     <div className="examen-practico-info">
                       <p>Examen Presencial</p>
                       <p>Debe rendirse en las instalaciones del centro de capacitación</p>
-                      {examen.ultimo_intento && examen.ultimo_intento.aprobado && (
-                        <span className="badge-aprobado">Aprobado</span>
+                      {/* Estado de aprobación del admin para el examen práctico */}
+                      {typeof examen.aceptado_admin !== 'undefined' && (
+                        <div style={{ marginTop: '10px' }}>
+                          <strong>Estado de aprobación del admin:</strong>
+                          {examen.aceptado_admin === true && <span style={{ color: 'green', fontWeight: 'bold', marginLeft: '8px' }}>Aprobado</span>}
+                          {examen.aceptado_admin === false && <span style={{ color: 'red', fontWeight: 'bold', marginLeft: '8px' }}>Desaprobado</span>}
+                          {(examen.aceptado_admin === null || examen.aceptado_admin === undefined) && <span style={{ color: 'orange', fontWeight: 'bold', marginLeft: '8px' }}>Pendiente</span>}
+                        </div>
                       )}
                     </div>
                   )}

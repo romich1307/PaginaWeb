@@ -6,6 +6,8 @@ import './Examenes.css';
 function Examenes() {
   const { user } = useAuth();
   const [cursosInscritos, setCursosInscritos] = useState([]);
+  // Mapear fechas por cursoId para mostrar en exámenes programados
+  const [fechasPorCurso, setFechasPorCurso] = useState({});
   const [examenesProgramados, setExamenesProgramados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [vistaExamen, setVistaExamen] = useState(null);
@@ -57,13 +59,20 @@ function Examenes() {
       
       if (response.ok) {
         const inscripciones = await response.json();
-        
         // Filtrar solo cursos con pago verificado
         const cursosVerificados = inscripciones.filter(
           inscripcion => inscripcion.estado_pago === 'verificado'
         );
-        
         setCursosInscritos(cursosVerificados);
+        // Guardar fechas por cursoId para mostrar en exámenes programados
+        const fechas = {};
+        cursosVerificados.forEach(insc => {
+          fechas[insc.curso] = {
+            teorico: insc.fecha_examen_teorico,
+            practico: insc.fecha_examen_practico
+          };
+        });
+        setFechasPorCurso(fechas);
       } else {
         console.error('Error al cargar cursos');
       }
@@ -112,49 +121,86 @@ function Examenes() {
       {/* Sección de Exámenes Programados */}
       {examenesProgramados.length > 0 && (
         <div className="examenes-programados-section">
-          <h2>🗓️ Tus Exámenes Programados</h2>
+          <h2>Tus Exámenes Programados</h2>
           <div className="examenes-programados-grid">
-            {examenesProgramados
-              .filter(examen => examen.fecha_programada_practica || examen.tipo === 'teorico')
-              .map(examen => (
-                <div key={examen.id} className="examen-programado-card">
-                  <div className="examen-programado-header">
-                    <h4>{examen.examen_nombre}</h4>
-                    <span className={`tipo-badge ${examen.tipo}`}>
-                      {examen.tipo === 'practico' ? 'Práctico' : 'Teórico'}
-                    </span>
-                  </div>
-                  
-                  <div className="examen-programado-info">
-                    <p><strong>Curso:</strong> {examen.curso_nombre}</p>
-                    {examen.fecha_programada_practica && (
-                      <p><strong>Fecha:</strong> {new Date(examen.fecha_programada_practica).toLocaleDateString('es-ES')}</p>
-                    )}
-                    {examen.hora_programada_practica && (
-                      <p><strong>Hora:</strong> {examen.hora_programada_practica}</p>
-                    )}
-                    {examen.duracion_programada && (
-                      <p><strong>Duración:</strong> {examen.duracion_programada} minutos</p>
-                    )}
-                    
-                    <div className="examen-estado">
-                      {examen.estado === 'completado' ? (
-                        <span className="estado-completado">
-                          ✅ Completado {examen.aprobado ? '(Aprobado)' : '(No Aprobado)'}
-                        </span>
-                      ) : examen.resultado_practico === 'pendiente' ? (
-                        <span className="estado-pendiente">
-                          ⏳ Pendiente de Evaluación
-                        </span>
-                      ) : (
-                        <span className="estado-programado">
-                          📅 Programado
-                        </span>
+            {/* Mostrar solo un examen teórico por curso y todos los prácticos */}
+            {(() => {
+              const teoricosPorCurso = new Set();
+              return examenesProgramados
+                .filter(examen => {
+                  if (examen.tipo === 'teorico') {
+                    if (teoricosPorCurso.has(examen.curso_nombre)) return false;
+                    teoricosPorCurso.add(examen.curso_nombre);
+                    return true;
+                  }
+                  // Mostrar todos los prácticos
+                  return examen.tipo === 'practico';
+                })
+                .map(examen => (
+                  <div key={examen.id} className="examen-programado-card">
+                    <div className="examen-programado-header">
+                      <h4>{examen.examen_nombre}</h4>
+                      <span className={`tipo-badge ${examen.tipo}`}>
+                        {examen.tipo === 'practico' ? 'Práctico' : 'Teórico'}
+                      </span>
+                    </div>
+                    <div className="examen-programado-info">
+                      <p><strong>Curso:</strong> {examen.curso_nombre}</p>
+                      {/* Mostrar la fecha que pone el admin en la inscripción, siempre igual que MisCursosInscritos.jsx */}
+                      {examen.tipo === 'teorico' && examen.fecha_examen_teorico && (
+                        <p><strong>Fecha:</strong> {examen.fecha_examen_teorico}</p>
                       )}
+                      {examen.tipo === 'practico' && examen.fecha_examen_practico && (
+                        <p><strong>Fecha:</strong> {examen.fecha_examen_practico}</p>
+                      )}
+                      {/* Si no hay fecha definida por el admin, mostrar la programada */}
+                      {((examen.tipo === 'teorico' && !examen.fecha_examen_teorico) || (examen.tipo === 'practico' && !examen.fecha_examen_practico)) && examen.fecha_programada_practica && (
+                        <p><strong>Fecha:</strong> {new Date(examen.fecha_programada_practica).toLocaleDateString('es-ES', {
+                          year: 'numeric', month: 'long', day: 'numeric'
+                        })}</p>
+                      )}
+                      {examen.hora_programada_practica && (
+                        <p><strong>Hora:</strong> {examen.hora_programada_practica}</p>
+                      )}
+                      {examen.duracion_programada && (
+                        <p><strong>Duración:</strong> {examen.duracion_programada} minutos</p>
+                      )}
+                      <div className="examen-estado">
+                        {/* Mostrar estado de aprobación del admin para examen práctico */}
+                        {examen.tipo === 'practico' && typeof examen.aceptado_admin !== 'undefined' ? (
+                          examen.aceptado_admin === true ? (
+                            <span className="estado-completado" style={{ color: 'green', fontWeight: 'bold' }}>
+                              Aprobado
+                            </span>
+                          ) : examen.aceptado_admin === false ? (
+                            <span className="estado-pendiente" style={{ color: 'red', fontWeight: 'bold' }}>
+                              Desaprobado
+                            </span>
+                          ) : (
+                            <span className="estado-pendiente" style={{ color: 'orange', fontWeight: 'bold' }}>
+                              Pendiente de Evaluación
+                            </span>
+                          )
+                        ) : (
+                          examen.estado === 'completado' ? (
+                            <span className="estado-completado">
+                              Completado {examen.aprobado ? '(Aprobado)' : '(No Aprobado)'}
+                            </span>
+                          ) : examen.resultado_practico === 'pendiente' ? (
+                            <span className="estado-pendiente">
+                              Pendiente de Evaluación
+                            </span>
+                          ) : (
+                            <span className="estado-programado">
+                              Programado
+                            </span>
+                          )
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ));
+            })()}
           </div>
         </div>
       )}
@@ -175,76 +221,7 @@ function Examenes() {
             Explorar Cursos Disponibles
           </a>
         </div>
-      ) : (
-        <div className="cursos-examenes-grid">
-          {cursosInscritos.map(inscripcion => (
-            <div key={inscripcion.id} className="curso-examen-card">
-              <div className="curso-examen-header">
-                <img 
-                  src={inscripcion.curso_info?.imagen || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=200&fit=crop"} 
-                  alt={inscripcion.curso_info?.nombre || 'Curso'} 
-                  className="curso-examen-imagen"
-                />
-                <div className="curso-examen-overlay">
-                  <h3>{inscripcion.curso_info?.nombre}</h3>
-                  <p>{inscripcion.curso_info?.categoria}</p>
-                </div>
-              </div>
-
-              <div className="curso-examen-body">
-                <div className="curso-examen-info">
-                  <div className="info-item">
-                    <span className="info-icon">Duración:</span>
-                    <span>{inscripcion.curso_info?.duracion_horas} horas</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-icon">Ubicación:</span>
-                    <span>{inscripcion.curso_info?.ubicacion || 'Virtual'}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-icon">Instructor:</span>
-                    <span>{inscripcion.curso_info?.instructor || 'Por asignar'}</span>
-                  </div>
-                </div>
-
-                <div className="examenes-preview">
-                  <h4>Exámenes Disponibles:</h4>
-                  <div className="examenes-tipos">
-                    <div className="examen-tipo-item">
-                      <span className="tipo-icon">Teórico</span>
-                      <span>Examen Teórico</span>
-                      <span className="tipo-badge teorico">Online</span>
-                    </div>
-                    <div className="examen-tipo-item">
-                      <span className="tipo-icon">Práctico</span>
-                      <span>Examen Práctico</span>
-                      <span className="tipo-badge practico">Presencial</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="estado-progreso">
-                  <div className="progreso-label">Estado del Curso:</div>
-                  <div className="estado-badge activo">
-                    Inscrito y Verificado
-                  </div>
-                </div>
-              </div>
-
-              <div className="curso-examen-footer">
-                <button 
-                  className="btn-acceder-examenes"
-                  onClick={() => abrirExamenes(inscripcion.curso, inscripcion.curso_info)}
-                >
-                  <span className="btn-icon">Exámenes</span>
-                  <span>Acceder a Exámenes</span>
-                  <span className="btn-arrow">→</span>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+  ) : null}
 
       <div className="examenes-info-section">
         <h3>Información sobre Exámenes</h3>
