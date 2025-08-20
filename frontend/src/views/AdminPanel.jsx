@@ -2322,7 +2322,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                       </td>
                       <td style={{ textAlign: 'center' }}>{examen.duracion_minutos} min</td>
                       <td style={{ textAlign: 'center' }}>{examen.numero_preguntas} de {examen.total_preguntas_creadas} total</td>
-                      <td style={{ textAlign: 'center' }}>{examen.intentos_completados}/{examen.total_intentos} completados</td>
+                      <td style={{ textAlign: 'center' }}>1 intento</td>
                       <td>
                         <select 
                           value={examen.activo} 
