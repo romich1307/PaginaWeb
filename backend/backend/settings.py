@@ -174,9 +174,9 @@ REST_FRAMEWORK = {
 
 # CORS settings for React frontend
 try:
-    CORS_ALLOWED_ORIGINS = json.loads(os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:5173"]'))
+    CORS_ALLOWED_ORIGINS = json.loads(os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:5173", "https://majestic-mooncake-e39ab7.netlify.app"]'))
 except Exception:
-    CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
+    CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "https://majestic-mooncake-e39ab7.netlify.app"]
 
 CORS_ALLOW_CREDENTIALS = True
 
