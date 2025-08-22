@@ -2,8 +2,8 @@
   const getImagenUrl = (img) => {
     if (!img) return null;
     if (img.startsWith('http')) return img;
-    if (img.startsWith('/media/')) return `http://localhost:8000${img}`;
-    return `http://localhost:8000/media/preguntas/${img}`;
+  if (img.startsWith('/media/')) return `${import.meta.env.VITE_API_URL.replace('/api','')}${img}`;
+  return `${import.meta.env.VITE_API_URL.replace('/api','')}/media/preguntas/${img}`;
   };
 import React, { useState, useEffect } from 'react';
 import './ExamenComponent.css';
@@ -20,7 +20,7 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
   const [examenTerminado, setExamenTerminado] = useState(false);
   const [resultado, setResultado] = useState(null);
 
-  const API_BASE_URL = 'http://localhost:8000/api';
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('authToken');

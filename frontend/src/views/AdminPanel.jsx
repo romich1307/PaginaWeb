@@ -2,8 +2,8 @@
   const getImagenUrl = (img) => {
     if (!img) return null;
     if (img.startsWith('http')) return img;
-    if (img.startsWith('/media/')) return `http://localhost:8000${img}`;
-    return `http://localhost:8000/media/preguntas/${img}`;
+  if (img.startsWith('/media/')) return `${import.meta.env.VITE_API_URL.replace('/api','')}${img}`;
+  return `${import.meta.env.VITE_API_URL.replace('/api','')}/media/preguntas/${img}`;
   };
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -442,12 +442,12 @@ function AdminPanel() {
         API Base: ${API_BASE_URL}
         
         Pruebas para diagnosticar:
-        1. ¿Django está corriendo? → http://localhost:8000/
-        2. ¿Archivos media funcionan? → http://localhost:8000/media/test.txt
+  1. ¿Django está corriendo? → ${import.meta.env.VITE_API_URL.replace('/api','')}/
+  2. ¿Archivos media funcionan? → ${import.meta.env.VITE_API_URL.replace('/api','')}/media/test.txt
         3. ¿Esta URL específica? → ${urlCompleta}
         
         Si alguna falla:
-        - Verificar que Django esté corriendo en puerto 8000
+  - Verificar que Django esté corriendo en el servidor configurado
         - Verificar configuración de MEDIA_URL y MEDIA_ROOT
         - Verificar que el archivo existe en backend/media/comprobantes/
         - Verificar configuración de CORS y X-Frame-Options

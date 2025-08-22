@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async (token) => {
     try {
       console.log('AuthContext: Verificando estado de autenticación con token:', token);
-      const response = await fetch('http://127.0.0.1:8000/api/profile/', {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/profile/`, {
         method: 'GET',
         headers: {
           'Authorization': `Token ${token}`,
@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       console.log('AuthContext: Intentando login con email:', email);
-      const response = await fetch('http://127.0.0.1:8000/api/login/', {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

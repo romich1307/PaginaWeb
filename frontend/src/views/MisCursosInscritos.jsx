@@ -10,7 +10,7 @@ function MisCursosInscritos() {
   const [vistaExamen, setVistaExamen] = useState(null); // {cursoId, curso}
   const [aprobados, setAprobados] = useState({}); // {cursoId: true}
 
-  const API_BASE_URL = 'http://localhost:8000/api';
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   // Función para hacer peticiones autenticadas
   const fetchWithAuth = async (url, options = {}) => {

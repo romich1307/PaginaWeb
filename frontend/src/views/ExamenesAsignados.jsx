@@ -20,7 +20,7 @@ const ExamenesAsignados = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:8000/api/mis-examenes-asignados/', {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/mis-examenes-asignados/`, {
         method: 'GET',
         headers: {
           'Authorization': `Token ${token}`,
@@ -47,7 +47,7 @@ const ExamenesAsignados = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`http://localhost:8000/api/examenes-asignados/${examenAsignadoId}/iniciar/`, {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/examenes-asignados/${examenAsignadoId}/iniciar/`, {
         method: 'POST',
         headers: {
           'Authorization': `Token ${token}`,
