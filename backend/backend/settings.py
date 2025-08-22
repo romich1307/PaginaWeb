@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'backend.middleware.AllowIframeForMedia',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -189,6 +190,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 # Custom user model
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
-# Configuraciones para desarrollo - permitir frames
-X_FRAME_OPTIONS = 'ALLOWALL'  # Permitir frames de cualquier origen para PDFs
-SECURE_FRAME_DENY = False
+
+# Configuración para archivos multimedia (imágenes de preguntas, comprobantes, etc.)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

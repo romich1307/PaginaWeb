@@ -163,7 +163,7 @@ class Pregunta(models.Model):
     orden = models.PositiveIntegerField(verbose_name="Orden en el Examen")
     
     # Para preguntas con imagen
-    imagen_pregunta = models.URLField(blank=True, null=True, verbose_name="URL de Imagen de la Pregunta")
+    imagen_pregunta = models.ImageField(upload_to='preguntas/', blank=True, null=True, verbose_name="Imagen de la Pregunta")
     
     class Meta:
         verbose_name = "Pregunta"

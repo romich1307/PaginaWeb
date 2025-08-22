@@ -60,7 +60,7 @@ class PreguntaSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Pregunta
-        fields = ['id', 'texto_pregunta', 'tipo', 'orden', 'opciones']
+        fields = ['id', 'texto_pregunta', 'tipo', 'orden', 'opciones', 'imagen_pregunta']
 
 class ExamenSerializer(serializers.ModelSerializer):
     preguntas = PreguntaSerializer(many=True, read_only=True, source='pregunta_set')
@@ -116,7 +116,7 @@ class OpcionRespuestaSerializer(serializers.ModelSerializer):
 
 class PreguntaSerializer(serializers.ModelSerializer):
     opciones = OpcionRespuestaSerializer(many=True, read_only=True)
-    
+    imagen_pregunta = serializers.ImageField(use_url=True, allow_null=True, required=False)
     class Meta:
         model = Pregunta
         fields = '__all__'

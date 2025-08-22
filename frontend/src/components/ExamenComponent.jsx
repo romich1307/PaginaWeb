@@ -270,7 +270,8 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
                 color: resultado.aprobado ? '#155724' : '#721c24',
                 marginBottom: '10px'
               }}>
-                Tu puntuación: {Math.round((resultado.puntaje_obtenido / resultado.total_preguntas) * 100)}%
+                Tu puntuación: {Math.round(resultado.puntaje_obtenido)}%<br/>
+                Nota sobre 20: {resultado.respuestas_correctas && resultado.total_preguntas ? Math.round((resultado.respuestas_correctas / resultado.total_preguntas) * 20 * 10) / 10 : 0}
               </p>
               <p style={{
                 fontSize: '16px',
@@ -342,7 +343,112 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
     const pregunta = preguntas[preguntaActual];
     const esUltimaPregunta = preguntaActual === preguntas.length - 1;
     const esPrimeraPregunta = preguntaActual === 0;
-    
+
+    // Renderizar imagen si existe
+    const renderImagenPregunta = () => {
+      if (pregunta.imagen_pregunta) {
+        return (
+          <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <img
+              src={pregunta.imagen_pregunta.startsWith('http') ? pregunta.imagen_pregunta : `${window.location.origin}${pregunta.imagen_pregunta}`}
+              alt="Imagen de la pregunta"
+              style={{ maxWidth: '400px', maxHeight: '300px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+              onError={e => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.innerHTML += '<div style="color:#E20713;font-weight:bold;">No se pudo cargar la imagen</div>'; }}
+            />
+          </div>
+        );
+      }
+      return null;
+    };
+
+    // Opciones para verdadero/falso
+    const renderOpciones = () => {
+      if (pregunta.tipo === 'verdadero_falso') {
+        const opcionesVF = [
+          { id: 'verdadero', texto_opcion: 'Verdadero' },
+          { id: 'falso', texto_opcion: 'Falso' }
+        ];
+        return opcionesVF.map((opcion, index) => {
+          const isSelected = respuestas[pregunta.id] === opcion.id;
+          return (
+            <label key={opcion.id} className="opcion-label" style={{
+              display: 'block',
+              padding: '15px',
+              margin: '10px 0',
+              border: `2px solid ${isSelected ? '#2DAAE1' : '#ddd'}`,
+              borderRadius: '8px',
+              cursor: 'pointer',
+              background: isSelected ? '#e3f2fd' : 'white',
+              transition: 'all 0.2s ease'
+            }}>
+              <input
+                type="radio"
+                name={`pregunta-${pregunta.id}`}
+                value={opcion.id}
+                checked={isSelected}
+                onChange={() => manejarRespuesta(pregunta.id, opcion.id)}
+                style={{ marginRight: '12px' }}
+              />
+              <span className="opcion-texto" style={{ color: '#333', fontWeight: 'bold' }}>
+                {opcion.texto_opcion}
+              </span>
+            </label>
+          );
+        });
+      }
+      // Pregunta de respuesta escrita
+      if (pregunta.tipo === 'texto') {
+        return (
+          <div style={{ marginTop: '20px' }}>
+            <textarea
+              name={`pregunta-${pregunta.id}`}
+              value={respuestas[pregunta.id] || ''}
+              onChange={e => manejarRespuesta(pregunta.id, e.target.value)}
+              rows={4}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '2px solid #2DAAE1', fontSize: '16px', resize: 'vertical' }}
+              placeholder="Escribe tu respuesta aquí..."
+            />
+          </div>
+        );
+      }
+      // Opción múltiple y otras
+      return pregunta.opciones.map((opcion, index) => {
+        const letra = String.fromCharCode(65 + index); // A, B, C, D
+        const isSelected = respuestas[pregunta.id] === opcion.id;
+        return (
+          <label key={opcion.id} className="opcion-label" style={{
+            display: 'block',
+            padding: '15px',
+            margin: '10px 0',
+            border: `2px solid ${isSelected ? '#2DAAE1' : '#ddd'}`,
+            borderRadius: '8px',
+            cursor: 'pointer',
+            background: isSelected ? '#e3f2fd' : 'white',
+            transition: 'all 0.2s ease'
+          }}>
+            <input
+              type="radio"
+              name={`pregunta-${pregunta.id}`}
+              value={opcion.id}
+              checked={isSelected}
+              onChange={() => manejarRespuesta(pregunta.id, opcion.id)}
+              style={{ marginRight: '12px' }}
+            />
+            <span style={{
+              fontWeight: 'bold',
+              color: '#E20713',
+              marginRight: '8px'
+            }}>
+              {letra})
+            </span>
+            <span className="opcion-texto" style={{ color: '#333' }}>
+              {opcion.texto_opcion}
+            </span>
+          </label>
+        );
+      });
+    };
+
     return (
       <div className="examen-container" style={{
         userSelect: 'none',
@@ -350,6 +456,8 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
         MozUserSelect: 'none',
         msUserSelect: 'none'
       }} onContextMenu={(e) => e.preventDefault()}>
+        {/* Imagen de la pregunta */}
+        {renderImagenPregunta()}
         {/* Protección anti-plagio */}
         <div style={{
           position: 'fixed',
@@ -361,7 +469,7 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
           zIndex: -1,
           pointerEvents: 'none'
         }}></div>
-        
+
         <div className="examen-header">
           <div className="examen-info">
             <h2 style={{ color: '#E20713' }}>{examenActual.nombre}</h2>
@@ -416,7 +524,7 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
           }}>
             Pregunta {preguntaActual + 1}
           </div>
-          
+
           <div className="pregunta-texto" style={{
             fontSize: '18px',
             lineHeight: '1.6',
@@ -425,44 +533,11 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
           }}>
             {pregunta.texto_pregunta}
           </div>
-          
+
+          {renderImagenPregunta()}
+
           <div className="opciones-container">
-            {pregunta.opciones.map((opcion, index) => {
-              const letra = String.fromCharCode(65 + index); // A, B, C, D
-              const isSelected = respuestas[pregunta.id] === opcion.id;
-              
-              return (
-                <label key={opcion.id} className="opcion-label" style={{
-                  display: 'block',
-                  padding: '15px',
-                  margin: '10px 0',
-                  border: `2px solid ${isSelected ? '#2DAAE1' : '#ddd'}`,
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  background: isSelected ? '#e3f2fd' : 'white',
-                  transition: 'all 0.2s ease'
-                }}>
-                  <input
-                    type="radio"
-                    name={`pregunta-${pregunta.id}`}
-                    value={opcion.id}
-                    checked={isSelected}
-                    onChange={() => manejarRespuesta(pregunta.id, opcion.id)}
-                    style={{ marginRight: '12px' }}
-                  />
-                  <span style={{
-                    fontWeight: 'bold',
-                    color: '#E20713',
-                    marginRight: '8px'
-                  }}>
-                    {letra})
-                  </span>
-                  <span className="opcion-texto" style={{ color: '#333' }}>
-                    {opcion.texto_opcion}
-                  </span>
-                </label>
-              );
-            })}
+            {renderOpciones()}
           </div>
         </div>
 

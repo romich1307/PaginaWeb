@@ -110,6 +110,19 @@ class PreguntaAdmin(admin.ModelAdmin):
         return obj.texto_pregunta[:50] + "..." if len(obj.texto_pregunta) > 50 else obj.texto_pregunta
     texto_pregunta_corto.short_description = "Pregunta"
 
+    def save_model(self, request, obj, form, change):
+        if obj.tipo == 'verdadero_falso':
+            opciones = obj.opcionrespuesta_set.all()
+            textos = [o.texto_opcion.lower() for o in opciones]
+            correctas = [o for o in opciones if o.es_correcta]
+            if 'verdadero' not in textos or 'falso' not in textos:
+                from django.core.exceptions import ValidationError
+                raise ValidationError("Las preguntas de Verdadero/Falso deben tener las opciones 'Verdadero' y 'Falso'.")
+            if len(correctas) != 1:
+                from django.core.exceptions import ValidationError
+                raise ValidationError("Debe haber exactamente una opción marcada como correcta en preguntas de Verdadero/Falso.")
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(ExamenUsuario)
 class ExamenUsuarioAdmin(admin.ModelAdmin):

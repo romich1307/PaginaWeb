@@ -331,30 +331,16 @@ def admin_examenes(request):
     """
     Obtener lista de todos los exámenes organizados por curso para administración
     """
-    # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
-        return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
-    from .models import Examen, Curso
-    from .models.examen import IntentarExamen
-    
-    # Obtener todos los cursos con sus exámenes
-    cursos_con_examenes = []
     cursos = Curso.objects.all().order_by('nombre')
-    
+    cursos_con_examenes = []
     for curso in cursos:
         examenes_curso = Examen.objects.filter(curso=curso).order_by('-fecha_creacion')
-        
         examenes_data = []
         for examen in examenes_curso:
-            # Contar preguntas del examen
+            # ...lógica de exámenes...
             total_preguntas = examen.preguntas.count()
-            
-            # Contar intentos del examen
             intentos_count = IntentarExamen.objects.filter(examen=examen).count()
             intentos_completados = IntentarExamen.objects.filter(examen=examen, estado='completado').count()
-            
-            # Para exámenes prácticos, obtener intentos pendientes de evaluación
             examenes_practicos_pendientes = []
             if examen.tipo == 'practico':
                 intentos_pendientes = IntentarExamen.objects.filter(
@@ -362,7 +348,6 @@ def admin_examenes(request):
                     estado='completado',
                     resultado_practico__isnull=True
                 ).select_related('usuario')
-                
                 for intento in intentos_pendientes:
                     examenes_practicos_pendientes.append({
                         'id': intento.id,
@@ -370,9 +355,9 @@ def admin_examenes(request):
                         'usuario_email': intento.usuario.email,
                         'fecha_intento': intento.fecha_intento,
                     })
-            
             examenes_data.append({
                 'id': examen.id,
+                'curso_id': examen.curso.id if examen.curso else None,
                 'titulo': examen.nombre,
                 'descripcion': examen.descripcion,
                 'tipo': examen.tipo,
@@ -385,7 +370,17 @@ def admin_examenes(request):
                 'intentos_completados': intentos_completados,
                 'examenes_practicos_pendientes': examenes_practicos_pendientes,
             })
-        
+        estudiantes_inscritos = curso.inscripcion_set.filter(estado_pago='verificado').count()
+        # Asegura que todos los cursos tengan la propiedad 'examenes', aunque esté vacía
+        cursos_con_examenes.append({
+            'id': curso.id,
+            'nombre': curso.nombre,
+            'descripcion': curso.descripcion,
+            'instructor': curso.instructor,
+            'estudiantes_inscritos': estudiantes_inscritos,
+            'examenes': examenes_data if examenes_data else [],
+            'total_examenes': len(examenes_data),
+        })
         # Contar estudiantes inscritos en el curso
         estudiantes_inscritos = curso.inscripcion_set.filter(estado_pago='verificado').count()
         
@@ -451,7 +446,7 @@ def admin_examen_detalle(request, examen_id):
         return Response({'message': 'Examen actualizado correctamente'}, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def admin_preguntas(request):
     """
@@ -460,26 +455,85 @@ def admin_preguntas(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
-    from .models import Pregunta
-    
+
+    from .models import Pregunta, Examen
+
+    if request.method == 'POST':
+        # Crear nueva pregunta asociada automáticamente al examen teórico del curso
+        data = request.POST
+        files = request.FILES
+        curso_id = data.get('curso_id')
+        texto = data.get('texto')
+        opcion_a = data.get('opcion_a', '')
+        opcion_b = data.get('opcion_b', '')
+        opcion_c = data.get('opcion_c', '')
+        opcion_d = data.get('opcion_d', '')
+        respuesta_correcta = data.get('respuesta_correcta', '')
+        imagen_pregunta = files.get('imagen_pregunta', None)
+        # Buscar examen teórico del curso
+        from .models import Curso
+        try:
+            curso = Curso.objects.get(id=curso_id)
+        except Curso.DoesNotExist:
+            return Response({'error': 'Curso no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        examen = Examen.objects.filter(curso=curso, tipo='teorico').first()
+        if not examen:
+            # Crear examen teórico automáticamente si no existe
+            examen = Examen.objects.create(
+                curso=curso,
+                nombre=f"Examen Teórico de {curso.nombre}",
+                tipo='teorico',
+                descripcion=f"Examen teórico generado automáticamente para el curso {curso.nombre}",
+                cantidad_preguntas=0,
+                tiempo_limite=60,
+                puntaje_minimo=70.0,
+                activo=True
+            )
+        # Crear pregunta
+        pregunta = Pregunta.objects.create(
+            examen=examen,
+            texto_pregunta=texto,
+            tipo='multiple',
+            puntaje=1.0,
+            orden=Pregunta.objects.filter(examen=examen).count() + 1,
+            activo=True,
+            imagen_pregunta=imagen_pregunta
+        )
+        # Crear opciones de respuesta
+        from .models import OpcionRespuesta
+        opciones = [opcion_a, opcion_b, opcion_c, opcion_d]
+        letras = ['A', 'B', 'C', 'D']
+        for idx, texto_opcion in enumerate(opciones):
+            if texto_opcion:
+                OpcionRespuesta.objects.create(
+                    pregunta=pregunta,
+                    texto_opcion=texto_opcion,
+                    es_correcta=(letras[idx] == respuesta_correcta),
+                    orden=idx+1
+                )
+        return Response({'message': 'Pregunta creada correctamente', 'id': pregunta.id}, status=status.HTTP_201_CREATED)
+
+    # GET: Listar preguntas
     preguntas = Pregunta.objects.select_related('examen').all().order_by('-id')
     preguntas_data = []
-    
     for pregunta in preguntas:
+        opciones = []
+        for opcion in pregunta.opciones.all().order_by('orden'):
+            opciones.append({
+                'id': opcion.id,
+                'texto_opcion': opcion.texto_opcion,
+                'es_correcta': opcion.es_correcta,
+                'orden': opcion.orden
+            })
         preguntas_data.append({
             'id': pregunta.id,
-            'texto': pregunta.texto_pregunta,  # Usar 'texto_pregunta'
-            'opcion_a': getattr(pregunta, 'opcion_a', ''),  # Campos que pueden no existir
-            'opcion_b': getattr(pregunta, 'opcion_b', ''),
-            'opcion_c': getattr(pregunta, 'opcion_c', ''),
-            'opcion_d': getattr(pregunta, 'opcion_d', ''),
-            'respuesta_correcta': getattr(pregunta, 'respuesta_correcta', ''),
+            'texto': pregunta.texto_pregunta,
+            'opciones': opciones,
             'examen_id': pregunta.examen.id if pregunta.examen else None,
-            'examen_titulo': pregunta.examen.nombre if pregunta.examen else 'Sin examen',  # Usar 'nombre'
+            'examen_titulo': pregunta.examen.nombre if pregunta.examen else 'Sin examen',
             'activo': pregunta.activo,
+            'imagen_pregunta': pregunta.imagen_pregunta.url if pregunta.imagen_pregunta else None,
         })
-    
     return Response(preguntas_data, status=status.HTTP_200_OK)
 
 
@@ -1101,7 +1155,7 @@ def obtener_preguntas_examen(request, intento_id):
                 'texto_pregunta': pregunta.texto_pregunta,
                 'tipo': pregunta.tipo,
                 'puntaje': float(pregunta.puntaje),
-                'imagen_pregunta': pregunta.imagen_pregunta,
+                'imagen_pregunta': pregunta.imagen_pregunta.url if pregunta.imagen_pregunta else None,
                 'opciones': []
             }
             
@@ -1114,6 +1168,12 @@ def obtener_preguntas_examen(request, intento_id):
                         'texto_opcion': opcion.texto_opcion,
                         'orden': opcion.orden
                     })
+            # Agregar opciones si es pregunta de verdadero/falso
+            elif pregunta.tipo == 'verdadero_falso':
+                pregunta_info['opciones'] = [
+                    {'id': 'verdadero', 'texto_opcion': 'Verdadero', 'orden': 1},
+                    {'id': 'falso', 'texto_opcion': 'Falso', 'orden': 2}
+                ]
             
             preguntas_data.append(pregunta_info)
         

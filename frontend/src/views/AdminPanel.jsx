@@ -68,6 +68,20 @@ function AdminPanel() {
   const [inscripciones, setInscripciones] = useState([]);
   const [examenes, setExamenes] = useState([]);
   const [preguntas, setPreguntas] = useState([]);
+  // Estados para selección de curso y examen en la pestaña de preguntas
+  const [cursoPreguntasId, setCursoPreguntasId] = useState('');
+  // Estado para el modal de añadir pregunta
+  const [mostrarModalPregunta, setMostrarModalPregunta] = useState(false);
+  const [nuevaPregunta, setNuevaPregunta] = useState({
+    texto: '',
+    opcion_a: '',
+    opcion_b: '',
+    opcion_c: '',
+    opcion_d: '',
+    respuesta_correcta: 'A',
+    examen_id: '',
+  });
+  const [errorPregunta, setErrorPregunta] = useState('');
   const [intentosExamen, setIntentosExamen] = useState([]);
   const [examenesPracticosPendientes, setExamenesPracticosPendientes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -677,13 +691,18 @@ function AdminPanel() {
   // Función para actualizar exámenes
   const actualizarExamen = async (examenId, campo, valor) => {
     try {
-      // Actualizar localmente primero
-      setExamenes(prevExamenes => 
-        prevExamenes.map(examen => 
-          examen.id === examenId 
-            ? { ...examen, [campo]: valor }
-            : examen
-        )
+      // Actualizar localmente primero (para examenes como array de cursos)
+      setExamenes(prevExamenes =>
+        prevExamenes.map(curso => ({
+          ...curso,
+          examenes: curso.examenes
+            ? curso.examenes.map(examen =>
+                examen.id === examenId
+                  ? { ...examen, [campo]: valor }
+                  : examen
+              )
+            : curso.examenes
+        }))
       );
 
       const response = await fetchWithAuth(`${API_BASE_URL}/admin/examenes/${examenId}/`, {
@@ -721,57 +740,36 @@ function AdminPanel() {
   };
 
   // Función para actualizar preguntas
-  const actualizarPregunta = async (preguntaId, campo, valor) => {
-    try {
-      // Actualizar localmente primero
-      setPreguntas(prevPreguntas => 
-        prevPreguntas.map(pregunta => 
-          pregunta.id === preguntaId 
-            ? { ...pregunta, [campo]: valor }
-            : pregunta
-        )
-      );
-
-      const response = await fetchWithAuth(`${API_BASE_URL}/admin/preguntas/${preguntaId}/`, {
-        method: 'PATCH',
-        body: JSON.stringify({ [campo]: valor }),
-      });
-
-      if (response.ok) {
-        console.log(`Pregunta actualizada: ${campo} = ${valor}`);
-      } else {
-        console.error('Error al actualizar pregunta');
-        loadData();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      loadData();
-    }
-  };
+  // ...la versión correcta ya está definida abajo...
 
   // Función para eliminar pregunta
-  const eliminarPregunta = async (preguntaId) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta pregunta?')) {
-      return;
-    }
-
-    try {
-      const response = await fetchWithAuth(`${API_BASE_URL}/admin/preguntas/${preguntaId}/`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setPreguntas(prevPreguntas => prevPreguntas.filter(p => p.id !== preguntaId));
-        alert('Pregunta eliminada correctamente');
-      } else {
-        alert('Error al eliminar la pregunta');
+    const actualizarPregunta = async (preguntaId, campo, valor) => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(`${API_BASE_URL}/admin/preguntas/${preguntaId}/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+          },
+          body: JSON.stringify({ [campo]: valor }),
+        });
+        if (response.ok) {
+          setPreguntas(prevPreguntas => 
+            prevPreguntas.map(pregunta => 
+              pregunta.id === preguntaId 
+                ? { ...pregunta, [campo]: valor }
+                : pregunta
+            )
+          );
+          setErrorPregunta('');
+        } else {
+          setErrorPregunta('Error al actualizar la pregunta');
+        }
+      } catch (error) {
+        setErrorPregunta('Error de conexión al actualizar la pregunta');
       }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al eliminar la pregunta');
-    }
-  };
-
+    };
   // Función para ver resultados del examen
   const verResultadosExamen = (examenId) => {
     // Buscar el examen en la estructura de cursos
@@ -2101,13 +2099,6 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
-                      className="btn-view"
-                      onClick={() => alert(`📋 Detalles del curso:\n\n📝 Descripción: ${curso.descripcion || 'Sin descripción'}\n⏱️ Duración: ${curso.duracion_semanas || 'No especificada'} semanas\n📊 Nivel: ${curso.nivel || 'No especificado'}\n💰 Precio: $${curso.precio || 0}`)}
-                      title="Ver detalles completos"
-                    >
-                      👁️ Ver
-                    </button>
-                    <button 
                       className="btn-edit"
                       onClick={() => {
                         const nuevaDescripcion = prompt(`Editar descripción del curso "${curso.nombre}":`, curso.descripcion || '');
@@ -2133,78 +2124,6 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
     <div style={{ padding: '20px' }}>
       <h2 style={{ marginBottom: '20px', color: '#333' }}>Gestión de Exámenes</h2>
       
-      {/* Estadísticas de exámenes */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-        gap: '20px', 
-        marginBottom: '30px' 
-      }}>
-        <div style={{ 
-          backgroundColor: '#f8f9fa', 
-          padding: '20px', 
-          borderRadius: '10px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#007bff' }}>� Cursos con Exámenes</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{examenes.length}</p>
-        </div>
-        <div style={{ 
-          backgroundColor: '#f8f9fa', 
-          padding: '20px', 
-          borderRadius: '10px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#28a745' }}>📝 Total Exámenes</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
-            {examenes.reduce((total, curso) => total + curso.total_examenes, 0)}
-          </p>
-        </div>
-        <div style={{ 
-          backgroundColor: '#f8f9fa', 
-          padding: '20px', 
-          borderRadius: '10px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#ffc107' }}>� Estudiantes Inscritos</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
-            {examenes.reduce((total, curso) => total + curso.estudiantes_inscritos, 0)}
-          </p>
-        </div>
-        <div style={{ 
-          backgroundColor: '#f8f9fa', 
-          padding: '20px', 
-          borderRadius: '10px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#dc3545' }}>Total Intentos</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
-            {examenes.reduce((total, curso) => 
-              total + curso.examenes.reduce((subTotal, examen) => subTotal + examen.total_intentos, 0), 0
-            )}
-          </p>
-        </div>
-        <div style={{ 
-          backgroundColor: '#f8f9fa', 
-          padding: '20px', 
-          borderRadius: '10px',
-          border: '1px solid #dee2e6'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#ff6b35' }}>Prácticos Pendientes</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>{examenesPracticosPendientes.length}</p>
-        </div>
-        <div style={{ 
-          backgroundColor: '#e8f5e8', 
-          padding: '20px', 
-          borderRadius: '10px',
-          border: '1px solid #28a745'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0', color: '#28a745' }}>Programados Hoy</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
-            {examenesPracticosPendientes.filter(examen => examen.es_programado_hoy).length}
-          </p>
-        </div>
-      </div>
 
       {/* Tabs para examenes */}
       <div style={{ marginBottom: '20px' }}>
@@ -2241,13 +2160,13 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
       {/* Contenido según sub-tab */}
       {subActiveTab === 'examenes' && (
         <div>
-          {examenes.map(curso => (
-            <div key={curso.id} style={{ 
-              marginBottom: '30px', 
-              border: '1px solid #dee2e6', 
-              borderRadius: '10px',
-              backgroundColor: '#f8f9fa'
-            }}>
+          {[...new Map(examenes.map(curso => [curso.id, curso])).values()].map(curso => (
+                      <div key={`curso-${curso.id}-${curso.nombre}`} style={{ 
+                        marginBottom: '30px', 
+                        border: '1px solid #dee2e6', 
+                        borderRadius: '10px',
+                        backgroundColor: '#f8f9fa'
+                      }}>
               {/* Header del curso */}
               <div style={{ 
                 padding: '20px', 
@@ -2307,7 +2226,20 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                         </span>
                       </td>
                       <td style={{ textAlign: 'center' }}>{examen.duracion_minutos} min</td>
-                      <td style={{ textAlign: 'center' }}>{examen.numero_preguntas} de {examen.total_preguntas_creadas} total</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <input
+                          type="number"
+                          min={1}
+                          max={examen.total_preguntas_creadas}
+                          value={examen.numero_preguntas}
+                          onChange={e => actualizarExamen(examen.id, 'numero_preguntas', parseInt(e.target.value))}
+                          style={{ width: '60px', textAlign: 'center', fontWeight: 'bold' }}
+                          title={`Cantidad de preguntas aleatorias a seleccionar (máximo ${examen.total_preguntas_creadas})`}
+                        />
+                        <div style={{ fontSize: '11px', color: '#6c757d' }}>
+                          de {examen.total_preguntas_creadas} disponibles
+                        </div>
+                      </td>
                       <td style={{ textAlign: 'center' }}>1 intento</td>
                       <td>
                         <select 
@@ -2402,27 +2334,8 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                         ) : (
                           // Para exámenes teóricos: botones normales
                           <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                            <button 
-                              className="btn-view"
-                              onClick={() => verResultadosExamen(examen.id)}
-                              title="Ver resultados"
-                              style={{ fontSize: '11px', padding: '5px 8px' }}
-                            >
-                              📊 Resultados
-                            </button>
-                            <button 
-                              className="btn-edit"
-                              onClick={() => {
-                                const nuevaDescripcion = prompt(`Editar descripción del examen "${examen.titulo}":`, examen.descripcion || '');
-                                if (nuevaDescripcion !== null) {
-                                  actualizarExamen(examen.id, 'descripcion', nuevaDescripcion);
-                                }
-                              }}
-                              title="Editar descripción"
-                              style={{ fontSize: '11px', padding: '5px 8px' }}
-                            >
-                              ✏️ Editar
-                            </button>
+            
+                          
                           </div>
                         )}
                       </td>
@@ -2448,94 +2361,356 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
 
       {subActiveTab === 'preguntas' && (
         <div className="table-container">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Examen</th>
-                <th>Pregunta</th>
-                <th>Opción A</th>
-                <th>Opción B</th>
-                <th>Opción C</th>
-                <th>Opción D</th>
-                <th>Respuesta Correcta</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {preguntas.map(pregunta => (
-                <tr key={pregunta.id}>
-                  <td>{pregunta.examen_titulo || 'Sin examen'}</td>
-                  <td>
-                    <textarea 
-                      value={pregunta.texto || ''} 
-                      onChange={(e) => actualizarPregunta(pregunta.id, 'texto', e.target.value)}
-                      className="inline-edit"
-                      style={{ minHeight: '60px', resize: 'vertical' }}
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={pregunta.opcion_a || ''} 
-                      onChange={(e) => actualizarPregunta(pregunta.id, 'opcion_a', e.target.value)}
-                      className="inline-edit"
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={pregunta.opcion_b || ''} 
-                      onChange={(e) => actualizarPregunta(pregunta.id, 'opcion_b', e.target.value)}
-                      className="inline-edit"
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={pregunta.opcion_c || ''} 
-                      onChange={(e) => actualizarPregunta(pregunta.id, 'opcion_c', e.target.value)}
-                      className="inline-edit"
-                    />
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      value={pregunta.opcion_d || ''} 
-                      onChange={(e) => actualizarPregunta(pregunta.id, 'opcion_d', e.target.value)}
-                      className="inline-edit"
-                    />
-                  </td>
-                  <td>
-                    <select 
-                      value={pregunta.respuesta_correcta || 'A'} 
-                      onChange={(e) => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}
-                      className="inline-edit"
-                      style={{ 
-                        color: '#28a745',
-                        fontWeight: 'bold',
-                        textAlign: 'center'
-                      }}
-                    >
+          <div style={{ marginBottom: '18px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <label style={{ fontWeight: 'bold', marginRight: '8px' }}>Curso:</label>
+            <select value={cursoPreguntasId} onChange={e => setCursoPreguntasId(e.target.value)}>
+              <option value="">Selecciona un curso</option>
+              {cursos.map(curso => (
+                <option key={curso.id} value={curso.id}>{curso.nombre}</option>
+              ))}
+            </select>
+            <button
+              style={{ marginLeft: '20px', padding: '8px 18px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+              onClick={() => setMostrarModalPregunta(true)}
+              disabled={!cursoPreguntasId}
+            >
+              + Añadir Pregunta
+            </button>
+          </div>
+          {cursoPreguntasId ? (
+            <>
+              <div style={{ marginBottom: '10px', fontWeight: 'bold', color: '#007bff' }}>
+                Preguntas para este curso: {
+                  (() => {
+                    const idNum = Number(cursoPreguntasId);
+                    const curso = examenes.find(c => c.curso_id === idNum || c.id === idNum);
+                    if (!curso || !curso.examenes) {
+                      return 0;
+                    }
+                    const examenTeorico = curso.examenes.find(ex => ex.tipo === 'teorico');
+                    if (!examenTeorico) {
+                      return 0;
+                    }
+                    const preguntasTeoricas = preguntas.filter(p => p.examen_id === examenTeorico.id);
+                    return preguntasTeoricas.length;
+                  })()
+                }
+              </div>
+              {/* Tabla de preguntas para el curso seleccionado */}
+              <div style={{ marginTop: '10px' }}>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Texto</th>
+                      <th>Tipo</th>
+                      <th>Imagen</th>
+                      <th>Opciones</th>
+                      <th>Respuesta Correcta</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const idNum = Number(cursoPreguntasId);
+                      const curso = examenes.find(c => c.curso_id === idNum || c.id === idNum);
+                      if (!curso || !curso.examenes) return null;
+                      const examenTeorico = curso.examenes.find(ex => ex.tipo === 'teorico');
+                      if (!examenTeorico) return null;
+                      const preguntasTeoricas = preguntas.filter(p => p.examen_id === examenTeorico.id);
+                      if (preguntasTeoricas.length === 0) {
+                        return (
+                          <tr><td colSpan={7} style={{ textAlign: 'center', color: '#6c757d' }}>No hay preguntas registradas para este curso.</td></tr>
+                        );
+                      }
+                      return preguntasTeoricas.map(pregunta => (
+                        <tr key={pregunta.id}>
+                          <td>{pregunta.id}</td>
+                          <td style={{ maxWidth: '320px' }}>{pregunta.texto}</td>
+                          <td>{pregunta.tipo}</td>
+                          <td>
+                            {pregunta.imagen_pregunta ? (
+                              <img src={pregunta.imagen_pregunta} alt="Imagen" style={{ maxWidth: '80px', maxHeight: '60px', borderRadius: '6px' }} />
+                            ) : 'Sin imagen'}
+                          </td>
+                          <td>
+                            {pregunta.opciones && pregunta.opciones.length > 0 ? (
+                              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                {pregunta.opciones.map((opcion, idx) => (
+                                  <li key={opcion.id} style={{ color: opcion.es_correcta ? '#28a745' : '#333', fontWeight: opcion.es_correcta ? 'bold' : 'normal' }}>
+                                    {String.fromCharCode(65 + idx)}. {opcion.texto_opcion}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : '-'}
+                          </td>
+                          <td>
+                            {pregunta.opciones && pregunta.opciones.length > 0 ? (
+                              (() => {
+                                const correcta = pregunta.opciones.find(o => o.es_correcta);
+                                return correcta ? String.fromCharCode(65 + pregunta.opciones.indexOf(correcta)) : '-';
+                              })()
+                            ) : (pregunta.respuesta_correcta || '-')}
+                          </td>
+                          <td>
+                            <button 
+                              className="btn-edit"
+                              onClick={() => eliminarPregunta(pregunta.id)}
+                              title="Eliminar pregunta"
+                              style={{ backgroundColor: '#dc3545', color: 'white', borderRadius: '6px', padding: '7px 14px', fontWeight: 'bold', fontSize: '15px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      ));
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div style={{ marginBottom: '10px', color: '#6c757d' }}>
+              Selecciona un curso para ver las preguntas.
+            </div>
+          )}
+  {/* Modal para añadir pregunta (fuera del bloque de preguntas) */}
+  {mostrarModalPregunta && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setMostrarModalPregunta(false)}>
+          <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', padding: '32px', minWidth: '350px', maxWidth: '90vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginBottom: '18px', textAlign: 'center', color: '#007bff' }}>Añadir Pregunta</h2>
+            {errorPregunta && <div style={{ color: 'red', marginBottom: '10px' }}>{errorPregunta}</div>}
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setErrorPregunta('');
+              // Ya no es necesario buscar el examen teórico, el backend lo crea automáticamente si no existe
+              // Validaciones básicas
+              if (!nuevaPregunta.texto.trim()) {
+                setErrorPregunta('El texto de la pregunta es obligatorio.');
+                return;
+              }
+              // Crear pregunta en backend
+              try {
+                const token = localStorage.getItem('authToken');
+                const formData = new FormData();
+                formData.append('texto', nuevaPregunta.texto);
+                formData.append('tipo', nuevaPregunta.tipo || 'multiple');
+                formData.append('opcion_a', nuevaPregunta.opcion_a || '');
+                formData.append('opcion_b', nuevaPregunta.opcion_b || '');
+                formData.append('opcion_c', nuevaPregunta.opcion_c || '');
+                formData.append('opcion_d', nuevaPregunta.opcion_d || '');
+                formData.append('respuesta_correcta', nuevaPregunta.respuesta_correcta || '');
+                formData.append('curso_id', cursoPreguntasId);
+                if (nuevaPregunta.imagen_pregunta) {
+                  formData.append('imagen_pregunta', nuevaPregunta.imagen_pregunta);
+                }
+                if (nuevaPregunta.respuesta_esperada) {
+                  formData.append('respuesta_esperada', nuevaPregunta.respuesta_esperada);
+                }
+                const res = await fetch(`${API_BASE_URL}/admin/preguntas/`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Token ${token}`,
+                  },
+                  body: formData
+                });
+                if (!res.ok) {
+                  let data = {};
+                  try { data = await res.json(); } catch { }
+                  setErrorPregunta(data.error || 'Error al crear la pregunta');
+                  return;
+                }
+                setMostrarModalPregunta(false);
+                setNuevaPregunta({ texto: '', opcion_a: '', opcion_b: '', opcion_c: '', opcion_d: '', respuesta_correcta: 'A', examen_id: '' });
+                setErrorPregunta('');
+                // Recargar preguntas
+                loadData();
+              } catch (err) {
+                setErrorPregunta('Error de conexión al crear la pregunta');
+              }
+            }}>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontWeight: 'bold' }}>Tipo de pregunta:</label>
+                <select
+                  value={nuevaPregunta.tipo || 'multiple'}
+                  onChange={e => setNuevaPregunta({ ...nuevaPregunta, tipo: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginTop: '5px' }}
+                  required
+                >
+                  <option value="multiple">Opción Múltiple</option>
+                  <option value="verdadero_falso">Verdadero/Falso</option>
+                  <option value="texto">Respuesta Escrita</option>
+                </select>
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontWeight: 'bold' }}>Imagen de la pregunta (opcional):</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files[0];
+                    setNuevaPregunta({ ...nuevaPregunta, imagen_pregunta: file });
+                  }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginTop: '5px' }}
+                />
+                {nuevaPregunta.imagen_pregunta && (
+                  <div style={{ marginTop: '10px' }}>
+                    <img src={URL.createObjectURL(nuevaPregunta.imagen_pregunta)} alt="Vista previa" style={{ maxWidth: '180px', maxHeight: '120px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
+                  </div>
+                )}
+              </div>
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontWeight: 'bold' }}>Texto de la pregunta:</label>
+                <textarea value={nuevaPregunta.texto} onChange={e => setNuevaPregunta({ ...nuevaPregunta, texto: e.target.value })} required style={{ width: '100%', minHeight: '60px', resize: 'vertical' }} />
+              </div>
+              {/* Campos dinámicos según tipo */}
+              {nuevaPregunta.tipo === 'multiple' && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                    <div>
+                      <label>Opción A:</label>
+                      <input type="text" value={nuevaPregunta.opcion_a} onChange={e => setNuevaPregunta({ ...nuevaPregunta, opcion_a: e.target.value })} />
+                    </div>
+                    <div>
+                      <label>Opción B:</label>
+                      <input type="text" value={nuevaPregunta.opcion_b} onChange={e => setNuevaPregunta({ ...nuevaPregunta, opcion_b: e.target.value })} />
+                    </div>
+                    <div>
+                      <label>Opción C:</label>
+                      <input type="text" value={nuevaPregunta.opcion_c} onChange={e => setNuevaPregunta({ ...nuevaPregunta, opcion_c: e.target.value })} />
+                    </div>
+                    <div>
+                      <label>Opción D:</label>
+                      <input type="text" value={nuevaPregunta.opcion_d} onChange={e => setNuevaPregunta({ ...nuevaPregunta, opcion_d: e.target.value })} />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label>Respuesta Correcta:</label>
+                    <select value={nuevaPregunta.respuesta_correcta} onChange={e => setNuevaPregunta({ ...nuevaPregunta, respuesta_correcta: e.target.value })}>
                       <option value="A">A</option>
                       <option value="B">B</option>
                       <option value="C">C</option>
                       <option value="D">D</option>
                     </select>
-                  </td>
-                  <td>
-                    <button 
-                      className="btn-edit"
-                      onClick={() => eliminarPregunta(pregunta.id)}
-                      title="Eliminar pregunta"
-                      style={{ backgroundColor: '#dc3545' }}
-                    >
-                      🗑️ Eliminar
-                    </button>
-                  </td>
-                </tr>
+                  </div>
+                </>
+              )}
+              {nuevaPregunta.tipo === 'verdadero_falso' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label>Respuesta Correcta:</label>
+                  <select value={nuevaPregunta.respuesta_correcta} onChange={e => setNuevaPregunta({ ...nuevaPregunta, respuesta_correcta: e.target.value })}>
+                    <option value="verdadero">Verdadero</option>
+                    <option value="falso">Falso</option>
+                  </select>
+                </div>
+              )}
+              {nuevaPregunta.tipo === 'texto' && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label>Respuesta esperada (opcional):</label>
+                  <input type="text" value={nuevaPregunta.respuesta_esperada || ''} onChange={e => setNuevaPregunta({ ...nuevaPregunta, respuesta_esperada: e.target.value })} />
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <button type="submit" style={{ padding: '10px 22px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Crear Pregunta</button>
+                <button type="button" style={{ padding: '10px 22px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setMostrarModalPregunta(false)}>Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', marginTop: '18px', alignItems: 'flex-start' }}>
+              {preguntas.filter(p => {
+                const examen = examenes.find(ex => ex.id === p.examen_id);
+                return examen && examen.curso_id === cursoPreguntasId;
+              }).map(pregunta => (
+                <div key={pregunta.id} style={{
+                  background: '#fff',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.10)',
+                  padding: '24px',
+                  minWidth: '320px',
+                  maxWidth: '400px',
+                  marginBottom: '10px',
+                  position: 'relative',
+                  border: '1px solid #e3e3e3'
+                }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '17px', marginBottom: '10px', color: '#007bff' }}>
+                    <span style={{ marginRight: '8px', color: '#6c757d', fontSize: '15px' }}>#{pregunta.id}</span>
+                    <textarea 
+                      value={pregunta.texto || ''} 
+                      onChange={(e) => actualizarPregunta(pregunta.id, 'texto', e.target.value)}
+                      className="inline-edit"
+                      style={{ minHeight: '48px', resize: 'vertical', width: '100%', fontSize: '15px', borderRadius: '8px', border: '1px solid #e3e3e3', padding: '8px' }}
+                    />
+                  </div>
+                  {pregunta.imagen_pregunta && (
+                    <div style={{ marginBottom: '10px', textAlign: 'center' }}>
+                      <img src={pregunta.imagen_pregunta} alt="Imagen" style={{ maxWidth: '180px', maxHeight: '120px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
+                    </div>
+                  )}
+                  <div style={{ marginBottom: '10px' }}>
+                    <div style={{ fontWeight: 'bold', color: '#333', marginBottom: '6px' }}>Opciones:</div>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                      {pregunta.opciones.map((opcion, idx) => (
+                        <li key={opcion.id} style={{
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          background: opcion.es_correcta ? '#eafaf1' : '#f8f9fa',
+                          borderRadius: '7px',
+                          padding: '6px 10px',
+                          border: opcion.es_correcta ? '1.5px solid #28a745' : '1px solid #e3e3e3'
+                        }}>
+                          <span style={{
+                            fontWeight: 'bold',
+                            color: opcion.es_correcta ? '#28a745' : '#007bff',
+                            fontSize: '16px',
+                            marginRight: '10px'
+                          }}>{String.fromCharCode(65 + idx)}.</span>
+                          <input
+                            type="text"
+                            value={opcion.texto_opcion}
+                            onChange={e => actualizarOpcion(pregunta.id, opcion.id, e.target.value)}
+                            className="inline-edit"
+                            style={{ width: '100%', fontSize: '15px', borderRadius: '6px', border: '1px solid #e3e3e3', padding: '6px' }}
+                          />
+                          {opcion.es_correcta && <span style={{ marginLeft: '10px', color: '#28a745', fontWeight: 'bold', fontSize: '15px' }}>✔</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
+                    <div style={{ fontWeight: 'bold', color: '#007bff', fontSize: '15px' }}>
+                      Respuesta Correcta: {
+                        (() => {
+                          const correcta = pregunta.opciones.find(o => o.es_correcta);
+                          return correcta ? String.fromCharCode(65 + pregunta.opciones.indexOf(correcta)) : '-';
+                        })()
+                      }
+                    </div>
+                    <div>
+                      <button 
+                        className="btn-edit"
+                        onClick={() => {/* Aquí iría la lógica para editar pregunta */}}
+                        title="Editar pregunta"
+                        style={{ backgroundColor: '#ffc107', color: '#333', marginRight: '8px', borderRadius: '6px', padding: '7px 14px', fontWeight: 'bold', fontSize: '15px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                      >
+                        ✏️ Editar
+                      </button>
+                      <button 
+                        className="btn-edit"
+                        onClick={() => eliminarPregunta(pregunta.id)}
+                        title="Eliminar pregunta"
+                        style={{ backgroundColor: '#dc3545', color: 'white', borderRadius: '6px', padding: '7px 14px', fontWeight: 'bold', fontSize: '15px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                      >
+                        🗑️ Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+
         </div>
       )}
 
