@@ -89,7 +89,7 @@ import dj_database_url
 
 # Configuración para usar SQLite localmente o PostgreSQL en producción
 if os.getenv('DATABASE_URL'):
-    # Configuración para PostgreSQL (Supabase) usando DATABASE_URL
+    # Configuración para PostgreSQL usando DATABASE_URL
     DATABASES = {
         'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
