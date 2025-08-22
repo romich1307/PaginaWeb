@@ -1,3 +1,10 @@
+  // Helper para construir la URL completa de la imagen de la pregunta
+  const getImagenUrl = (img) => {
+    if (!img) return null;
+    if (img.startsWith('http')) return img;
+    if (img.startsWith('/media/')) return `http://localhost:8000${img}`;
+    return `http://localhost:8000/media/preguntas/${img}`;
+  };
 import React, { useState, useEffect } from 'react';
 import './ExamenComponent.css';
 
@@ -350,7 +357,7 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
         return (
           <div style={{ marginBottom: '20px', textAlign: 'center' }}>
             <img
-              src={pregunta.imagen_pregunta.startsWith('http') ? pregunta.imagen_pregunta : `${window.location.origin}${pregunta.imagen_pregunta}`}
+              src={getImagenUrl(pregunta.imagen_pregunta)}
               alt="Imagen de la pregunta"
               style={{ maxWidth: '400px', maxHeight: '300px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
               onError={e => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentNode.innerHTML += '<div style="color:#E20713;font-weight:bold;">No se pudo cargar la imagen</div>'; }}

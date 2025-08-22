@@ -1,3 +1,10 @@
+  // Helper para construir la URL completa de la imagen de la pregunta
+  const getImagenUrl = (img) => {
+    if (!img) return null;
+    if (img.startsWith('http')) return img;
+    if (img.startsWith('/media/')) return `http://localhost:8000${img}`;
+    return `http://localhost:8000/media/preguntas/${img}`;
+  };
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
@@ -770,6 +777,28 @@ function AdminPanel() {
         setErrorPregunta('Error de conexión al actualizar la pregunta');
       }
     };
+
+    // Función para eliminar pregunta
+const eliminarPregunta = async (preguntaId) => {
+  if (!window.confirm('¿Seguro que deseas eliminar esta pregunta?')) return;
+  try {
+    const token = localStorage.getItem('authToken');
+    const res = await fetch(`${API_BASE_URL}/admin/preguntas/${preguntaId}/`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+    });
+    if (!res.ok) {
+      alert('Error al eliminar la pregunta');
+      return;
+    }
+    // Actualizar preguntas localmente
+    setPreguntas(prev => prev.filter(p => p.id !== preguntaId));
+  } catch (err) {
+    alert('Error de conexión al eliminar la pregunta');
+  }
+};
   // Función para ver resultados del examen
   const verResultadosExamen = (examenId) => {
     // Buscar el examen en la estructura de cursos
@@ -2430,7 +2459,9 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                           <td>{pregunta.tipo}</td>
                           <td>
                             {pregunta.imagen_pregunta ? (
-                              <img src={pregunta.imagen_pregunta} alt="Imagen" style={{ maxWidth: '80px', maxHeight: '60px', borderRadius: '6px' }} />
+                              <a href={getImagenUrl(pregunta.imagen_pregunta)} target="_blank" rel="noopener noreferrer">
+                                <img src={getImagenUrl(pregunta.imagen_pregunta)} alt="Imagen" style={{ maxWidth: '80px', maxHeight: '60px', borderRadius: '6px', cursor: 'pointer' }} />
+                              </a>
                             ) : 'Sin imagen'}
                           </td>
                           <td>
