@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 # Cargar variables de entorno
 load_dotenv()
 
+import json
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,6 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-(vg7gr-vt*ry)uhyk0d8v^s&ef
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 ALLOWED_HOSTS = []
 
@@ -171,16 +173,10 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings for React frontend
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Vite development server
-    "http://localhost:5174",  # Vite development server backup
-    "http://localhost:5175",  # Vite development server backup 2
-    "http://localhost:5176",  # Vite development server backup 3
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174",
-    "http://127.0.0.1:5175",
-    "http://127.0.0.1:5176",
-]
+try:
+    CORS_ALLOWED_ORIGINS = json.loads(os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:5173"]'))
+except Exception:
+    CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
 CORS_ALLOW_CREDENTIALS = True
 
