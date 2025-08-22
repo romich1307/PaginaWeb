@@ -164,6 +164,7 @@ class Pregunta(models.Model):
     
     # Para preguntas con imagen
     imagen_pregunta = models.ImageField(upload_to='preguntas/', blank=True, null=True, verbose_name="Imagen de la Pregunta")
+    activo = models.BooleanField(default=True, verbose_name="Pregunta Activa")
     
     class Meta:
         verbose_name = "Pregunta"
