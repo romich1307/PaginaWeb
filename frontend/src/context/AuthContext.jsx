@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
+  console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
     try {
       console.log('AuthContext: Intentando login con email:', email);
   const response = await fetch(`${import.meta.env.VITE_API_URL}/login/`, {
