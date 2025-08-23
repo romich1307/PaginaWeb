@@ -2137,7 +2137,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                       }}
                       title="Editar descripción"
                     >
-                      ✏️ Desc
+                      Desc
                     </button>
                   </div>
                 </td>
@@ -2817,7 +2817,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
     <div className="admin-panel">
       <div className="admin-header">
         <div className="logo-section">
-          <img src="/LogoPagina.png" alt="CertifiKT" className="admin-logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+          <img src="/LogoPagina.png" alt="CertifiKT" className="admin-logo" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
           <h1>Panel de Administración</h1>
         </div>
         <button 
