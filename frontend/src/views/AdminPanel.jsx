@@ -2168,7 +2168,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
             cursor: 'pointer'
           }}
         >
-          📝 Exámenes
+          Exámenes
         </button>
         <button
           onClick={() => setSubActiveTab('preguntas')}
@@ -2209,7 +2209,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 <div>
                   <h3 style={{ margin: 0, fontSize: '20px' }}>📚 {curso.nombre}</h3>
                   <p style={{ margin: '5px 0 0 0', opacity: 0.9 }}>
-                    👨‍🏫 {curso.instructor} • 👥 {curso.estudiantes_inscritos} estudiantes inscritos
+                    {curso.instructor} •  {curso.estudiantes_inscritos} estudiantes inscritos
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
@@ -2251,7 +2251,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                           backgroundColor: examen.tipo === 'teorico' ? '#d1ecf1' : '#d4edda',
                           color: examen.tipo === 'teorico' ? '#0c5460' : '#155724'
                         }}>
-                          {examen.tipo === 'teorico' ? '📖 Teórico' : '🔧 Práctico'}
+                          {examen.tipo === 'teorico' ? ' Teórico' : ' Práctico'}
                         </span>
                       </td>
                       <td style={{ textAlign: 'center' }}>{examen.duracion_minutos} min</td>
@@ -2313,7 +2313,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                                 }}
                                 title="Ver lista de estudiantes para aprobar/desaprobar"
                               >
-                                👥 Lista de Estudiantes
+                                Lista de Estudiantes
                               </button>
                             </div>
                             {/* Evaluaciones individuales */}
@@ -2381,7 +2381,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
               padding: '60px', 
               color: '#6c757d' 
             }}>
-              <h3>📚 No hay cursos disponibles</h3>
+              <h3> No hay cursos disponibles</h3>
               <p>Primero crea cursos en la pestaña "Gestión de Cursos" para poder agregar exámenes.</p>
             </div>
           )}
