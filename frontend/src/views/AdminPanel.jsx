@@ -2989,48 +2989,81 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
       {modalListaEstudiantes.abierto && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>
           <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', padding: '32px', minWidth: '350px', maxWidth: '90vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ marginBottom: '18px', textAlign: 'center', color: '#007bff' }}>Estudiantes inscritos</h2>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {modalListaEstudiantes.estudiantes.map(est => (
-                <li key={est.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
-                  <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    {/* Estado actual de aprobación */}
-                    {typeof est.aceptado_admin !== 'undefined' && (
-                      <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
-                        {est.aceptado_admin === true && <span style={{ color: 'green' }}>Aprobado</span>}
-                        {est.aceptado_admin === false && <span style={{ color: 'red' }}>Desaprobado</span>}
-                        {(est.aceptado_admin === null || est.aceptado_admin === undefined) && <span style={{ color: 'orange' }}>Pendiente</span>}
-                      </span>
-                    )}
-                    <button
-                      style={{ padding: '6px 14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                      onClick={async () => {
-                        await aprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                        setModalListaEstudiantes(prev => ({
-                          ...prev,
-                          estudiantes: prev.estudiantes.map(e =>
-                            e.id === est.id ? { ...e, aceptado_admin: true } : e
-                          )
-                        }));
-                      }}
-                    >Aprobar</button>
-                    <button
-                      style={{ padding: '6px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                      onClick={async () => {
-                        await desaprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                        setModalListaEstudiantes(prev => ({
-                          ...prev,
-                          estudiantes: prev.estudiantes.map(e =>
-                            e.id === est.id ? { ...e, aceptado_admin: false } : e
-                          )
-                        }));
-                      }}
-                    >Desaprobar</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <h2 style={{ marginBottom: '18px', textAlign: 'center', color: '#007bff' }}>
+              {modalListaEstudiantes.examenId ? 'Notas de Estudiantes en el Examen' : 'Estudiantes inscritos'}
+            </h2>
+            {modalListaEstudiantes.examenId ? (
+              <table className="admin-table" style={{ marginBottom: '18px' }}>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>DNI</th>
+                    <th>Nota</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {modalListaEstudiantes.estudiantes.length === 0 ? (
+                    <tr><td colSpan={5} style={{ textAlign: 'center', color: '#6c757d' }}>No hay estudiantes con intentos en este examen.</td></tr>
+                  ) : (
+                    modalListaEstudiantes.estudiantes.map(est => (
+                      est.intentos.map((intento, idx) => (
+                        <tr key={est.id + '-' + idx}>
+                          <td>{est.nombre}</td>
+                          <td>{est.email}</td>
+                          <td>{est.dni}</td>
+                          <td>{intento.puntaje_obtenido !== null && intento.puntaje_obtenido !== undefined ? intento.puntaje_obtenido : '-'}</td>
+                          <td>{intento.aprobado ? <span style={{ color: 'green', fontWeight: 'bold' }}>Aprobado</span> : <span style={{ color: 'red', fontWeight: 'bold' }}>Reprobado</span>}</td>
+                        </tr>
+                      ))
+                    ))
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {modalListaEstudiantes.estudiantes.map(est => (
+                  <li key={est.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      {/* Estado actual de aprobación */}
+                      {typeof est.aceptado_admin !== 'undefined' && (
+                        <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
+                          {est.aceptado_admin === true && <span style={{ color: 'green' }}>Aprobado</span>}
+                          {est.aceptado_admin === false && <span style={{ color: 'red' }}>Desaprobado</span>}
+                          {(est.aceptado_admin === null || est.aceptado_admin === undefined) && <span style={{ color: 'orange' }}>Pendiente</span>}
+                        </span>
+                      )}
+                      <button
+                        style={{ padding: '6px 14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                        onClick={async () => {
+                          await aprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
+                          setModalListaEstudiantes(prev => ({
+                            ...prev,
+                            estudiantes: prev.estudiantes.map(e =>
+                              e.id === est.id ? { ...e, aceptado_admin: true } : e
+                            )
+                          }));
+                        }}
+                      >Aprobar</button>
+                      <button
+                        style={{ padding: '6px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                        onClick={async () => {
+                          await desaprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
+                          setModalListaEstudiantes(prev => ({
+                            ...prev,
+                            estudiantes: prev.estudiantes.map(e =>
+                              e.id === est.id ? { ...e, aceptado_admin: false } : e
+                            )
+                          }));
+                        }}
+                      >Desaprobar</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div style={{ textAlign: 'center', marginTop: '18px' }}>
               <button style={{ padding: '8px 22px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>Cerrar</button>
             </div>
