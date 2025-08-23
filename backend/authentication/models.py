@@ -1,3 +1,32 @@
+# Modelo para exámenes asignados a usuarios
+class ExamenUsuario(models.Model):
+    ESTADO_CHOICES = [
+        ('programado', 'Programado'),
+        ('activo', 'Activo'),
+        ('completado', 'Completado'),
+        ('expirado', 'Expirado'),
+    ]
+    RESULTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('aprobado', 'Aprobado'),
+        ('desaprobado', 'Desaprobado'),
+    ]
+    usuario = models.ForeignKey('CustomUser', on_delete=models.CASCADE, verbose_name='Usuario')
+    examen = models.ForeignKey('Examen', on_delete=models.CASCADE, verbose_name='Examen')
+    fecha_programada = models.DateField(verbose_name='Fecha Programada')
+    hora_inicio = models.TimeField(verbose_name='Hora de Inicio')
+    duracion_minutos = models.PositiveIntegerField(verbose_name='Duración (minutos)')
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='programado', verbose_name='Estado')
+    resultado = models.CharField(max_length=20, choices=RESULTADO_CHOICES, default='pendiente', verbose_name='Resultado')
+    nota_final = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True, verbose_name='Nota Final')
+    fecha_asignacion = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Asignación')
+    fecha_realizacion = models.DateTimeField(blank=True, null=True, verbose_name='Fecha de Realización')
+    class Meta:
+        verbose_name = 'Examen Asignado'
+        verbose_name_plural = 'Exámenes Asignados'
+        db_table = 'examenes_usuarios'
+        ordering = ['fecha_programada', 'hora_inicio']
+        unique_together = ('usuario', 'examen')
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
