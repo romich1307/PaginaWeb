@@ -1605,10 +1605,8 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 return (
                   <tr key={estudiante.id} className={estudiantesSeleccionados.includes(estudiante.id) ? 'selected' : ''}>
                     <td>
-                            {(() => {
-                              console.debug('Pregunta debug:', pregunta);
-                              return null;
-                            })()}
+                            {/* El log debe ir dentro del map donde 'pregunta' está definido */}
+                            {/* ...existing code... */}
                       <input
                         type="checkbox"
                         checked={estudiantesSeleccionados.includes(estudiante.id)}
@@ -2465,80 +2463,83 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                           <tr><td colSpan={7} style={{ textAlign: 'center', color: '#6c757d' }}>No hay preguntas registradas para este curso.</td></tr>
                         );
                       }
-                      return preguntasTeoricas.map(pregunta => (
-                        <tr key={pregunta.id}>
-                          <td>{pregunta.id}</td>
-                          <td style={{ maxWidth: '320px' }}>{pregunta.texto}</td>
-                          <td>{pregunta.tipo}</td>
-                          <td>
-                            {pregunta.imagen_pregunta ? (
-                              <a href={getImagenUrl(pregunta.imagen_pregunta)} target="_blank" rel="noopener noreferrer">
-                                <img src={getImagenUrl(pregunta.imagen_pregunta)} alt="Imagen" style={{ maxWidth: '80px', maxHeight: '60px', borderRadius: '6px', cursor: 'pointer' }} />
-                              </a>
-                            ) : 'Sin imagen'}
-                          </td>
-                          <td>
-                            {pregunta.opciones && pregunta.opciones.length > 0 ? (
-                              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                {pregunta.opciones.map((opcion, idx) => (
-                                  <li key={opcion.id} style={{ color: opcion.es_correcta ? '#28a745' : '#333', fontWeight: opcion.es_correcta ? 'bold' : 'normal' }}>
-                                    {String.fromCharCode(65 + idx)}. {opcion.texto_opcion}
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : '-'}
-                          </td>
-                          <td>
-                            {pregunta.tipo === 'verdadero_falso' ? (
-                              <>
-                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>
-                                  {typeof pregunta.respuesta_correcta === 'string' && pregunta.respuesta_correcta !== ''
-                                    ? (pregunta.respuesta_correcta === 'verdadero' ? 'Verdadero' : 'Falso')
-                                    : <span style={{ color: '#6c757d' }}>Sin respuesta</span>}
-                                </span>
-                                <select value={pregunta.respuesta_correcta || ''} onChange={e => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}>
-                                  <option value="">Sin respuesta</option>
-                                  <option value="verdadero">Verdadero</option>
-                                  <option value="falso">Falso</option>
-                                </select>
-                              </>
-                            ) : pregunta.tipo === 'texto' ? (
-                              <>
-                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>
-                                  {pregunta.respuesta_esperada && pregunta.respuesta_esperada.trim() !== ''
-                                    ? pregunta.respuesta_esperada
-                                    : <span style={{ color: '#6c757d' }}>Sin respuesta</span>}
-                                </span>
-                                <input
-                                  type="text"
-                                  value={pregunta.respuesta_esperada || ''}
-                                  onChange={e => actualizarPregunta(pregunta.id, 'respuesta_esperada', e.target.value)}
-                                  className="inline-edit"
-                                  style={{ width: '90%' }}
-                                  placeholder="Respuesta esperada"
-                                />
-                              </>
-                            ) : (
-                              pregunta.opciones && pregunta.opciones.length > 0 ? (
-                                (() => {
-                                  const correcta = pregunta.opciones.find(o => o.es_correcta);
-                                  return correcta ? String.fromCharCode(65 + pregunta.opciones.indexOf(correcta)) : '-';
-                                })()
-                              ) : (pregunta.respuesta_correcta || '-')
-                            )}
-                          </td>
-                          <td>
-                            <button 
-                              className="btn-edit"
-                              onClick={() => eliminarPregunta(pregunta.id)}
-                              title="Eliminar pregunta"
-                              style={{ backgroundColor: '#dc3545', color: 'white', borderRadius: '6px', padding: '7px 14px', fontWeight: 'bold', fontSize: '15px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
-                            >
-                              🗑️ Eliminar
-                            </button>
-                          </td>
-                        </tr>
-                      ));
+                      return preguntasTeoricas.map(pregunta => {
+                        console.debug('Pregunta debug:', pregunta);
+                        return (
+                          <tr key={pregunta.id}>
+                            <td>{pregunta.id}</td>
+                            <td style={{ maxWidth: '320px' }}>{pregunta.texto}</td>
+                            <td>{pregunta.tipo}</td>
+                            <td>
+                              {pregunta.imagen_pregunta ? (
+                                <a href={getImagenUrl(pregunta.imagen_pregunta)} target="_blank" rel="noopener noreferrer">
+                                  <img src={getImagenUrl(pregunta.imagen_pregunta)} alt="Imagen" style={{ maxWidth: '80px', maxHeight: '60px', borderRadius: '6px', cursor: 'pointer' }} />
+                                </a>
+                              ) : 'Sin imagen'}
+                            </td>
+                            <td>
+                              {pregunta.opciones && pregunta.opciones.length > 0 ? (
+                                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                  {pregunta.opciones.map((opcion, idx) => (
+                                    <li key={opcion.id} style={{ color: opcion.es_correcta ? '#28a745' : '#333', fontWeight: opcion.es_correcta ? 'bold' : 'normal' }}>
+                                      {String.fromCharCode(65 + idx)}. {opcion.texto_opcion}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : '-'}
+                            </td>
+                            <td>
+                              {pregunta.tipo === 'verdadero_falso' ? (
+                                <>
+                                  <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>
+                                    {typeof pregunta.respuesta_correcta === 'string' && pregunta.respuesta_correcta !== ''
+                                      ? (pregunta.respuesta_correcta === 'verdadero' ? 'Verdadero' : 'Falso')
+                                      : <span style={{ color: '#6c757d' }}>Sin respuesta</span>}
+                                  </span>
+                                  <select value={pregunta.respuesta_correcta || ''} onChange={e => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}>
+                                    <option value="">Sin respuesta</option>
+                                    <option value="verdadero">Verdadero</option>
+                                    <option value="falso">Falso</option>
+                                  </select>
+                                </>
+                              ) : pregunta.tipo === 'texto' ? (
+                                <>
+                                  <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>
+                                    {pregunta.respuesta_esperada && pregunta.respuesta_esperada.trim() !== ''
+                                      ? pregunta.respuesta_esperada
+                                      : <span style={{ color: '#6c757d' }}>Sin respuesta</span>}
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={pregunta.respuesta_esperada || ''}
+                                    onChange={e => actualizarPregunta(pregunta.id, 'respuesta_esperada', e.target.value)}
+                                    className="inline-edit"
+                                    style={{ width: '90%' }}
+                                    placeholder="Respuesta esperada"
+                                  />
+                                </>
+                              ) : (
+                                pregunta.opciones && pregunta.opciones.length > 0 ? (
+                                  (() => {
+                                    const correcta = pregunta.opciones.find(o => o.es_correcta);
+                                    return correcta ? String.fromCharCode(65 + pregunta.opciones.indexOf(correcta)) : '-';
+                                  })()
+                                ) : (pregunta.respuesta_correcta || '-')
+                              )}
+                            </td>
+                            <td>
+                              <button 
+                                className="btn-edit"
+                                onClick={() => eliminarPregunta(pregunta.id)}
+                                title="Eliminar pregunta"
+                                style={{ backgroundColor: '#dc3545', color: 'white', borderRadius: '6px', padding: '7px 14px', fontWeight: 'bold', fontSize: '15px', border: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+                              >
+                                🗑️ Eliminar
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
                     })()}
                   </tbody>
                 </table>
