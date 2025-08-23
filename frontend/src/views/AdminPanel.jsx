@@ -2404,7 +2404,54 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                           // Para exámenes teóricos: botones normales
                           <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
             
-                          
+                            <button
+                              onClick={async () => {
+                                setLoading(true);
+                                try {
+                                  const response = await fetchWithAuth(`${API_BASE_URL}/admin/usuarios-examenes/`);
+                                  if (response.ok) {
+                                    const data = await response.json();
+                                    // Filtrar solo los estudiantes que tengan intentos en este examen
+                                    const estudiantesConNotas = data.usuarios
+                                      .map(usuario => {
+                                        const intentos = usuario.intentos_examenes.filter(
+                                          intento => intento.examen.id === examen.id && intento.examen.tipo === 'teorico'
+                                        );
+                                        if (intentos.length > 0) {
+                                          return {
+                                            id: usuario.id,
+                                            nombre: `${usuario.nombres} ${usuario.apellidos}`.trim(),
+                                            email: usuario.email,
+                                            dni: usuario.dni,
+                                            intentos: intentos
+                                          };
+                                        }
+                                        return null;
+                                      })
+                                      .filter(e => e !== null);
+                                    setModalListaEstudiantes({ abierto: true, estudiantes: estudiantesConNotas, examenId: examen.id });
+                                  } else {
+                                    setError('Error al obtener la lista de estudiantes y notas');
+                                  }
+                                } catch (error) {
+                                  setError('Error al obtener la lista de estudiantes y notas');
+                                } finally {
+                                  setLoading(false);
+                                }
+                              }}
+                              style={{
+                                padding: '6px 12px',
+                                fontSize: '11px',
+                                backgroundColor: '#007bff',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer'
+                              }}
+                              title="Ver lista de estudiantes y notas de este examen"
+                            >
+                              Notas de Estudiantes
+                            </button>
                           </div>
                         )}
                       </td>
