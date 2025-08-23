@@ -2486,19 +2486,25 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                           </td>
                           <td>
                             {pregunta.tipo === 'verdadero_falso' ? (
-                              <select value={pregunta.respuesta_correcta || ''} onChange={e => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}>
-                                <option value="verdadero">Verdadero</option>
-                                <option value="falso">Falso</option>
-                              </select>
+                              <>
+                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>{pregunta.respuesta_correcta ? (pregunta.respuesta_correcta === 'verdadero' ? 'Verdadero' : 'Falso') : '-'}</span>
+                                <select value={pregunta.respuesta_correcta || ''} onChange={e => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}>
+                                  <option value="verdadero">Verdadero</option>
+                                  <option value="falso">Falso</option>
+                                </select>
+                              </>
                             ) : pregunta.tipo === 'texto' ? (
-                              <input
-                                type="text"
-                                value={pregunta.respuesta_esperada || ''}
-                                onChange={e => actualizarPregunta(pregunta.id, 'respuesta_esperada', e.target.value)}
-                                className="inline-edit"
-                                style={{ width: '90%' }}
-                                placeholder="Respuesta esperada"
-                              />
+                              <>
+                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>{pregunta.respuesta_esperada || '-'}</span>
+                                <input
+                                  type="text"
+                                  value={pregunta.respuesta_esperada || ''}
+                                  onChange={e => actualizarPregunta(pregunta.id, 'respuesta_esperada', e.target.value)}
+                                  className="inline-edit"
+                                  style={{ width: '90%' }}
+                                  placeholder="Respuesta esperada"
+                                />
+                              </>
                             ) : (
                               pregunta.opciones && pregunta.opciones.length > 0 ? (
                                 (() => {
