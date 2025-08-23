@@ -2485,12 +2485,28 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                             ) : '-'}
                           </td>
                           <td>
-                            {pregunta.opciones && pregunta.opciones.length > 0 ? (
-                              (() => {
-                                const correcta = pregunta.opciones.find(o => o.es_correcta);
-                                return correcta ? String.fromCharCode(65 + pregunta.opciones.indexOf(correcta)) : '-';
-                              })()
-                            ) : (pregunta.respuesta_correcta || '-')}
+                            {pregunta.tipo === 'verdadero_falso' ? (
+                              <select value={pregunta.respuesta_correcta || ''} onChange={e => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}>
+                                <option value="verdadero">Verdadero</option>
+                                <option value="falso">Falso</option>
+                              </select>
+                            ) : pregunta.tipo === 'texto' ? (
+                              <input
+                                type="text"
+                                value={pregunta.respuesta_esperada || ''}
+                                onChange={e => actualizarPregunta(pregunta.id, 'respuesta_esperada', e.target.value)}
+                                className="inline-edit"
+                                style={{ width: '90%' }}
+                                placeholder="Respuesta esperada"
+                              />
+                            ) : (
+                              pregunta.opciones && pregunta.opciones.length > 0 ? (
+                                (() => {
+                                  const correcta = pregunta.opciones.find(o => o.es_correcta);
+                                  return correcta ? String.fromCharCode(65 + pregunta.opciones.indexOf(correcta)) : '-';
+                                })()
+                              ) : (pregunta.respuesta_correcta || '-')
+                            )}
                           </td>
                           <td>
                             <button 
