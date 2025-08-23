@@ -2487,15 +2487,24 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                           <td>
                             {pregunta.tipo === 'verdadero_falso' ? (
                               <>
-                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>{pregunta.respuesta_correcta ? (pregunta.respuesta_correcta === 'verdadero' ? 'Verdadero' : 'Falso') : '-'}</span>
+                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>
+                                  {typeof pregunta.respuesta_correcta === 'string' && pregunta.respuesta_correcta !== ''
+                                    ? (pregunta.respuesta_correcta === 'verdadero' ? 'Verdadero' : 'Falso')
+                                    : <span style={{ color: '#6c757d' }}>Sin respuesta</span>}
+                                </span>
                                 <select value={pregunta.respuesta_correcta || ''} onChange={e => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}>
+                                  <option value="">Sin respuesta</option>
                                   <option value="verdadero">Verdadero</option>
                                   <option value="falso">Falso</option>
                                 </select>
                               </>
                             ) : pregunta.tipo === 'texto' ? (
                               <>
-                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>{pregunta.respuesta_esperada || '-'}</span>
+                                <span style={{ fontWeight: 'bold', color: '#007bff', marginRight: '8px' }}>
+                                  {pregunta.respuesta_esperada && pregunta.respuesta_esperada.trim() !== ''
+                                    ? pregunta.respuesta_esperada
+                                    : <span style={{ color: '#6c757d' }}>Sin respuesta</span>}
+                                </span>
                                 <input
                                   type="text"
                                   value={pregunta.respuesta_esperada || ''}
