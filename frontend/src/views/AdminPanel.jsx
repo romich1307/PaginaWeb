@@ -2817,7 +2817,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
     <div className="admin-panel">
       <div className="admin-header">
         <div className="logo-section">
-          <img src="/logo-certifikt.png" alt="CertifiKT" className="admin-logo" />
+          <img src="/LogoPagina.png" alt="CertifiKT" className="admin-logo" />
           <h1>Panel de Administración</h1>
         </div>
         <button 
