@@ -18,88 +18,7 @@ import json
 from django.db import transaction
 import random
 
-# Endpoint para ver detalle de respuestas de un intento de examen (solo admin)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def admin_intento_detalle(request, intento_id):
-    """
-    Devuelve el detalle de las respuestas de un intento de examen (solo admin)
-    """
-    if not request.user.is_staff:
-        return Response({'error': 'Solo los administradores pueden acceder a esta información.'}, status=status.HTTP_403_FORBIDDEN)
-
-    from .models import IntentarExamen, OpcionRespuesta
-    try:
-        intento = IntentarExamen.objects.select_related('usuario', 'examen').get(id=intento_id)
-        preguntas = intento.obtener_preguntas_del_intento()
-        respuestas_usuario = intento.respuestas or {}
-        detalle_preguntas = []
-        for pregunta in preguntas:
-            # Opciones
-            opciones = []
-            if pregunta.tipo in ['multiple', 'multiple_choice']:
-                opciones_qs = OpcionRespuesta.objects.filter(pregunta=pregunta).order_by('orden')
-                for opcion in opciones_qs:
-                    opciones.append({
-                        'id': opcion.id,
-                        'texto_opcion': opcion.texto_opcion,
-                        'es_correcta': opcion.es_correcta
-                    })
-            elif pregunta.tipo == 'verdadero_falso':
-                opciones = [
-                    {'id': 'verdadero', 'texto_opcion': 'Verdadero', 'es_correcta': None},
-                    {'id': 'falso', 'texto_opcion': 'Falso', 'es_correcta': None}
-                ]
-
-            # Respuesta correcta
-            respuesta_correcta = None
-            if pregunta.tipo in ['multiple', 'multiple_choice']:
-                correcta = next((o for o in opciones if o['es_correcta']), None)
-                respuesta_correcta = correcta['id'] if correcta else None
-            elif pregunta.tipo == 'verdadero_falso':
-                correcta = OpcionRespuesta.objects.filter(pregunta=pregunta, es_correcta=True).first()
-                respuesta_correcta = correcta.texto_opcion.lower() if correcta else None
-
-            # Respuesta del alumno
-            respuesta_alumno = respuestas_usuario.get(str(pregunta.id), None)
-
-            # ¿Fue correcta?
-            fue_correcta = False
-            if respuesta_alumno is not None:
-                if pregunta.tipo in ['multiple', 'multiple_choice']:
-                    fue_correcta = str(respuesta_alumno) == str(respuesta_correcta)
-                elif pregunta.tipo == 'verdadero_falso':
-                    fue_correcta = str(respuesta_alumno).lower() == str(respuesta_correcta)
-
-            detalle_preguntas.append({
-                'id': pregunta.id,
-                'texto_pregunta': pregunta.texto_pregunta,
-                'tipo': pregunta.tipo,
-                'puntaje': float(pregunta.puntaje),
-                'imagen_pregunta': pregunta.imagen_pregunta.url if pregunta.imagen_pregunta else None,
-                'opciones': opciones,
-                'respuesta_correcta': respuesta_correcta,
-                'respuesta_alumno': respuesta_alumno,
-                'fue_correcta': fue_correcta
-            })
-
-        return Response({
-            'intento_id': intento.id,
-            'usuario': {
-                'id': intento.usuario.id,
-                'nombre': f"{intento.usuario.first_name} {intento.usuario.last_name}".strip() or intento.usuario.email
-            },
-            'examen': {
-                'id': intento.examen.id,
-                'nombre': intento.examen.nombre,
-                'tipo': intento.examen.tipo
-            },
-            'detalle_preguntas': detalle_preguntas
-        }, status=status.HTTP_200_OK)
-    except IntentarExamen.DoesNotExist:
-        return Response({'error': 'Intento de examen no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        return Response({'error': f'Error al obtener detalle del intento: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# Create your views here.
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -1665,7 +1584,7 @@ def lista_usuarios_examenes(request):
         
         for usuario in usuarios:
             # Obtener cursos en los que está inscrito
-            inscripciones = Inscripcion.objects.filter(usuario=usuario, estado_pago='verificado')
+            inscripciones = Inscripcion.objects.filter(usuario=usuario, activa=True)
             cursos_inscritos = [inscripcion.curso for inscripcion in inscripciones]
             
             # Obtener intentos de examen del usuario

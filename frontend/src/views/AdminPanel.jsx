@@ -112,15 +112,6 @@ function AdminPanel() {
   const [examenesPracticosPendientes, setExamenesPracticosPendientes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  // Log para depuración global
-  useEffect(() => {
-    console.log('Estado de estudiantes:', estudiantes);
-    console.log('Estado de cursos:', cursos);
-    console.log('Estado de inscripciones:', inscripciones);
-    console.log('Estado de examenes:', examenes);
-    console.log('Estado de preguntas:', preguntas);
-    console.log('Estado de intentosExamen:', intentosExamen);
-  }, [estudiantes, cursos, inscripciones, examenes, preguntas, intentosExamen]);
   const [mostrarFormularioCurso, setMostrarFormularioCurso] = useState(false);
   
   // Estados para la gestión de estudiantes
@@ -195,146 +186,104 @@ function AdminPanel() {
     setError('');
     
     try {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken'); // Usar 'authToken' consistentemente
       console.log('Token:', token);
+      
       if (!token) {
         setError('No estás logueado. Por favor inicia sesión primero.');
         return;
       }
+      
+      // Primero verificar si el token es válido obteniendo el perfil del usuario
       const profileResponse = await fetchWithAuth(`${API_BASE_URL}/profile/`);
       console.log('Profile response status:', profileResponse.status);
+      
       if (profileResponse.status === 401 || profileResponse.status === 403) {
         setError('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('authToken'); // Cambiar de 'token' a 'authToken'
         return;
       }
+      
       if (!profileResponse.ok) {
         const errorText = await profileResponse.text();
-        console.error('Profile response error:', errorText);
+        console.log('Profile response error:', errorText);
         setError(`Error de autenticación: ${profileResponse.status}`);
         return;
       }
+      
       const profileData = await profileResponse.json();
       console.log('User profile:', profileData);
+      
+      // Verificar si es admin
       const adminResponse = await fetchWithAuth(`${API_BASE_URL}/admin/is-admin/`);
       console.log('Admin response status:', adminResponse.status);
+      
       if (!adminResponse.ok) {
         const errorText = await adminResponse.text();
-        console.error('Admin response error:', errorText);
+        console.log('Admin response error:', errorText);
         setError(`Error verificando permisos: ${adminResponse.status}`);
         return;
       }
+      
       const adminData = await adminResponse.json();
       console.log('Admin data:', adminData);
+      
       if (!adminData.is_admin) {
         setError(`No tienes permisos de administrador. Email actual: ${profileData.user?.email || 'No disponible'}. Se requiere: jiji@gmail.com`);
         return;
       }
+
       // Cargar estudiantes
-      try {
-        const estudiantesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/estudiantes/`);
-        if (estudiantesResponse.ok) {
-          const estudiantesData = await estudiantesResponse.json();
-          setEstudiantes(estudiantesData);
-        } else {
-          const errorText = await estudiantesResponse.text();
-          console.error('Error estudiantes:', errorText);
-          setError('Error al cargar estudiantes');
-        }
-      } catch (err) {
-        console.error('Error estudiantes:', err);
-        setError('Error al cargar estudiantes');
+      const estudiantesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/estudiantes/`);
+      if (estudiantesResponse.ok) {
+        const estudiantesData = await estudiantesResponse.json();
+        setEstudiantes(estudiantesData);
       }
+
       // Cargar cursos
-      try {
-        const cursosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/cursos/`);
-        if (cursosResponse.ok) {
-          const cursosData = await cursosResponse.json();
-          setCursos(cursosData);
-        } else {
-          const errorText = await cursosResponse.text();
-          console.error('Error cursos:', errorText);
-          setError('Error al cargar cursos');
-        }
-      } catch (err) {
-        console.error('Error cursos:', err);
-        setError('Error al cargar cursos');
+      const cursosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/cursos/`);
+      if (cursosResponse.ok) {
+        const cursosData = await cursosResponse.json();
+        setCursos(cursosData);
       }
+
       // Cargar inscripciones
-      try {
-        const inscripcionesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/`);
-        if (inscripcionesResponse.ok) {
-          const inscripcionesData = await inscripcionesResponse.json();
-          setInscripciones(inscripcionesData);
-        } else {
-          const errorText = await inscripcionesResponse.text();
-          console.error('Error inscripciones:', errorText);
-          setError('Error al cargar inscripciones');
-        }
-      } catch (err) {
-        console.error('Error inscripciones:', err);
-        setError('Error al cargar inscripciones');
+      const inscripcionesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/`);
+      if (inscripcionesResponse.ok) {
+        const inscripcionesData = await inscripcionesResponse.json();
+        console.log('📋 Inscripciones cargadas:', inscripcionesData.length);
+        console.log('📋 Inscripciones más recientes:', inscripcionesData.slice(0, 3));
+        setInscripciones(inscripcionesData);
       }
+
       // Cargar exámenes
-      try {
-        const examenesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes/`);
-        if (examenesResponse.ok) {
-          const examenesData = await examenesResponse.json();
-          setExamenes(examenesData);
-        } else {
-          const errorText = await examenesResponse.text();
-          console.error('Error examenes:', errorText);
-          setError('Error al cargar exámenes');
-        }
-      } catch (err) {
-        console.error('Error examenes:', err);
-        setError('Error al cargar exámenes');
+      const examenesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes/`);
+      if (examenesResponse.ok) {
+        const examenesData = await examenesResponse.json();
+        setExamenes(examenesData);
       }
+
       // Cargar preguntas
-      try {
-        const preguntasResponse = await fetchWithAuth(`${API_BASE_URL}/admin/preguntas/`);
-        if (preguntasResponse.ok) {
-          const preguntasData = await preguntasResponse.json();
-          setPreguntas(preguntasData);
-        } else {
-          const errorText = await preguntasResponse.text();
-          console.error('Error preguntas:', errorText);
-          setError('Error al cargar preguntas');
-        }
-      } catch (err) {
-        console.error('Error preguntas:', err);
-        setError('Error al cargar preguntas');
+      const preguntasResponse = await fetchWithAuth(`${API_BASE_URL}/admin/preguntas/`);
+      if (preguntasResponse.ok) {
+        const preguntasData = await preguntasResponse.json();
+        setPreguntas(preguntasData);
       }
+
       // Cargar intentos de examen
-      try {
-        const intentosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/intentos-examen/`);
-        if (intentosResponse.ok) {
-          const intentosData = await intentosResponse.json();
-          setIntentosExamen(intentosData);
-        } else {
-          const errorText = await intentosResponse.text();
-          console.error('Error intentos:', errorText);
-          setError('Error al cargar intentos de examen');
-        }
-      } catch (err) {
-        console.error('Error intentos:', err);
-        setError('Error al cargar intentos de examen');
+      const intentosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/intentos-examen/`);
+      if (intentosResponse.ok) {
+        const intentosData = await intentosResponse.json();
+        setIntentosExamen(intentosData);
       }
+
       // Cargar exámenes prácticos pendientes
-      try {
-        const practicosPendientesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes-practicos/pendientes/`);
-        if (practicosPendientesResponse.ok) {
-          const practicosPendientesData = await practicosPendientesResponse.json();
-          setExamenesPracticosPendientes(practicosPendientesData);
-        } else {
-          const errorText = await practicosPendientesResponse.text();
-          console.error('Error practicos pendientes:', errorText);
-          setError('Error al cargar exámenes prácticos pendientes');
-        }
-      } catch (err) {
-        console.error('Error practicos pendientes:', err);
-        setError('Error al cargar exámenes prácticos pendientes');
+      const practicosPendientesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes-practicos/pendientes/`);
+      if (practicosPendientesResponse.ok) {
+        const practicosPendientesData = await practicosPendientesResponse.json();
+        setExamenesPracticosPendientes(practicosPendientesData);
       }
+
     } catch (error) {
       console.error('Error cargando datos:', error);
       setError('Error al cargar los datos del sistema');
@@ -1039,29 +988,54 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
     }
   };
 
-
-  // Tabs para navegación
-  const [tab, setTab] = useState('estudiantes');
-
-  // Render principal con tabs y contenido
-  return (
-    <div className="admin-panel-container">
-      <div className="admin-header">
-        <h1>Panel de Administración</h1>
-        <div className="admin-tabs">
-          <button className={tab === 'estudiantes' ? 'active' : ''} onClick={() => setTab('estudiantes')}>Estudiantes</button>
-          <button className={tab === 'inscripciones' ? 'active' : ''} onClick={() => setTab('inscripciones')}>Inscripciones</button>
-          <button className={tab === 'cursos' ? 'active' : ''} onClick={() => setTab('cursos')}>Cursos</button>
-          <button className={tab === 'examenes' ? 'active' : ''} onClick={() => setTab('examenes')}>Exámenes</button>
+  // Mostrar loading mientras se verifica la autenticación
+  if (isLoading) {
+    return (
+      <div className="admin-panel">
+        <div className="admin-header">
+          <h1>Verificando autenticación...</h1>
         </div>
       </div>
-      <div className="admin-content">
-        {tab === 'estudiantes' && renderEstudiantes()}
-        {tab === 'inscripciones' && renderInscripciones && renderInscripciones()}
-        {/* Puedes agregar más tabs y renders aquí según tu lógica */}
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="admin-panel">
+        <div className="admin-header">
+          <h1>Cargando panel de administración...</h1>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="admin-panel">
+        <div className="admin-header">
+          <h1>Panel de Administración</h1>
+          <div className="error-message" style={{color: 'red', padding: '20px', textAlign: 'center'}}>
+            {error}
+            <br />
+            <div style={{marginTop: '15px'}}>
+              <button 
+                onClick={loadData} 
+                style={{marginRight: '10px', padding: '8px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                Reintentar
+              </button>
+              <button 
+                onClick={() => window.location.href = '/login'} 
+                style={{padding: '8px 15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                Ir a Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderEstudiantes = () => {
     const elementosPorPagina = 10;
@@ -1665,13 +1639,11 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                       </div>
                     </td>
                     <td>{estudiante.email}</td>
-                                <div className="admin-panel-container">
-                                  <div style={{ color: 'white', background: 'red', padding: '20px', fontSize: '2rem', textAlign: 'center' }}>
-                                    TEST: El render del AdminPanel funciona. Si ves este mensaje, el componente está renderizando correctamente.
-                                  </div>
-                                  {error && <div className="error-message">{error}</div>}
-                                  {/* ...rest of the panel UI... */}
-                                </div>
+                    <td>{estudiante.dni}</td>
+                    <td>{new Date(estudiante.date_joined).toLocaleDateString()}</td>
+                    <td>
+                      <span className={`status-badge ${esActivo ? 'active' : 'inactive'}`}>
+                        {esActivo ? 'Activo' : 'Inactivo'}
       
                     <td>
                       <div className="courses-info">
