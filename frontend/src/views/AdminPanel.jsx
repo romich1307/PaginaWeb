@@ -1605,6 +1605,10 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 return (
                   <tr key={estudiante.id} className={estudiantesSeleccionados.includes(estudiante.id) ? 'selected' : ''}>
                     <td>
+                            {(() => {
+                              console.debug('Pregunta debug:', pregunta);
+                              return null;
+                            })()}
                       <input
                         type="checkbox"
                         checked={estudiantesSeleccionados.includes(estudiante.id)}
