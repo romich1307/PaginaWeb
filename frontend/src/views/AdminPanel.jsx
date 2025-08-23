@@ -1039,63 +1039,29 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
     }
   };
 
-  // Mostrar loading mientras se verifica la autenticación
-  if (isLoading) {
-    return (
-      <div className="admin-panel">
-        <div className="admin-header">
-          <h1>Verificando autenticación...</h1>
-        </div>
-      </div>
-    );
-  }
 
-  if (loading) {
-    return (
-      <div className="admin-panel">
-        <div className="admin-header">
-          <h1>Cargando panel de administración...</h1>
-        </div>
-      </div>
-    );
-  }
+  // Tabs para navegación
+  const [tab, setTab] = useState('estudiantes');
 
-  if (error) {
-    return (
-      <div className="admin-panel">
-        <div className="admin-header">
-          <h1>Panel de Administración</h1>
-          <div className="error-message" style={{color: 'red', padding: '20px', textAlign: 'center', fontSize: '1.2em', background: '#fff3cd', border: '2px solid #dc3545', borderRadius: '8px', margin: '30px auto', maxWidth: '600px'}}>
-            <strong>¡Error detectado!</strong>
-            <br />
-            <span>{error}</span>
-            <br />
-            <div style={{marginTop: '15px'}}>
-              <button 
-                onClick={loadData} 
-                style={{marginRight: '10px', padding: '8px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
-              >
-                Reintentar
-              </button>
-              <button 
-                onClick={() => window.location.href = '/login'} 
-                style={{padding: '8px 15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
-              >
-                Ir a Login
-              </button>
-            </div>
-            <div style={{marginTop: '20px', color: '#333', fontSize: '0.95em'}}>
-              <strong>¿Cómo depurar?</strong><br />
-              1. Abre la consola del navegador (F12) y revisa los errores.<br />
-              2. Revisa los logs en amarillo/rojo para saber qué petición falló.<br />
-              3. Si el error es de datos, revisa la estructura recibida desde la API.<br />
-              4. Si el error es de conexión, revisa la URL y variables de entorno.<br />
-            </div>
-          </div>
+  // Render principal con tabs y contenido
+  return (
+    <div className="admin-panel-container">
+      <div className="admin-header">
+        <h1>Panel de Administración</h1>
+        <div className="admin-tabs">
+          <button className={tab === 'estudiantes' ? 'active' : ''} onClick={() => setTab('estudiantes')}>Estudiantes</button>
+          <button className={tab === 'inscripciones' ? 'active' : ''} onClick={() => setTab('inscripciones')}>Inscripciones</button>
+          <button className={tab === 'cursos' ? 'active' : ''} onClick={() => setTab('cursos')}>Cursos</button>
+          <button className={tab === 'examenes' ? 'active' : ''} onClick={() => setTab('examenes')}>Exámenes</button>
         </div>
       </div>
-    );
-  }
+      <div className="admin-content">
+        {tab === 'estudiantes' && renderEstudiantes()}
+        {tab === 'inscripciones' && renderInscripciones && renderInscripciones()}
+        {/* Puedes agregar más tabs y renders aquí según tu lógica */}
+      </div>
+    </div>
+  );
 
   const renderEstudiantes = () => {
     const elementosPorPagina = 10;
