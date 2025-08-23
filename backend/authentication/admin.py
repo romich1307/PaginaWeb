@@ -100,7 +100,19 @@ class OpcionRespuestaInline(admin.TabularInline):
 
 @admin.register(Pregunta)
 class PreguntaAdmin(admin.ModelAdmin):
-    list_display = ['texto_pregunta_corto', 'examen', 'tipo', 'puntaje', 'orden']
+    def examen_safe(self, obj):
+        return obj.examen if obj.examen else "(Sin examen)"
+
+    def tipo_safe(self, obj):
+        return obj.tipo if obj.tipo else "(Sin tipo)"
+
+    def puntaje_safe(self, obj):
+        return obj.puntaje if obj.puntaje is not None else "(Sin puntaje)"
+
+    def orden_safe(self, obj):
+        return obj.orden if obj.orden is not None else "(Sin orden)"
+
+    list_display = ['texto_pregunta_corto', 'examen_safe', 'tipo_safe', 'puntaje_safe', 'orden_safe']
     list_filter = ['tipo', 'examen__curso', 'examen__tipo']
     search_fields = ['texto_pregunta', 'examen__nombre']
     ordering = ['examen', 'orden']
