@@ -128,7 +128,7 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Sending registration data:', userData);
       
-      const response = await fetch('http://127.0.0.1:8000/api/register/', {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('authToken');
       if (token) {
-        await fetch('http://127.0.0.1:8000/api/logout/', {
+  await fetch(`${import.meta.env.VITE_API_URL}/logout/`, {
           method: 'POST',
           headers: {
             'Authorization': `Token ${token}`,
