@@ -1644,7 +1644,8 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                     <td>
                       <span className={`status-badge ${esActivo ? 'active' : 'inactive'}`}>
                         {esActivo ? 'Activo' : 'Inactivo'}
-      
+                      </span>
+                    </td>
                     <td>
                       <div className="courses-info">
                         {cursosEstudiante.length > 0 ? (
