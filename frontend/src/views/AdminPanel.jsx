@@ -2491,11 +2491,14 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                                 <option value="falso">Falso</option>
                               </select>
                             ) : pregunta.tipo === 'texto' ? (
-                              pregunta.respuesta_esperada ? (
-                                <span style={{ fontWeight: 'bold', color: '#007bff' }}>{pregunta.respuesta_esperada}</span>
-                              ) : (
-                                <span style={{ color: '#6c757d' }}>Sin respuesta</span>
-                              )
+                              <input
+                                type="text"
+                                value={pregunta.respuesta_esperada || ''}
+                                onChange={e => actualizarPregunta(pregunta.id, 'respuesta_esperada', e.target.value)}
+                                className="inline-edit"
+                                style={{ width: '90%' }}
+                                placeholder="Respuesta esperada"
+                              />
                             ) : (
                               pregunta.opciones && pregunta.opciones.length > 0 ? (
                                 (() => {
