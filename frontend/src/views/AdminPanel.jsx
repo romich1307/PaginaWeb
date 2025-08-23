@@ -1004,14 +1004,13 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
       </div>
       <div className="admin-content">
         {activeTab === 'estudiantes' && renderEstudiantes()}
-        {activeTab === 'inscripciones' && renderInscripciones && renderInscripciones()}
-        {activeTab === 'cursos' && renderCursos && renderCursos()}
-        {activeTab === 'examenes' && renderExamenes && renderExamenes()}
+        {activeTab === 'inscripciones' && renderInscripciones()}
+        {activeTab === 'cursos' && renderCursos()}
+        {activeTab === 'examenes' && renderExamenes()}
       </div>
     </div>
   );
-
-  const renderEstudiantes = () => {
+const renderEstudiantes = () => {
     const elementosPorPagina = 10;
 
     // Función para verificar si un estudiante tiene cursos comprados
@@ -2990,3 +2989,4 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
 }
 
 export default AdminPanel;
+
