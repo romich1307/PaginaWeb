@@ -112,6 +112,15 @@ function AdminPanel() {
   const [examenesPracticosPendientes, setExamenesPracticosPendientes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Log para depuración global
+  useEffect(() => {
+    console.log('Estado de estudiantes:', estudiantes);
+    console.log('Estado de cursos:', cursos);
+    console.log('Estado de inscripciones:', inscripciones);
+    console.log('Estado de examenes:', examenes);
+    console.log('Estado de preguntas:', preguntas);
+    console.log('Estado de intentosExamen:', intentosExamen);
+  }, [estudiantes, cursos, inscripciones, examenes, preguntas, intentosExamen]);
   const [mostrarFormularioCurso, setMostrarFormularioCurso] = useState(false);
   
   // Estados para la gestión de estudiantes
@@ -186,104 +195,146 @@ function AdminPanel() {
     setError('');
     
     try {
-      const token = localStorage.getItem('authToken'); // Usar 'authToken' consistentemente
+      const token = localStorage.getItem('authToken');
       console.log('Token:', token);
-      
       if (!token) {
         setError('No estás logueado. Por favor inicia sesión primero.');
         return;
       }
-      
-      // Primero verificar si el token es válido obteniendo el perfil del usuario
       const profileResponse = await fetchWithAuth(`${API_BASE_URL}/profile/`);
       console.log('Profile response status:', profileResponse.status);
-      
       if (profileResponse.status === 401 || profileResponse.status === 403) {
         setError('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
-        localStorage.removeItem('authToken'); // Cambiar de 'token' a 'authToken'
+        localStorage.removeItem('authToken');
         return;
       }
-      
       if (!profileResponse.ok) {
         const errorText = await profileResponse.text();
-        console.log('Profile response error:', errorText);
+        console.error('Profile response error:', errorText);
         setError(`Error de autenticación: ${profileResponse.status}`);
         return;
       }
-      
       const profileData = await profileResponse.json();
       console.log('User profile:', profileData);
-      
-      // Verificar si es admin
       const adminResponse = await fetchWithAuth(`${API_BASE_URL}/admin/is-admin/`);
       console.log('Admin response status:', adminResponse.status);
-      
       if (!adminResponse.ok) {
         const errorText = await adminResponse.text();
-        console.log('Admin response error:', errorText);
+        console.error('Admin response error:', errorText);
         setError(`Error verificando permisos: ${adminResponse.status}`);
         return;
       }
-      
       const adminData = await adminResponse.json();
       console.log('Admin data:', adminData);
-      
       if (!adminData.is_admin) {
         setError(`No tienes permisos de administrador. Email actual: ${profileData.user?.email || 'No disponible'}. Se requiere: jiji@gmail.com`);
         return;
       }
-
       // Cargar estudiantes
-      const estudiantesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/estudiantes/`);
-      if (estudiantesResponse.ok) {
-        const estudiantesData = await estudiantesResponse.json();
-        setEstudiantes(estudiantesData);
+      try {
+        const estudiantesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/estudiantes/`);
+        if (estudiantesResponse.ok) {
+          const estudiantesData = await estudiantesResponse.json();
+          setEstudiantes(estudiantesData);
+        } else {
+          const errorText = await estudiantesResponse.text();
+          console.error('Error estudiantes:', errorText);
+          setError('Error al cargar estudiantes');
+        }
+      } catch (err) {
+        console.error('Error estudiantes:', err);
+        setError('Error al cargar estudiantes');
       }
-
       // Cargar cursos
-      const cursosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/cursos/`);
-      if (cursosResponse.ok) {
-        const cursosData = await cursosResponse.json();
-        setCursos(cursosData);
+      try {
+        const cursosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/cursos/`);
+        if (cursosResponse.ok) {
+          const cursosData = await cursosResponse.json();
+          setCursos(cursosData);
+        } else {
+          const errorText = await cursosResponse.text();
+          console.error('Error cursos:', errorText);
+          setError('Error al cargar cursos');
+        }
+      } catch (err) {
+        console.error('Error cursos:', err);
+        setError('Error al cargar cursos');
       }
-
       // Cargar inscripciones
-      const inscripcionesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/`);
-      if (inscripcionesResponse.ok) {
-        const inscripcionesData = await inscripcionesResponse.json();
-        console.log('📋 Inscripciones cargadas:', inscripcionesData.length);
-        console.log('📋 Inscripciones más recientes:', inscripcionesData.slice(0, 3));
-        setInscripciones(inscripcionesData);
+      try {
+        const inscripcionesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/`);
+        if (inscripcionesResponse.ok) {
+          const inscripcionesData = await inscripcionesResponse.json();
+          setInscripciones(inscripcionesData);
+        } else {
+          const errorText = await inscripcionesResponse.text();
+          console.error('Error inscripciones:', errorText);
+          setError('Error al cargar inscripciones');
+        }
+      } catch (err) {
+        console.error('Error inscripciones:', err);
+        setError('Error al cargar inscripciones');
       }
-
       // Cargar exámenes
-      const examenesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes/`);
-      if (examenesResponse.ok) {
-        const examenesData = await examenesResponse.json();
-        setExamenes(examenesData);
+      try {
+        const examenesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes/`);
+        if (examenesResponse.ok) {
+          const examenesData = await examenesResponse.json();
+          setExamenes(examenesData);
+        } else {
+          const errorText = await examenesResponse.text();
+          console.error('Error examenes:', errorText);
+          setError('Error al cargar exámenes');
+        }
+      } catch (err) {
+        console.error('Error examenes:', err);
+        setError('Error al cargar exámenes');
       }
-
       // Cargar preguntas
-      const preguntasResponse = await fetchWithAuth(`${API_BASE_URL}/admin/preguntas/`);
-      if (preguntasResponse.ok) {
-        const preguntasData = await preguntasResponse.json();
-        setPreguntas(preguntasData);
+      try {
+        const preguntasResponse = await fetchWithAuth(`${API_BASE_URL}/admin/preguntas/`);
+        if (preguntasResponse.ok) {
+          const preguntasData = await preguntasResponse.json();
+          setPreguntas(preguntasData);
+        } else {
+          const errorText = await preguntasResponse.text();
+          console.error('Error preguntas:', errorText);
+          setError('Error al cargar preguntas');
+        }
+      } catch (err) {
+        console.error('Error preguntas:', err);
+        setError('Error al cargar preguntas');
       }
-
       // Cargar intentos de examen
-      const intentosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/intentos-examen/`);
-      if (intentosResponse.ok) {
-        const intentosData = await intentosResponse.json();
-        setIntentosExamen(intentosData);
+      try {
+        const intentosResponse = await fetchWithAuth(`${API_BASE_URL}/admin/intentos-examen/`);
+        if (intentosResponse.ok) {
+          const intentosData = await intentosResponse.json();
+          setIntentosExamen(intentosData);
+        } else {
+          const errorText = await intentosResponse.text();
+          console.error('Error intentos:', errorText);
+          setError('Error al cargar intentos de examen');
+        }
+      } catch (err) {
+        console.error('Error intentos:', err);
+        setError('Error al cargar intentos de examen');
       }
-
       // Cargar exámenes prácticos pendientes
-      const practicosPendientesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes-practicos/pendientes/`);
-      if (practicosPendientesResponse.ok) {
-        const practicosPendientesData = await practicosPendientesResponse.json();
-        setExamenesPracticosPendientes(practicosPendientesData);
+      try {
+        const practicosPendientesResponse = await fetchWithAuth(`${API_BASE_URL}/admin/examenes-practicos/pendientes/`);
+        if (practicosPendientesResponse.ok) {
+          const practicosPendientesData = await practicosPendientesResponse.json();
+          setExamenesPracticosPendientes(practicosPendientesData);
+        } else {
+          const errorText = await practicosPendientesResponse.text();
+          console.error('Error practicos pendientes:', errorText);
+          setError('Error al cargar exámenes prácticos pendientes');
+        }
+      } catch (err) {
+        console.error('Error practicos pendientes:', err);
+        setError('Error al cargar exámenes prácticos pendientes');
       }
-
     } catch (error) {
       console.error('Error cargando datos:', error);
       setError('Error al cargar los datos del sistema');
@@ -1014,8 +1065,10 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
       <div className="admin-panel">
         <div className="admin-header">
           <h1>Panel de Administración</h1>
-          <div className="error-message" style={{color: 'red', padding: '20px', textAlign: 'center'}}>
-            {error}
+          <div className="error-message" style={{color: 'red', padding: '20px', textAlign: 'center', fontSize: '1.2em', background: '#fff3cd', border: '2px solid #dc3545', borderRadius: '8px', margin: '30px auto', maxWidth: '600px'}}>
+            <strong>¡Error detectado!</strong>
+            <br />
+            <span>{error}</span>
             <br />
             <div style={{marginTop: '15px'}}>
               <button 
@@ -1030,6 +1083,13 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
               >
                 Ir a Login
               </button>
+            </div>
+            <div style={{marginTop: '20px', color: '#333', fontSize: '0.95em'}}>
+              <strong>¿Cómo depurar?</strong><br />
+              1. Abre la consola del navegador (F12) y revisa los errores.<br />
+              2. Revisa los logs en amarillo/rojo para saber qué petición falló.<br />
+              3. Si el error es de datos, revisa la estructura recibida desde la API.<br />
+              4. Si el error es de conexión, revisa la URL y variables de entorno.<br />
             </div>
           </div>
         </div>
