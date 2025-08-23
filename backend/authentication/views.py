@@ -1,3 +1,23 @@
+from django.shortcuts import render
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
+from .models import CustomUser, Curso, Inscripcion, Examen, ExamenUsuario, Pregunta, OpcionRespuesta, IntentarExamen
+from .serializers import (
+    UserSerializer, UserRegistrationSerializer, CursoSerializer, 
+    InscripcionCreateSerializer, InscripcionSerializer,
+    ExamenSerializer, ExamenListSerializer, PreguntaSerializer, 
+    OpcionRespuestaSerializer, IntentarExamenSerializer
+)
+import json
+from django.db import transaction
+import random
+
 # Endpoint para ver detalle de respuestas de un intento de examen (solo admin)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -80,27 +100,6 @@ def admin_intento_detalle(request, intento_id):
         return Response({'error': 'Intento de examen no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': f'Error al obtener detalle del intento: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-from django.shortcuts import render
-from django.utils import timezone
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
-from .models import CustomUser, Curso, Inscripcion, Examen, ExamenUsuario, Pregunta, OpcionRespuesta, IntentarExamen
-from .serializers import (
-    UserSerializer, UserRegistrationSerializer, CursoSerializer, 
-    InscripcionCreateSerializer, InscripcionSerializer,
-    ExamenSerializer, ExamenListSerializer, PreguntaSerializer, 
-    OpcionRespuestaSerializer, IntentarExamenSerializer
-)
-import json
-from django.db import transaction
-import random
-
-# Create your views here.
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
