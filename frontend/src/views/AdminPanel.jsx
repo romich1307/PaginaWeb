@@ -1699,13 +1699,14 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                       </div>
                     </td>
                     <td>{estudiante.email}</td>
-                    <td>{estudiante.dni}</td>
-                    <td>{new Date(estudiante.date_joined).toLocaleDateString()}</td>
-                    <td>
-                      <span className={`status-badge ${esActivo ? 'active' : 'inactive'}`}>
-                        {esActivo ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
+                                <div className="admin-panel-container">
+                                  <div style={{ color: 'white', background: 'red', padding: '20px', fontSize: '2rem', textAlign: 'center' }}>
+                                    TEST: El render del AdminPanel funciona. Si ves este mensaje, el componente está renderizando correctamente.
+                                  </div>
+                                  {error && <div className="error-message">{error}</div>}
+                                  {/* ...rest of the panel UI... */}
+                                </div>
+      
                     <td>
                       <div className="courses-info">
                         {cursosEstudiante.length > 0 ? (
