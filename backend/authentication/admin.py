@@ -140,7 +140,28 @@ class PreguntaAdmin(admin.ModelAdmin):
 
 @admin.register(ExamenUsuario)
 class ExamenUsuarioAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'examen', 'fecha_programada', 'hora_inicio', 'estado', 'resultado', 'nota_final']
+    def usuario_safe(self, obj):
+        return obj.usuario if obj.usuario else "(Sin usuario)"
+
+    def examen_safe(self, obj):
+        return obj.examen if obj.examen else "(Sin examen)"
+
+    def fecha_programada_safe(self, obj):
+        return obj.fecha_programada if obj.fecha_programada else "(Sin fecha)"
+
+    def hora_inicio_safe(self, obj):
+        return obj.hora_inicio if obj.hora_inicio else "(Sin hora)"
+
+    def estado_safe(self, obj):
+        return obj.estado if obj.estado else "(Sin estado)"
+
+    def resultado_safe(self, obj):
+        return obj.resultado if obj.resultado else "(Sin resultado)"
+
+    def nota_final_safe(self, obj):
+        return obj.nota_final if obj.nota_final is not None else "(Sin nota)"
+
+    list_display = ['usuario_safe', 'examen_safe', 'fecha_programada_safe', 'hora_inicio_safe', 'estado_safe', 'resultado_safe', 'nota_final_safe']
     list_filter = ['estado', 'resultado', 'fecha_programada', 'examen__curso']
     search_fields = ['usuario__nombres', 'usuario__apellidos', 'examen__nombre']
     ordering = ['fecha_programada', 'hora_inicio']
