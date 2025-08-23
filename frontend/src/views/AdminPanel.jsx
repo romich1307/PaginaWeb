@@ -12,6 +12,25 @@ import autoTable from 'jspdf-autotable';
 import './AdminPanel.css';
 
 function AdminPanel() {
+  // Eliminar curso
+  const eliminarCurso = async (cursoId) => {
+    if (!window.confirm('¿Seguro que deseas eliminar este curso?')) return;
+    try {
+      const token = localStorage.getItem('authToken');
+      const res = await fetch(`${API_BASE_URL}/admin/cursos/${cursoId}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Token ${token}` }
+      });
+      if (res.ok) {
+        mostrarNotificacion('Curso eliminado correctamente');
+        loadData();
+      } else {
+        mostrarNotificacion('Error al eliminar el curso');
+      }
+    } catch {
+      mostrarNotificacion('Error de conexión');
+    }
+  };
   // Devuelve estudiantes inscritos, pagados y aceptados por el admin para un curso
   const getEstudiantesInscritosPagadosAceptados = (cursoId) => {
     return inscripciones
@@ -2143,6 +2162,30 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                     </button>
                   </div>
                 </td>
+                <td>
+  <div style={{ display: 'flex', gap: '8px' }}>
+    <button 
+      className="btn-edit"
+      onClick={() => {
+        const nuevaDescripcion = prompt(`Editar descripción del curso "${curso.nombre}":`, curso.descripcion || '');
+        if (nuevaDescripcion !== null) {
+          actualizarCurso(curso.id, 'descripcion', nuevaDescripcion);
+        }
+      }}
+      title="Editar descripción"
+    >
+      Desc
+    </button>
+    <button
+      className="btn-edit"
+      onClick={() => eliminarCurso(curso.id)}
+      title="Eliminar curso"
+      style={{ backgroundColor: '#dc3545', color: 'white', borderRadius: '6px', padding: '7px 14px', fontWeight: 'bold', fontSize: '15px', border: 'none' }}
+    >
+      🗑️ Eliminar
+    </button>
+  </div>
+</td>
               </tr>
             ))}
           </tbody>
