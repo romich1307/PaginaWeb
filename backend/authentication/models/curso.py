@@ -13,7 +13,7 @@ class Curso(models.Model):
     precio = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Precio")
     duracion_semanas = models.PositiveIntegerField(verbose_name="Duración en Semanas")
     nivel = models.CharField(max_length=20, choices=NIVEL_CHOICES, verbose_name="Nivel")
-    imagen_url = models.URLField(blank=True, null=True, verbose_name="URL de Imagen")
+    imagen = models.ImageField(upload_to='cursos/', blank=True, null=True, verbose_name="Imagen del Curso")
     contenido = models.JSONField(default=list, verbose_name="Contenido del Curso")
     
     # Información adicional para cursos presenciales
