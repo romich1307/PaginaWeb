@@ -2146,22 +2146,8 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                     <option value={false}>Inactivo</option>
                   </select>
                 </td>
-                <td>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      className="btn-edit"
-                      onClick={() => {
-                        const nuevaDescripcion = prompt(`Editar descripción del curso "${curso.nombre}":`, curso.descripcion || '');
-                        if (nuevaDescripcion !== null) {
-                          actualizarCurso(curso.id, 'descripcion', nuevaDescripcion);
-                        }
-                      }}
-                      title="Editar descripción"
-                    >
-                      Desc
-                    </button>
-                  </div>
-                </td>
+         
+                {/* ...el bloque correcto de acciones ya está abajo... */}
                 <td>
   <div style={{ display: 'flex', gap: '8px' }}>
     <button 
