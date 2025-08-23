@@ -107,6 +107,8 @@ class PreguntaAdmin(admin.ModelAdmin):
     inlines = [OpcionRespuestaInline]
     
     def texto_pregunta_corto(self, obj):
+        if not hasattr(obj, 'texto_pregunta') or obj.texto_pregunta is None:
+            return "(Sin texto)"
         return obj.texto_pregunta[:50] + "..." if len(obj.texto_pregunta) > 50 else obj.texto_pregunta
     texto_pregunta_corto.short_description = "Pregunta"
 
@@ -176,7 +178,14 @@ class IntentarExamenAdmin(admin.ModelAdmin):
     readonly_fields = ['fecha_inicio', 'tiempo_utilizado', 'respuestas']
     
     def get_tipo_examen(self, obj):
-        return "Teórico" if obj.examen.tipo == 'teorico' else "Práctico"
+        if not hasattr(obj, 'examen') or obj.examen is None:
+            return "(Sin examen)"
+        tipo = getattr(obj.examen, 'tipo', None)
+        if tipo == 'teorico':
+            return "Teórico"
+        elif tipo == 'practico':
+            return "Práctico"
+        return "(Tipo desconocido)"
     get_tipo_examen.short_description = 'Tipo de Examen'
     
     # Filtrar por tipo de examen

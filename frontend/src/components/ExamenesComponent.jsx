@@ -13,7 +13,7 @@ function ExamenesComponent({ cursoId, cursoNombre }) {
   const [tiempoRestante, setTiempoRestante] = useState(0);
   const [intentoId, setIntentoId] = useState(null);
 
-  const API_BASE_URL = 'http://localhost:8000/api';
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   // Función para hacer peticiones autenticadas
   const fetchWithAuth = async (url, options = {}) => {
