@@ -989,53 +989,27 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
   };
 
   // Mostrar loading mientras se verifica la autenticación
-  if (isLoading) {
-    return (
-      <div className="admin-panel">
-        <div className="admin-header">
-          <h1>Verificando autenticación...</h1>
-        </div>
-      </div>
-    );
-  }
 
-  if (loading) {
-    return (
-      <div className="admin-panel">
-        <div className="admin-header">
-          <h1>Cargando panel de administración...</h1>
+  // Render principal con tabs y contenido completo
+  return (
+    <div className="admin-panel-container">
+      <div className="admin-header">
+        <h1>Panel de Administración</h1>
+        <div className="admin-tabs">
+          <button className={activeTab === 'estudiantes' ? 'active' : ''} onClick={() => setActiveTab('estudiantes')}>Estudiantes</button>
+          <button className={activeTab === 'inscripciones' ? 'active' : ''} onClick={() => setActiveTab('inscripciones')}>Inscripciones</button>
+          <button className={activeTab === 'cursos' ? 'active' : ''} onClick={() => setActiveTab('cursos')}>Cursos</button>
+          <button className={activeTab === 'examenes' ? 'active' : ''} onClick={() => setActiveTab('examenes')}>Exámenes</button>
         </div>
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="admin-panel">
-        <div className="admin-header">
-          <h1>Panel de Administración</h1>
-          <div className="error-message" style={{color: 'red', padding: '20px', textAlign: 'center'}}>
-            {error}
-            <br />
-            <div style={{marginTop: '15px'}}>
-              <button 
-                onClick={loadData} 
-                style={{marginRight: '10px', padding: '8px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
-              >
-                Reintentar
-              </button>
-              <button 
-                onClick={() => window.location.href = '/login'} 
-                style={{padding: '8px 15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
-              >
-                Ir a Login
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="admin-content">
+        {activeTab === 'estudiantes' && renderEstudiantes()}
+        {activeTab === 'inscripciones' && renderInscripciones && renderInscripciones()}
+        {activeTab === 'cursos' && renderCursos && renderCursos()}
+        {activeTab === 'examenes' && renderExamenes && renderExamenes()}
       </div>
-    );
-  }
+    </div>
+  );
 
   const renderEstudiantes = () => {
     const elementosPorPagina = 10;
