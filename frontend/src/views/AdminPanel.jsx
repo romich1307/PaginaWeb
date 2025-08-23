@@ -1,4 +1,4 @@
-  // Helper para construir la URL completa de la imagen de la pregunta
+// Helper para construir la URL completa de la imagen de la pregunta
   const getImagenUrl = (img) => {
     if (!img) return null;
     if (img.startsWith('http')) return img;
@@ -1868,6 +1868,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 </td>
                 <td>
                   <input
+
                     type="date"
                     value={inscripcion.fecha_examen_teorico || ''}
                     onChange={(e) => actualizarFechaInscripcion(inscripcion.id, 'fecha_examen_teorico', e.target.value)}
@@ -2922,150 +2923,90 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
         </div>
       )}
 
-    </div>
-  );
-
-  return (
-    <div className="admin-panel">
-      <div className="admin-header">
-        <div className="logo-section">
-          <img src="/LogoPagina.png" alt="CertifiKT" className="admin-logo" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-          <h1>Panel de Administración</h1>
-        </div>
-        <button 
-          onClick={() => {
-            logout();
-            window.location.href = '/login';
-          }}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          Cerrar Sesión
-        </button>
-      </div>
-
-      <div className="admin-tabs">
-        <button 
-          className={`tab-button ${activeTab === 'estudiantes' ? 'active' : ''}`}
-          onClick={() => setActiveTab('estudiantes')}
-        >
-          Estudiantes
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'inscripciones' ? 'active' : ''}`}
-          onClick={() => setActiveTab('inscripciones')}
-        >
-          Inscripciones y Pagos
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'cursos' ? 'active' : ''}`}
-          onClick={() => setActiveTab('cursos')}
-        >
-          Gestión de Cursos
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'examenes' ? 'active' : ''}`}
-          onClick={() => setActiveTab('examenes')}
-        >
-          Exámenes
-        </button>
-      </div>
-
-      <div className="admin-content">
-        {activeTab === 'estudiantes' && renderEstudiantes()}
-        {activeTab === 'inscripciones' && renderInscripciones()}
-        {activeTab === 'cursos' && renderCursos()}
-        {activeTab === 'examenes' && renderExamenes()}
-      </div>
-
       {/* Modal/tarjeta de estudiantes */}
-      {modalListaEstudiantes.abierto && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>
-          <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', padding: '32px', minWidth: '350px', maxWidth: '90vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <h2 style={{ marginBottom: '18px', textAlign: 'center', color: '#007bff' }}>
-              {modalListaEstudiantes.examenId ? 'Notas de Estudiantes en el Examen' : 'Estudiantes inscritos'}
-            </h2>
-            {modalListaEstudiantes.examenId ? (
-              <table className="admin-table" style={{ marginBottom: '18px' }}>
+      {modalListaEstudiantes.abierto && modalListaEstudiantes.estudiantes && (
+        <div className="modal-overlay" onClick={() => setModalListaEstudiantes({ abierto: false, estudiantes: [], examenId: null })}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Notas de Estudiantes</h3>
+              <button className="modal-close" onClick={() => setModalListaEstudiantes({ abierto: false, estudiantes: [], examenId: null })}>×</button>
+            </div>
+            <div className="modal-body">
+              <table className="admin-table">
                 <thead>
                   <tr>
                     <th>Nombre</th>
                     <th>Email</th>
                     <th>DNI</th>
-                    <th>Nota</th>
+                    <th>Puntaje</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {modalListaEstudiantes.estudiantes.length === 0 ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', color: '#6c757d' }}>No hay estudiantes con intentos en este examen.</td></tr>
-                  ) : (
-                    modalListaEstudiantes.estudiantes.map(est => (
-                      est.intentos.map((intento, idx) => (
-                        <tr key={est.id + '-' + idx}>
-                          <td>{est.nombre}</td>
-                          <td>{est.email}</td>
-                          <td>{est.dni}</td>
-                          <td>{intento.puntaje_obtenido !== null && intento.puntaje_obtenido !== undefined ? intento.puntaje_obtenido : '-'}</td>
-                          <td>{intento.aprobado ? <span style={{ color: 'green', fontWeight: 'bold' }}>Aprobado</span> : <span style={{ color: 'red', fontWeight: 'bold' }}>Reprobado</span>}</td>
-                        </tr>
-                      ))
+                  {modalListaEstudiantes.estudiantes.map(est => (
+                    est.intentos.map(intento => (
+                      <tr key={intento.id}>
+                        <td>{est.nombre}</td>
+                        <td>{est.email}</td>
+                        <td>{est.dni}</td>
+                        <td>{typeof intento.puntaje_obtenido === 'number' ? `${intento.puntaje_obtenido.toFixed(1)}%` : '-'}</td>
+                        <td>{intento.aprobado ? 'Aprobado' : 'No aprobado'}</td>
+                        <td>
+                          <button
+                            className="btn-details"
+                            onClick={() => verDetalleRespuestasAlumno(intento.id, est)}
+                            style={{ padding: '6px 12px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                          >
+                            Ver detalle de respuestas
+                          </button>
+                        </td>
+                      </tr>
                     ))
-                  )}
+                  ))}
                 </tbody>
               </table>
-            ) : (
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                {modalListaEstudiantes.estudiantes.map(est => (
-                  <li key={est.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      {/* Estado actual de aprobación */}
-                      {typeof est.aceptado_admin !== 'undefined' && (
-                        <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
-                          {est.aceptado_admin === true && <span style={{ color: 'green' }}>Aprobado</span>}
-                          {est.aceptado_admin === false && <span style={{ color: 'red' }}>Desaprobado</span>}
-                          {(est.aceptado_admin === null || est.aceptado_admin === undefined) && <span style={{ color: 'orange' }}>Pendiente</span>}
-                        </span>
-                      )}
-                      <button
-                        style={{ padding: '6px 14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                        onClick={async () => {
-                          await aprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                          setModalListaEstudiantes(prev => ({
-                            ...prev,
-                            estudiantes: prev.estudiantes.map(e =>
-                              e.id === est.id ? { ...e, aceptado_admin: true } : e
-                            )
-                          }));
-                        }}
-                      >Aprobar</button>
-                      <button
-                        style={{ padding: '6px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                        onClick={async () => {
-                          await desaprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                          setModalListaEstudiantes(prev => ({
-                            ...prev,
-                            estudiantes: prev.estudiantes.map(e =>
-                              e.id === est.id ? { ...e, aceptado_admin: false } : e
-                            )
-                          }));
-                        }}
-                      >Desaprobar</button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div style={{ textAlign: 'center', marginTop: '18px' }}>
-              <button style={{ padding: '8px 22px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para mostrar detalle de respuestas */}
+      {modalDetalleRespuestas.abierto && modalDetalleRespuestas.detalle && (
+        <div className="modal-overlay" onClick={() => setModalDetalleRespuestas({ abierto: false, detalle: null, alumno: null })}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Detalle de Respuestas</h3>
+              <button className="modal-close" onClick={() => setModalDetalleRespuestas({ abierto: false, detalle: null, alumno: null })}>×</button>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: '10px', fontWeight: 'bold', color: '#007bff' }}>
+                Alumno: {modalDetalleRespuestas.alumno?.nombre} | Email: {modalDetalleRespuestas.alumno?.email}
+              </div>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Pregunta</th>
+                    <th>Respuesta Correcta</th>
+                    <th>Respuesta Alumno</th>
+                    <th>¿Correcta?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {modalDetalleRespuestas.detalle.detalle_preguntas.map((preg, idx) => (
+                    <tr key={preg.id}>
+                      <td>{idx + 1}</td>
+                      <td>{preg.texto_pregunta}</td>
+                      <td>{preg.opciones.find(o => o.id === preg.respuesta_correcta)?.texto_opcion || preg.respuesta_correcta}</td>
+                      <td>{preg.opciones.find(o => o.id === preg.respuesta_alumno)?.texto_opcion || preg.respuesta_alumno}</td>
+                      <td>
+                        {preg.fue_correcta ? <span style={{ color: 'green', fontWeight: 'bold' }}>✔</span> : <span style={{ color: 'red', fontWeight: 'bold' }}>✘</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
