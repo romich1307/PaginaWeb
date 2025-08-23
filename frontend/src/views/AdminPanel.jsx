@@ -2254,7 +2254,16 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                           {examen.tipo === 'teorico' ? ' Teórico' : ' Práctico'}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'center' }}>{examen.duracion_minutos} min</td>
+                      <td style={{ textAlign: 'center' }}>
+                      <input
+                        type="number"
+                        min={1}
+                        value={examen.duracion_minutos}
+                        onChange={e => actualizarExamen(examen.id, 'duracion_minutos', parseInt(e.target.value))}
+                        style={{ width: '60px', textAlign: 'center', fontWeight: 'bold' }}
+                        title="Duración del examen en minutos"
+                      /> min
+                    </td>
                       <td style={{ textAlign: 'center' }}>
                         <input
                           type="number"
