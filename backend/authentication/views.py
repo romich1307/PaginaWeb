@@ -1271,9 +1271,18 @@ def enviar_respuestas_examen(request, intento_id):
                     respuestas_correctas += 1
 
                 elif pregunta.tipo in ['completar', 'abierta', 'texto']:
-                    # Corrección automática para preguntas abiertas/completar
-                    respuesta_correcta = (pregunta.respuesta_correcta or '').strip().lower()
-                    respuesta_usuario_normalizada = (str(respuesta_usuario).strip().lower())
+                    # Corrección automática robusta para preguntas abiertas/completar
+                    import unicodedata
+                    def normalizar(texto):
+                        if not texto:
+                            return ''
+                        texto = str(texto).strip().lower()
+                        texto = unicodedata.normalize('NFD', texto)
+                        texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+                        texto = ' '.join(texto.split())
+                        return texto
+                    respuesta_correcta = normalizar(pregunta.respuesta_correcta)
+                    respuesta_usuario_normalizada = normalizar(respuesta_usuario)
                     if respuesta_correcta and respuesta_usuario_normalizada == respuesta_correcta:
                         puntaje_total += float(pregunta.puntaje)
                         respuestas_correctas += 1
