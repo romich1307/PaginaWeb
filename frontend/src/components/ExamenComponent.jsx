@@ -134,6 +134,7 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
 
   const finalizarExamen = async () => {
     if (!intentoActual) return;
+    console.log('Respuestas enviadas al backend:', respuestas);
 
     try {
       const response = await fetchWithAuth(`${API_BASE_URL}/intentos/${intentoActual.id}/enviar/`, {

@@ -1244,7 +1244,11 @@ def enviar_respuestas_examen(request, intento_id):
             puntaje_maximo += float(pregunta.puntaje)
             
             respuesta_usuario = respuestas.get(str(pregunta.id), '')
-            
+                # DEBUG: Log respuesta recibida y respuesta correcta
+            import logging
+            logger = logging.getLogger('examen_debug')
+            if pregunta.tipo in ['completar', 'abierta', 'texto']:
+                logger.warning(f"Pregunta {pregunta.id}: usuario='{respuesta_usuario}', correcta='{pregunta.respuesta_correcta}'")
             if pregunta.tipo == 'multiple':
                 # Verificar respuesta de opción múltiple
                 try:
