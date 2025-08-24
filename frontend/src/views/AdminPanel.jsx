@@ -2415,21 +2415,16 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                                     // Filtrar solo los estudiantes que tengan intentos en este examen
                                     const estudiantesConNotas = data.usuarios
                                       .map(usuario => {
-                                        const intentos = usuario.intentos_examenes.filter(
-                                          intento => intento.examen.id === examen.id && intento.examen.tipo === 'teorico'
+                                        const intentoTeorico = usuario.intentos_examenes?.find(
+                                          intento => intento.examen_id === examen.id && intento.tipo === 'teorico'
                                         );
-                                        if (intentos.length > 0) {
-                                          return {
-                                            id: usuario.id,
-                                            nombre: `${usuario.nombres} ${usuario.apellidos}`.trim(),
-                                            email: usuario.email,
-                                            dni: usuario.dni,
-                                            intentos: intentos
-                                          };
-                                        }
-                                        return null;
-                                      })
-                                      .filter(e => e !== null);
+                                        return {
+                                          id: usuario.id,
+                                          nombre: `${usuario.nombres} ${usuario.apellidos}`.trim(),
+                                          puntaje_obtenido: intentoTeorico?.puntaje_obtenido
+                                        };
+                                      });
+                                    setModalListaEstudiantes({ abierto: true, estudiantes: estudiantesConNotas, examenId: examen.id });
                                     setModalListaEstudiantes({ abierto: true, estudiantes: estudiantesConNotas, examenId: examen.id });
                                   } else {
                                     setError('Error al obtener la lista de estudiantes y notas');
