@@ -2966,12 +2966,27 @@ const renderEstudiantes = () => {
     </div>
   );
 
+  
+  // Render principal con tabs y contenido completo
+  return (
+    <div className="admin-panel-container">
+      <div className="admin-header">
+        <h1>Panel de Administración</h1>
+        <div className="admin-tabs">
+          <button className={activeTab === 'estudiantes' ? 'active' : ''} onClick={() => setActiveTab('estudiantes')}>Estudiantes</button>
+          <button className={activeTab === 'inscripciones' ? 'active' : ''} onClick={() => setActiveTab('inscripciones')}>Inscripciones</button>
+          <button className={activeTab === 'cursos' ? 'active' : ''} onClick={() => setActiveTab('cursos')}>Cursos</button>
+          <button className={activeTab === 'examenes' ? 'active' : ''} onClick={() => setActiveTab('examenes')}>Exámenes</button>
+        </div>
+      </div>
       <div className="admin-content">
         {activeTab === 'estudiantes' && renderEstudiantes()}
-        {activeTab === 'inscripciones' && renderInscripciones()}
-        {activeTab === 'cursos' && renderCursos()}
-        {activeTab === 'examenes' && renderExamenes() && renderExamenes()}
+        {activeTab === 'inscripciones' && renderInscripciones && renderInscripciones()}
+        {activeTab === 'cursos' && renderCursos && renderCursos()}
+        {activeTab === 'examenes' && renderExamenes  && renderExamenes()}
       </div>
+      </div>
+  )
 }
 
 export default AdminPanel;
