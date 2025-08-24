@@ -134,15 +134,30 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
 
   const finalizarExamen = async () => {
     if (!intentoActual) return;
-    console.log('Respuestas enviadas al backend:', respuestas);
-
+    // Normalizar respuestas de texto/completar/abierta antes de enviar
+    const normalizar = (texto) => {
+      if (!texto) return '';
+      texto = String(texto).trim().toLowerCase();
+      texto = texto.normalize('NFD').replace(/\u0300-\u036f/g, '');
+      texto = texto.replace(/\s+/g, ' ');
+      return texto;
+    };
+    const respuestasNormalizadas = {};
+    preguntas.forEach(pregunta => {
+      if (["texto", "completar", "abierta"].includes(pregunta.tipo)) {
+        respuestasNormalizadas[pregunta.id] = normalizar(respuestas[pregunta.id]);
+      } else {
+        respuestasNormalizadas[pregunta.id] = respuestas[pregunta.id];
+      }
+    });
+    console.log('Respuestas enviadas al backend (normalizadas):', respuestasNormalizadas);
     try {
       const response = await fetchWithAuth(`${API_BASE_URL}/intentos/${intentoActual.id}/enviar/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ respuestas })
+        body: JSON.stringify({ respuestas: respuestasNormalizadas })
       });
 
       if (response.ok) {
