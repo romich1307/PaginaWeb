@@ -492,12 +492,17 @@ def admin_preguntas(request):
                 activo=True
             )
         # Crear pregunta
+        # Calcular el siguiente orden disponible para el examen
+        orden_existentes = set(Pregunta.objects.filter(examen=examen).values_list('orden', flat=True))
+        nuevo_orden = 1
+        while nuevo_orden in orden_existentes:
+            nuevo_orden += 1
         pregunta = Pregunta.objects.create(
             examen=examen,
             texto_pregunta=texto,
             tipo=tipo,
             puntaje=1.0,
-            orden=Pregunta.objects.filter(examen=examen).count() + 1,
+            orden=nuevo_orden,
             activo=True,
             imagen_pregunta=imagen_pregunta,
             respuesta_correcta=respuesta_correcta if tipo == 'texto' else None
@@ -551,7 +556,7 @@ def admin_pregunta_detalle(request, pregunta_id):
     """
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
-        return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
     
     from .models import Pregunta
     
