@@ -43,7 +43,7 @@ class CursoAdmin(admin.ModelAdmin):
             'fields': ('nombre', 'descripcion', 'nivel', 'precio', 'duracion_semanas')
         }),
         ('Contenido', {
-            'fields': ('contenido', 'imagen_url')
+            'fields': ('contenido',)  # imagen_url eliminado
         }),
         ('Información del Curso', {
             'fields': ('ubicacion', 'horario', 'instructor')

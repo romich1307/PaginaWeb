@@ -95,6 +95,9 @@ class Pregunta(models.Model):
     
     # Para preguntas con imagen
     imagen_pregunta = models.ImageField(upload_to='preguntas/', blank=True, null=True, verbose_name="Imagen de la Pregunta")
+
+    # Para preguntas de completar (texto libre)
+    respuesta_correcta = models.TextField(blank=True, null=True, verbose_name="Respuesta Correcta (solo para preguntas de texto)")
     
     class Meta:
         verbose_name = "Pregunta"

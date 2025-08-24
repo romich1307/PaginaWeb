@@ -463,21 +463,22 @@ def admin_preguntas(request):
         data = request.POST
         files = request.FILES
         curso_id = data.get('curso_id')
-        texto = data.get('texto')
-        opcion_a = data.get('opcion_a', '')
-        opcion_b = data.get('opcion_b', '')
-        opcion_c = data.get('opcion_c', '')
-        opcion_d = data.get('opcion_d', '')
-        respuesta_correcta = data.get('respuesta_correcta', '')
-        imagen_pregunta = files.get('imagen_pregunta', None)
+    texto = data.get('texto')
+    tipo = data.get('tipo', 'multiple')
+    opcion_a = data.get('opcion_a', '')
+    opcion_b = data.get('opcion_b', '')
+    opcion_c = data.get('opcion_c', '')
+    opcion_d = data.get('opcion_d', '')
+    respuesta_correcta = data.get('respuesta_correcta', '')
+    imagen_pregunta = files.get('imagen_pregunta', None)
         # Buscar examen teórico del curso
-        from .models import Curso
-        try:
+    from .models import Curso
+    try:
             curso = Curso.objects.get(id=curso_id)
-        except Curso.DoesNotExist:
+    except Curso.DoesNotExist:
             return Response({'error': 'Curso no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
-        examen = Examen.objects.filter(curso=curso, tipo='teorico').first()
-        if not examen:
+    examen = Examen.objects.filter(curso=curso, tipo='teorico').first()
+    if not examen:
             # Crear examen teórico automáticamente si no existe
             examen = Examen.objects.create(
                 curso=curso,
@@ -490,28 +491,30 @@ def admin_preguntas(request):
                 activo=True
             )
         # Crear pregunta
-        pregunta = Pregunta.objects.create(
+    pregunta = Pregunta.objects.create(
             examen=examen,
             texto_pregunta=texto,
-            tipo='multiple',
+            tipo=tipo,
             puntaje=1.0,
             orden=Pregunta.objects.filter(examen=examen).count() + 1,
             activo=True,
-            imagen_pregunta=imagen_pregunta
+            imagen_pregunta=imagen_pregunta,
+            respuesta_correcta=respuesta_correcta if tipo == 'texto' else None
         )
-        # Crear opciones de respuesta
-        from .models import OpcionRespuesta
-        opciones = [opcion_a, opcion_b, opcion_c, opcion_d]
-        letras = ['A', 'B', 'C', 'D']
-        for idx, texto_opcion in enumerate(opciones):
-            if texto_opcion:
-                OpcionRespuesta.objects.create(
-                    pregunta=pregunta,
-                    texto_opcion=texto_opcion,
-                    es_correcta=(letras[idx] == respuesta_correcta),
-                    orden=idx+1
-                )
-        return Response({'message': 'Pregunta creada correctamente', 'id': pregunta.id}, status=status.HTTP_201_CREATED)
+        # Solo crear opciones si la pregunta es de opción múltiple o verdadero/falso
+    if tipo in ['multiple', 'verdadero_falso']:
+            from .models import OpcionRespuesta
+            opciones = [opcion_a, opcion_b, opcion_c, opcion_d]
+            letras = ['A', 'B', 'C', 'D']
+            for idx, texto_opcion in enumerate(opciones):
+                if texto_opcion:
+                    OpcionRespuesta.objects.create(
+                        pregunta=pregunta,
+                        texto_opcion=texto_opcion,
+                        es_correcta=(letras[idx] == respuesta_correcta),
+                        orden=idx+1
+                    )
+    return Response({'message': 'Pregunta creada correctamente', 'id': pregunta.id}, status=status.HTTP_201_CREATED)
 
     # GET: Listar preguntas
     preguntas = Pregunta.objects.select_related('examen').all().order_by('-id')
@@ -557,15 +560,21 @@ def admin_pregunta_detalle(request, pregunta_id):
     if request.method == 'GET':
         data = {
             'id': pregunta.id,
-            'texto': pregunta.texto_pregunta,  # Usar 'texto_pregunta'
-            'opcion_a': getattr(pregunta, 'opcion_a', ''),
-            'opcion_b': getattr(pregunta, 'opcion_b', ''),
-            'opcion_c': getattr(pregunta, 'opcion_c', ''),
-            'opcion_d': getattr(pregunta, 'opcion_d', ''),
-            'respuesta_correcta': getattr(pregunta, 'respuesta_correcta', ''),
+            'texto': pregunta.texto_pregunta,
+            'tipo': pregunta.tipo,
+            'opcion_a': '',
+            'opcion_b': '',
+            'opcion_c': '',
+            'opcion_d': '',
+            'respuesta_correcta': pregunta.respuesta_correcta,
             'examen_id': pregunta.examen.id if pregunta.examen else None,
             'activo': pregunta.activo,
         }
+        # Si la pregunta es de opción múltiple, incluir opciones
+        if pregunta.tipo == 'multiple':
+            opciones = pregunta.opciones.all().order_by('orden')
+            for idx, opcion in enumerate(opciones):
+                data[f'opcion_{chr(97+idx)}'] = opcion.texto_opcion
         return Response(data, status=status.HTTP_200_OK)
     
     elif request.method == 'PATCH':
@@ -1252,6 +1261,14 @@ def enviar_respuestas_examen(request, intento_id):
                 if opcion_correcta and respuesta_usuario.lower() == opcion_correcta.texto_opcion.lower():
                     puntaje_total += float(pregunta.puntaje)
                     respuestas_correctas += 1
+
+                elif pregunta.tipo in ['completar', 'abierta', 'texto']:
+                    # Corrección automática para preguntas abiertas/completar
+                    respuesta_correcta = (pregunta.respuesta_correcta or '').strip().lower()
+                    respuesta_usuario_normalizada = (str(respuesta_usuario).strip().lower())
+                    if respuesta_correcta and respuesta_usuario_normalizada == respuesta_correcta:
+                        puntaje_total += float(pregunta.puntaje)
+                        respuestas_correctas += 1
         
         # Calcular porcentaje
         porcentaje = (puntaje_total / puntaje_maximo * 100) if puntaje_maximo > 0 else 0

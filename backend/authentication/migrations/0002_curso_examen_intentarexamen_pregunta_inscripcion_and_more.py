@@ -22,7 +22,6 @@ class Migration(migrations.Migration):
                 ('precio', models.DecimalField(decimal_places=2, max_digits=8, verbose_name='Precio')),
                 ('duracion_semanas', models.PositiveIntegerField(verbose_name='Duración en Semanas')),
                 ('nivel', models.CharField(choices=[('principiante', 'Principiante'), ('intermedio', 'Intermedio'), ('avanzado', 'Avanzado')], max_length=20, verbose_name='Nivel')),
-                ('imagen_url', models.URLField(blank=True, null=True, verbose_name='URL de Imagen')),
                 ('contenido', models.JSONField(default=list, verbose_name='Contenido del Curso')),
                 ('ubicacion', models.CharField(default='Centro de Capacitación TechPro', max_length=200, verbose_name='Ubicación')),
                 ('horario', models.CharField(default='Lunes a Viernes 7:00 PM - 9:00 PM', max_length=100, verbose_name='Horario')),
