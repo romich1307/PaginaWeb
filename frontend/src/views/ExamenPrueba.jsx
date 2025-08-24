@@ -20,7 +20,7 @@ const ExamenPrueba = () => {
     nombre: "Examen de Líquidos Penetrantes - PRUEBA",
     duracion: 30, // 30 minutos
     totalPreguntas: 10,
-    preguntas: [
+  preguntas: [
       {
         id: 1,
         texto: "¿Cuál es el propósito principal de los líquidos penetrantes?",
@@ -130,6 +130,12 @@ const ExamenPrueba = () => {
           { id: 'd', texto: "ASME VIII" }
         ],
         respuesta_correcta: 'a'
+      },
+      {
+        id: 11,
+        texto: "Escribe el nombre del proceso que utiliza líquidos para detectar discontinuidades superficiales.",
+        tipo: "texto",
+        respuesta_correcta: "liquidos penetrantes"
       }
     ]
   };
