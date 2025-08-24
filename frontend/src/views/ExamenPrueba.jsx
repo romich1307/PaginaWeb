@@ -1,3 +1,15 @@
+  // Función para iniciar el examen
+  const iniciarExamen = () => {
+    if (intentoUsado) return; // Prevenir inicio si ya se usó el intento
+    setExamenIniciado(true);
+    setTiempoRestante(examenDatos.duracion * 60); // Convertir minutos a segundos
+    setPreguntaActual(0);
+    setRespuestas({});
+    setExamenTerminado(false);
+    setResultado(null);
+    // Si tienes lógica para convertir preguntas a imágenes, puedes llamarla aquí
+    // convertirPreguntasAImagenes();
+  };
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import './ExamenPrueba.css';
