@@ -383,9 +383,8 @@ const ExamenPrueba = () => {
     const normalizar = (texto) => {
       if (!texto) return '';
       texto = String(texto).trim().toLowerCase();
-      texto = texto.normalize('NFD').replace(/[ 0--]/g, '');
-      texto = texto.replace(/\s+/g, ' ');
-      texto = texto.replace(/\p{Diacritic}/gu, '');
+  texto = texto.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Quitar tildes
+  texto = texto.replace(/\s+/g, ' ');
       return texto;
     };
     examenDatos.preguntas.forEach(pregunta => {
