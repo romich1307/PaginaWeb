@@ -3017,25 +3017,47 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                         <button
                           style={{ padding: '6px 14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
                           onClick={async () => {
-                            await aprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                            setModalListaEstudiantes(prev => ({
-                              ...prev,
-                              estudiantes: prev.estudiantes.map(e =>
-                                e.id === est.id ? { ...e, aceptado_admin: true } : e
-                              )
-                            }));
+                            try {
+                              const insc = inscripciones.find(
+                                i => i.usuario_info?.id === est.id && i.curso_info?.id === modalListaEstudiantes.cursoId
+                              );
+                              if (!insc) return;
+                              await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/${insc.id}/`, {
+                                method: 'PUT',
+                                body: JSON.stringify({ aceptado_admin: true })
+                              });
+                              setModalListaEstudiantes(prev => ({
+                                ...prev,
+                                estudiantes: prev.estudiantes.map(e =>
+                                  e.id === est.id ? { ...e, aceptado_admin: true } : e
+                                )
+                              }));
+                            } catch (err) {
+                              mostrarNotificacion('Error al aprobar estudiante');
+                            }
                           }}
                         >Aprobar</button>
                         <button
                           style={{ padding: '6px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
                           onClick={async () => {
-                            await desaprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                            setModalListaEstudiantes(prev => ({
-                              ...prev,
-                              estudiantes: prev.estudiantes.map(e =>
-                                e.id === est.id ? { ...e, aceptado_admin: false } : e
-                              )
-                            }));
+                            try {
+                              const insc = inscripciones.find(
+                                i => i.usuario_info?.id === est.id && i.curso_info?.id === modalListaEstudiantes.cursoId
+                              );
+                              if (!insc) return;
+                              await fetchWithAuth(`${API_BASE_URL}/admin/inscripciones/${insc.id}/`, {
+                                method: 'PUT',
+                                body: JSON.stringify({ aceptado_admin: false })
+                              });
+                              setModalListaEstudiantes(prev => ({
+                                ...prev,
+                                estudiantes: prev.estudiantes.map(e =>
+                                  e.id === est.id ? { ...e, aceptado_admin: false } : e
+                                )
+                              }));
+                            } catch (err) {
+                              mostrarNotificacion('Error al desaprobar estudiante');
+                            }
                           }}
                         >Desaprobar</button>
                       </div>
