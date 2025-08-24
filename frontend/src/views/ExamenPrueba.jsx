@@ -576,7 +576,6 @@ const ExamenPrueba = () => {
         <div className="pregunta-numero">
           Pregunta {preguntaActual + 1}
         </div>
-        
         {imagenesGenerandose ? (
           <div className="cargando-imagen-container">
             <div className="spinner"></div>
@@ -591,12 +590,23 @@ const ExamenPrueba = () => {
               <span className="progreso-texto">{progresoConversion}%</span>
             </div>
           </div>
+        ) : pregunta.tipo === 'texto' || pregunta.tipo === 'completar' || pregunta.tipo === 'abierta' ? (
+          <>
+            <h3 className="pregunta-texto">{pregunta.texto}</h3>
+            <textarea
+              value={respuestas[pregunta.id] || ''}
+              onChange={e => setRespuestas(prev => ({ ...prev, [pregunta.id]: e.target.value }))}
+              placeholder="Escribe tu respuesta aquí..."
+              rows={4}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '2px solid #2DAAE1', fontSize: '16px', resize: 'vertical', marginTop: '18px' }}
+            />
+          </>
         ) : preguntasComoImagenes[pregunta.id] ? (
           <div className="opciones-interactivas">
             <h3 className="pregunta-texto-protegida">{pregunta.texto}</h3>
             <h4>Selecciona tu respuesta:</h4>
             <div className="opciones-simples">
-              {pregunta.opciones.map(opcion => (
+              {pregunta.opciones && pregunta.opciones.map(opcion => (
                 <button 
                   key={opcion.id}
                   className={`opcion-btn ${respuestas[pregunta.id] === opcion.id ? 'seleccionada' : ''}`}
@@ -607,8 +617,7 @@ const ExamenPrueba = () => {
                 </button>
               ))}
             </div>
-            
-            {respuestas[pregunta.id] && (
+            {respuestas[pregunta.id] && pregunta.opciones && (
               <div className="respuesta-seleccionada">
                 <span>Respuesta seleccionada: </span>
                 <strong>{respuestas[pregunta.id].toUpperCase()}) {pregunta.opciones.find(opt => opt.id === respuestas[pregunta.id])?.texto}</strong>
@@ -618,9 +627,8 @@ const ExamenPrueba = () => {
         ) : (
           <>
             <h3 className="pregunta-texto">{pregunta.texto}</h3>
-            
             <div className="opciones-container">
-              {pregunta.opciones.map(opcion => (
+              {pregunta.opciones && pregunta.opciones.map(opcion => (
                 <div 
                   key={opcion.id}
                   className={`opcion ${respuestas[pregunta.id] === opcion.id ? 'seleccionada' : ''}`}
