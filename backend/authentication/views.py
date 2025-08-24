@@ -1584,7 +1584,7 @@ def lista_usuarios_examenes(request):
         
         for usuario in usuarios:
             # Obtener cursos en los que está inscrito
-            inscripciones = Inscripcion.objects.filter(usuario=usuario, activa=True)
+            inscripciones = Inscripcion.objects.filter(usuario=usuario, estado_pago='verificado', aceptado_admin=True)
             cursos_inscritos = [inscripcion.curso for inscripcion in inscripciones]
             
             # Obtener intentos de examen del usuario
