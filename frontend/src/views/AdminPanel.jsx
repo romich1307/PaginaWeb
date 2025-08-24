@@ -2415,6 +2415,12 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                                     // Filtrar solo los estudiantes que tengan intentos en este examen
                                     const estudiantesConNotas = data.usuarios
                                       .map(usuario => {
+                                        // Solo mostrar estudiantes inscritos en el curso actual
+                                        const inscripcion = inscripciones.find(
+                                          insc => insc.usuario_info?.id === usuario.id && insc.curso_info?.id === curso.id && insc.estado_pago === 'verificado'
+                                        );
+                                        if (!inscripcion) return null;
+                                        // Buscar intento teórico para este examen
                                         const intentoTeorico = usuario.intentos_examenes?.find(
                                           intento => intento.examen_id === examen.id && intento.tipo === 'teorico'
                                         );
@@ -2423,8 +2429,8 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                                           nombre: `${usuario.nombres} ${usuario.apellidos}`.trim(),
                                           puntaje_obtenido: intentoTeorico?.puntaje_obtenido
                                         };
-                                      });
-                                    setModalListaEstudiantes({ abierto: true, estudiantes: estudiantesConNotas, examenId: examen.id });
+                                      })
+                                      .filter(e => e !== null);
                                     setModalListaEstudiantes({ abierto: true, estudiantes: estudiantesConNotas, examenId: examen.id });
                                   } else {
                                     setError('Error al obtener la lista de estudiantes y notas');
@@ -2987,19 +2993,16 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
           <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', padding: '32px', minWidth: '350px', maxWidth: '90vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <h2 style={{ marginBottom: '18px', textAlign: 'center', color: '#007bff' }}>Estudiantes inscritos</h2>
             <ul style={{ listStyle: 'none', padding: 0 }}>
-              {modalListaEstudiantes.estudiantes.map(est => (
-                modalListaEstudiantes.examenId
-                  ? (
-                    // Modal de notas de estudiantes (examen teórico)
+              {modalListaEstudiantes.examenId
+                ? modalListaEstudiantes.estudiantes.map(est => (
                     <li key={est.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
                       <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
                       <span style={{ fontSize: '14px', color: '#007bff', marginTop: '4px' }}>
                         Nota: {est.puntaje_obtenido !== undefined && est.puntaje_obtenido !== null ? est.puntaje_obtenido : 'Sin nota'}
                       </span>
                     </li>
-                  )
-                  : (
-                    // Modal de lista de estudiantes (examen práctico)
+                  ))
+                : modalListaEstudiantes.estudiantes.map(est => (
                     <li key={est.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
                       <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -3037,8 +3040,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                         >Desaprobar</button>
                       </div>
                     </li>
-                  )
-              ))}
+                  ))}
             </ul>
             <div style={{ textAlign: 'center', marginTop: '18px' }}>
               <button style={{ padding: '8px 22px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>Cerrar</button>
