@@ -112,7 +112,7 @@ class PreguntaAdmin(admin.ModelAdmin):
     def orden_safe(self, obj):
         return obj.orden if obj.orden is not None else "(Sin orden)"
 
-    list_display = ['texto_pregunta_corto', 'examen_safe', 'tipo_safe', 'puntaje_safe', 'orden_safe']
+    list_display = ['texto_pregunta_corto', 'examen_safe', 'tipo_safe', 'puntaje_safe', 'orden_safe', 'respuesta_correcta']
     list_filter = ['tipo', 'examen__curso', 'examen__tipo']
     search_fields = ['texto_pregunta', 'examen__nombre']
     ordering = ['examen', 'orden']
