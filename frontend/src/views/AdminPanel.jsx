@@ -2965,6 +2965,7 @@ const renderEstudiantes = () => {
       )}
     </div>
   );
+}
   // Render principal con tabs y contenido completo
   return (
     <div className="admin-panel-container">
@@ -2986,7 +2987,6 @@ const renderEstudiantes = () => {
     </div>
   );
 
-}
 
 export default AdminPanel;
 
