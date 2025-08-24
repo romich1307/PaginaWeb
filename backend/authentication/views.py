@@ -1261,7 +1261,7 @@ def enviar_respuestas_examen(request, intento_id):
                         respuestas_correctas += 1
                 except (ValueError, OpcionRespuesta.DoesNotExist):
                     pass
-            
+
             elif pregunta.tipo == 'verdadero_falso':
                 # Para verdadero/falso, necesitamos configurar la respuesta correcta
                 # Por ahora, asumimos que se configura en las opciones
@@ -1274,25 +1274,25 @@ def enviar_respuestas_examen(request, intento_id):
                     puntaje_total += float(pregunta.puntaje)
                     respuestas_correctas += 1
 
-                elif pregunta.tipo in ['completar', 'abierta', 'texto']:
-                    # Corrección automática robusta para preguntas abiertas/completar
-                    import unicodedata
-                    def normalizar(texto):
-                        if not texto:
-                            return ''
-                        texto = str(texto).strip().lower()
-                        texto = unicodedata.normalize('NFD', texto)
-                        texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
-                        texto = ' '.join(texto.split())
-                        return texto
-                    respuesta_correcta = normalizar(pregunta.respuesta_correcta)
-                    respuesta_usuario_normalizada = normalizar(respuesta_usuario)
-                    # Logging para depuración
-                    iguales = respuesta_correcta == respuesta_usuario_normalizada
-                    logger.warning(f"[CORRECCION TEXTO] Pregunta {pregunta.id}: usuario='{respuesta_usuario}' (normalizada='{respuesta_usuario_normalizada}'), correcta='{pregunta.respuesta_correcta}' (normalizada='{respuesta_correcta}'), iguales={iguales}, puntaje={pregunta.puntaje}")
-                    if respuesta_correcta and iguales:
-                        puntaje_total += float(pregunta.puntaje)
-                        respuestas_correctas += 1
+            if pregunta.tipo in ['completar', 'abierta', 'texto']:
+                # Corrección automática robusta para preguntas abiertas/completar
+                import unicodedata
+                def normalizar(texto):
+                    if not texto:
+                        return ''
+                    texto = str(texto).strip().lower()
+                    texto = unicodedata.normalize('NFD', texto)
+                    texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+                    texto = ' '.join(texto.split())
+                    return texto
+                respuesta_correcta = normalizar(pregunta.respuesta_correcta)
+                respuesta_usuario_normalizada = normalizar(respuesta_usuario)
+                # Logging para depuración
+                iguales = respuesta_correcta == respuesta_usuario_normalizada
+                logger.warning(f"[CORRECCION TEXTO] Pregunta {pregunta.id}: usuario='{respuesta_usuario}' (normalizada='{respuesta_usuario_normalizada}'), correcta='{pregunta.respuesta_correcta}' (normalizada='{respuesta_correcta}'), iguales={iguales}, puntaje={pregunta.puntaje}")
+                if respuesta_correcta and iguales:
+                    puntaje_total += float(pregunta.puntaje)
+                    respuestas_correctas += 1
         
         # Calcular porcentaje
         porcentaje = (puntaje_total / puntaje_maximo * 100) if puntaje_maximo > 0 else 0
