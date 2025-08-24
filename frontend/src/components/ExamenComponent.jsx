@@ -479,8 +479,7 @@ const ExamenComponent = ({ cursoId, curso, onVolver }) => {
         MozUserSelect: 'none',
         msUserSelect: 'none'
       }} onContextMenu={(e) => e.preventDefault()}>
-        {/* Imagen de la pregunta */}
-        {renderImagenPregunta()}
+  // ...existing code...
         {/* Protección anti-plagio */}
         <div style={{
           position: 'fixed',
