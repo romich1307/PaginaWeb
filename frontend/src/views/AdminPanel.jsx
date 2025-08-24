@@ -2986,6 +2986,15 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
               {modalListaEstudiantes.estudiantes.map(est => (
                 <li key={est.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
                   <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
+                  {est.intentos_examenes && est.intentos_examenes.length > 0 && (
+                  <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                    {est.intentos_examenes.map((intento, idx) => (
+                      <li key={intento.id || idx} style={{ fontSize: '14px', color: '#007bff' }}>
+                        Nota: {intento.puntaje_obtenido !== undefined ? intento.puntaje_obtenido : 'Sin nota'}
+                      </li>
+                    ))}
+                  </ul>
+                )}
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     {/* Estado actual de aprobación */}
                     {typeof est.aceptado_admin !== 'undefined' && (
