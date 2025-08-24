@@ -2995,40 +2995,6 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                     ))}
                   </ul>
                 )}
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    {/* Estado actual de aprobación */}
-                    {typeof est.aceptado_admin !== 'undefined' && (
-                      <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
-                        {est.aceptado_admin === true && <span style={{ color: 'green' }}>Aprobado</span>}
-                        {est.aceptado_admin === false && <span style={{ color: 'red' }}>Desaprobado</span>}
-                        {(est.aceptado_admin === null || est.aceptado_admin === undefined) && <span style={{ color: 'orange' }}>Pendiente</span>}
-                      </span>
-                    )}
-                    <button
-                      style={{ padding: '6px 14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                      onClick={async () => {
-                        await aprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                        setModalListaEstudiantes(prev => ({
-                          ...prev,
-                          estudiantes: prev.estudiantes.map(e =>
-                            e.id === est.id ? { ...e, aceptado_admin: true } : e
-                          )
-                        }));
-                      }}
-                    >Aprobar</button>
-                    <button
-                      style={{ padding: '6px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                      onClick={async () => {
-                        await desaprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
-                        setModalListaEstudiantes(prev => ({
-                          ...prev,
-                          estudiantes: prev.estudiantes.map(e =>
-                            e.id === est.id ? { ...e, aceptado_admin: false } : e
-                          )
-                        }));
-                      }}
-                    >Desaprobar</button>
-                  </div>
                 </li>
               ))}
             </ul>
