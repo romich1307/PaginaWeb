@@ -2422,7 +2422,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                                         if (!inscripcion) return null;
                                         // Buscar intento teórico para este examen
                                         const intentoTeorico = usuario.intentos_examenes?.find(
-                                          intento => intento.examen_id === examen.id && intento.tipo === 'teorico'
+                                          intento => intento.examen.id === examen.id && intento.examen.tipo === 'teorico'
                                         );
                                         return {
                                           id: usuario.id,
