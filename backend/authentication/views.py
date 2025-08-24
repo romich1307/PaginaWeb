@@ -1288,8 +1288,9 @@ def enviar_respuestas_examen(request, intento_id):
                     respuesta_correcta = normalizar(pregunta.respuesta_correcta)
                     respuesta_usuario_normalizada = normalizar(respuesta_usuario)
                     # Logging para depuración
-                    logger.warning(f"[CORRECCION TEXTO] Pregunta {pregunta.id}: usuario='{respuesta_usuario}' (normalizada='{respuesta_usuario_normalizada}'), correcta='{pregunta.respuesta_correcta}' (normalizada='{respuesta_correcta}')")
-                    if respuesta_correcta and respuesta_usuario_normalizada == respuesta_correcta:
+                    iguales = respuesta_correcta == respuesta_usuario_normalizada
+                    logger.warning(f"[CORRECCION TEXTO] Pregunta {pregunta.id}: usuario='{respuesta_usuario}' (normalizada='{respuesta_usuario_normalizada}'), correcta='{pregunta.respuesta_correcta}' (normalizada='{respuesta_correcta}'), iguales={iguales}, puntaje={pregunta.puntaje}")
+                    if respuesta_correcta and iguales:
                         puntaje_total += float(pregunta.puntaje)
                         respuestas_correctas += 1
         
