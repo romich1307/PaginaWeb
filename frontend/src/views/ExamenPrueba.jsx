@@ -1,15 +1,32 @@
-  // Función para iniciar el examen
-  const iniciarExamen = () => {
-    if (intentoUsado) return; // Prevenir inicio si ya se usó el intento
-    setExamenIniciado(true);
-    setTiempoRestante(examenDatos.duracion * 60); // Convertir minutos a segundos
-    setPreguntaActual(0);
-    setRespuestas({});
-    setExamenTerminado(false);
-    setResultado(null);
-    // Si tienes lógica para convertir preguntas a imágenes, puedes llamarla aquí
-    // convertirPreguntasAImagenes();
-  };
+  import React, { useState, useEffect, useRef } from 'react';
+  import html2canvas from 'html2canvas';
+  import './ExamenPrueba.css';
+
+  const ExamenPrueba = () => {
+    const [examenIniciado, setExamenIniciado] = useState(false);
+    const [preguntaActual, setPreguntaActual] = useState(0);
+    const [respuestas, setRespuestas] = useState({});
+    const [tiempoRestante, setTiempoRestante] = useState(0);
+    const [examenTerminado, setExamenTerminado] = useState(false);
+    const [resultado, setResultado] = useState(null);
+    const [intentoUsado, setIntentoUsado] = useState(false); // Nuevo estado para controlar intentos
+    const [preguntasComoImagenes, setPreguntasComoImagenes] = useState({});
+    const [imagenesGenerandose, setImagenesGenerandose] = useState(false);
+    const [progresoConversion, setProgresoConversion] = useState(0);
+    const preguntaRef = useRef(null);
+
+    // Función para iniciar el examen
+    const iniciarExamen = () => {
+      if (intentoUsado) return; // Prevenir inicio si ya se usó el intento
+      setExamenIniciado(true);
+      setTiempoRestante(examenDatos.duracion * 60); // Convertir minutos a segundos
+      setPreguntaActual(0);
+      setRespuestas({});
+      setExamenTerminado(false);
+      setResultado(null);
+      // Si tienes lógica para convertir preguntas a imágenes, puedes llamarla aquí
+      // convertirPreguntasAImagenes();
+    };
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import './ExamenPrueba.css';
@@ -453,6 +470,6 @@ const ExamenPrueba = () => {
       </div>
     </div>
   );
-};
-
+}
+  }
 export default ExamenPrueba;
