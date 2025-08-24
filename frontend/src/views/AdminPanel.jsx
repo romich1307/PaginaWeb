@@ -2589,8 +2589,8 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                                   </span>
                                   <input
                                     type="text"
-                                    value={pregunta.respuesta_esperada || ''}
-                                    onChange={e => actualizarPregunta(pregunta.id, 'respuesta_esperada', e.target.value)}
+                                    value={pregunta.respuesta_correcta || pregunta.respuesta_esperada || ''}
+                                    onChange={e => actualizarPregunta(pregunta.id, 'respuesta_correcta', e.target.value)}
                                     className="inline-edit"
                                     style={{ width: '90%' }}
                                     placeholder="Respuesta esperada"
@@ -2659,7 +2659,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                   formData.append('imagen_pregunta', nuevaPregunta.imagen_pregunta);
                 }
                 if (nuevaPregunta.respuesta_esperada) {
-                  formData.append('respuesta_esperada', nuevaPregunta.respuesta_esperada);
+                  formData.append('respuesta_correcta', nuevaPregunta.respuesta_esperada);
                 }
                 const res = await fetch(`${API_BASE_URL}/admin/preguntas/`, {
                   method: 'POST',
