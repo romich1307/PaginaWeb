@@ -2979,12 +2979,12 @@ const renderEstudiantes = () => {
           <button className={activeTab === 'examenes' ? 'active' : ''} onClick={() => setActiveTab('examenes')}>Exámenes</button>
         </div>
       </div>
-      <div className="admin-content">
+      {/* <div className="admin-content">
         {activeTab === 'estudiantes' && renderEstudiantes()}
         {activeTab === 'inscripciones' && renderInscripciones && renderInscripciones()}
         {activeTab === 'cursos' && renderCursos && renderCursos()}
         {activeTab === 'examenes' && renderExamenes  && renderExamenes()}
-      </div>
+      </div> */}
       </div>
   )
 }
