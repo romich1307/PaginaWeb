@@ -458,27 +458,28 @@ def admin_preguntas(request):
 
     from .models import Pregunta, Examen
 
+
     if request.method == 'POST':
         # Crear nueva pregunta asociada automáticamente al examen teórico del curso
         data = request.POST
         files = request.FILES
         curso_id = data.get('curso_id')
-    texto = data.get('texto')
-    tipo = data.get('tipo', 'multiple')
-    opcion_a = data.get('opcion_a', '')
-    opcion_b = data.get('opcion_b', '')
-    opcion_c = data.get('opcion_c', '')
-    opcion_d = data.get('opcion_d', '')
-    respuesta_correcta = data.get('respuesta_correcta', '')
-    imagen_pregunta = files.get('imagen_pregunta', None)
+        texto = data.get('texto')
+        tipo = data.get('tipo', 'multiple')
+        opcion_a = data.get('opcion_a', '')
+        opcion_b = data.get('opcion_b', '')
+        opcion_c = data.get('opcion_c', '')
+        opcion_d = data.get('opcion_d', '')
+        respuesta_correcta = data.get('respuesta_correcta', '')
+        imagen_pregunta = files.get('imagen_pregunta', None)
         # Buscar examen teórico del curso
-    from .models import Curso
-    try:
+        from .models import Curso
+        try:
             curso = Curso.objects.get(id=curso_id)
-    except Curso.DoesNotExist:
+        except Curso.DoesNotExist:
             return Response({'error': 'Curso no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
-    examen = Examen.objects.filter(curso=curso, tipo='teorico').first()
-    if not examen:
+        examen = Examen.objects.filter(curso=curso, tipo='teorico').first()
+        if not examen:
             # Crear examen teórico automáticamente si no existe
             examen = Examen.objects.create(
                 curso=curso,
@@ -491,7 +492,7 @@ def admin_preguntas(request):
                 activo=True
             )
         # Crear pregunta
-    pregunta = Pregunta.objects.create(
+        pregunta = Pregunta.objects.create(
             examen=examen,
             texto_pregunta=texto,
             tipo=tipo,
@@ -502,7 +503,7 @@ def admin_preguntas(request):
             respuesta_correcta=respuesta_correcta if tipo == 'texto' else None
         )
         # Solo crear opciones si la pregunta es de opción múltiple o verdadero/falso
-    if tipo in ['multiple', 'verdadero_falso']:
+        if tipo in ['multiple', 'verdadero_falso']:
             from .models import OpcionRespuesta
             opciones = [opcion_a, opcion_b, opcion_c, opcion_d]
             letras = ['A', 'B', 'C', 'D']
@@ -514,7 +515,7 @@ def admin_preguntas(request):
                         es_correcta=(letras[idx] == respuesta_correcta),
                         orden=idx+1
                     )
-    return Response({'message': 'Pregunta creada correctamente', 'id': pregunta.id}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Pregunta creada correctamente', 'id': pregunta.id}, status=status.HTTP_201_CREATED)
 
     # GET: Listar preguntas
     preguntas = Pregunta.objects.select_related('examen').all().order_by('-id')
