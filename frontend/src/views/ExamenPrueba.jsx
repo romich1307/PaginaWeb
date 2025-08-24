@@ -379,9 +379,27 @@ const ExamenPrueba = () => {
 
   const calcularResultado = () => {
     let correctas = 0;
+    // Función para normalizar texto (sin tildes, espacios, mayúsculas)
+    const normalizar = (texto) => {
+      if (!texto) return '';
+      texto = String(texto).trim().toLowerCase();
+      texto = texto.normalize('NFD').replace(/[ 0--]/g, '');
+      texto = texto.replace(/\s+/g, ' ');
+      texto = texto.replace(/\p{Diacritic}/gu, '');
+      return texto;
+    };
     examenDatos.preguntas.forEach(pregunta => {
-      if (respuestas[pregunta.id] === pregunta.respuesta_correcta) {
-        correctas++;
+      if (pregunta.tipo === 'texto' || pregunta.tipo === 'completar' || pregunta.tipo === 'abierta') {
+        if (
+          normalizar(respuestas[pregunta.id]) !== '' &&
+          normalizar(respuestas[pregunta.id]) === normalizar(pregunta.respuesta_correcta)
+        ) {
+          correctas++;
+        }
+      } else {
+        if (respuestas[pregunta.id] === pregunta.respuesta_correcta) {
+          correctas++;
+        }
       }
     });
 
