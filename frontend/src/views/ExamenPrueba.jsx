@@ -17,9 +17,9 @@ const ExamenPrueba = () => {
 
   // Datos de ejemplo para el examen
   const examenDatos = {
-    nombre: "Examen de Líquidos Penetrantes - PRUEBA",
-    duracion: 30, // 30 minutos
-    totalPreguntas: 10,
+  nombre: "Examen de Líquidos Penetrantes - PRUEBA",
+  duracion: 30, // 30 minutos
+  totalPreguntas: 11,
   preguntas: [
       {
         id: 1,
