@@ -17,120 +17,10 @@ const ExamenPrueba = () => {
 
   // Datos de ejemplo para el examen
   const examenDatos = {
-  nombre: "Examen de Líquidos Penetrantes - PRUEBA",
-  duracion: 30, // 30 minutos
-  totalPreguntas: 11,
-  preguntas: [
-      {
-        id: 1,
-        texto: "¿Cuál es el propósito principal de los líquidos penetrantes?",
-        opciones: [
-          { id: 'a', texto: "Detectar discontinuidades superficiales" },
-          { id: 'b', texto: "Medir el espesor del material" },
-          { id: 'c', texto: "Determinar la composición química" },
-          { id: 'd', texto: "Evaluar propiedades magnéticas" }
-        ],
-        respuesta_correcta: 'a'
-      },
-      {
-        id: 2,
-        texto: "¿Qué tipo de defectos NO pueden detectarse con líquidos penetrantes?",
-        opciones: [
-          { id: 'a', texto: "Grietas superficiales" },
-          { id: 'b', texto: "Defectos internos" },
-          { id: 'c', texto: "Porosidad superficial" },
-          { id: 'd', texto: "Falta de fusión en soldadura" }
-        ],
-        respuesta_correcta: 'b'
-      },
-      {
-        id: 3,
-        texto: "¿Cuál es la secuencia correcta en el proceso de líquidos penetrantes?",
-        opciones: [
-          { id: 'a', texto: "Aplicar penetrante → Limpiar → Aplicar revelador" },
-          { id: 'b', texto: "Limpiar → Aplicar penetrante → Tiempo de penetración → Limpiar → Aplicar revelador" },
-          { id: 'c', texto: "Aplicar revelador → Aplicar penetrante → Limpiar" },
-          { id: 'd', texto: "Aplicar penetrante → Aplicar revelador → Limpiar" }
-        ],
-        respuesta_correcta: 'b'
-      },
-      {
-        id: 4,
-        texto: "¿Qué característica debe tener un buen penetrante?",
-        opciones: [
-          { id: 'a', texto: "Alta viscosidad" },
-          { id: 'b', texto: "Baja tensión superficial" },
-          { id: 'c', texto: "Alta tensión superficial" },
-          { id: 'd', texto: "Secado rápido" }
-        ],
-        respuesta_correcta: 'b'
-      },
-      {
-        id: 5,
-        texto: "¿Cuál es la función del revelador?",
-        opciones: [
-          { id: 'a', texto: "Penetrar en los defectos" },
-          { id: 'b', texto: "Limpiar la superficie" },
-          { id: 'c', texto: "Absorber el penetrante y hacerlo visible" },
-          { id: 'd', texto: "Proteger la superficie" }
-        ],
-        respuesta_correcta: 'c'
-      },
-      {
-        id: 6,
-        texto: "¿Qué tipo de luz se usa con penetrantes fluorescentes?",
-        opciones: [
-          { id: 'a', texto: "Luz blanca" },
-          { id: 'b', texto: "Luz ultravioleta" },
-          { id: 'c', texto: "Luz infrarroja" },
-          { id: 'd', texto: "Luz láser" }
-        ],
-        respuesta_correcta: 'b'
-      },
-      {
-        id: 7,
-        texto: "¿Cuál es el tiempo mínimo de penetración recomendado?",
-        opciones: [
-          { id: 'a', texto: "1-2 minutos" },
-          { id: 'b', texto: "5-10 minutos" },
-          { id: 'c', texto: "15-20 minutos" },
-          { id: 'd', texto: "30 minutos" }
-        ],
-        respuesta_correcta: 'b'
-      },
-      {
-        id: 8,
-        texto: "¿Qué material NO es adecuado para ensayos con líquidos penetrantes?",
-        opciones: [
-          { id: 'a', texto: "Acero inoxidable" },
-          { id: 'b', texto: "Aluminio" },
-          { id: 'c', texto: "Materiales porosos" },
-          { id: 'd', texto: "Titanio" }
-        ],
-        respuesta_correcta: 'c'
-      },
-      {
-        id: 9,
-        texto: "¿Cuál es la ventaja principal de los penetrantes lavables con agua?",
-        opciones: [
-          { id: 'a', texto: "Mayor sensibilidad" },
-          { id: 'b', texto: "Facilidad de remoción" },
-          { id: 'c', texto: "Menor costo" },
-          { id: 'd', texto: "Mayor penetración" }
-        ],
-        respuesta_correcta: 'b'
-      },
-      {
-        id: 10,
-        texto: "¿Qué norma internacional rige los ensayos con líquidos penetrantes?",
-        opciones: [
-          { id: 'a', texto: "ASTM E165" },
-          { id: 'b', texto: "ISO 9001" },
-          { id: 'c', texto: "AWS D1.1" },
-          { id: 'd', texto: "ASME VIII" }
-        ],
-        respuesta_correcta: 'a'
-      },
+    nombre: "Examen de Líquidos Penetrantes - PRUEBA",
+    duracion: 30, // 30 minutos
+    totalPreguntas: 1,
+    preguntas: [
       {
         id: 11,
         texto: "Escribe el nombre del proceso que utiliza líquidos para detectar discontinuidades superficiales.",
@@ -148,146 +38,20 @@ const ExamenPrueba = () => {
         return false;
       };
 
-      const prevenirTeclado = (e) => {
-        // Prevenir Ctrl+C, Ctrl+A, Ctrl+S, Ctrl+P, F12, etc.
-        if (
-          (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 's' || e.key === 'p')) ||
-          e.key === 'F12' ||
-          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-          (e.ctrlKey && e.key === 'u')
-        ) {
-          e.preventDefault();
-          return false;
-        }
-      };
-
-      // Agregar event listeners
-      document.addEventListener('selectstart', prevenir);
-      document.addEventListener('contextmenu', prevenir);
+      // Aquí deberías agregar los listeners y la lógica de prevención
       document.addEventListener('copy', prevenir);
       document.addEventListener('cut', prevenir);
       document.addEventListener('paste', prevenir);
-      document.addEventListener('dragstart', prevenir);
-      document.addEventListener('keydown', prevenirTeclado);
+      document.addEventListener('contextmenu', prevenir);
 
       return () => {
-        // Limpiar event listeners
-        document.removeEventListener('selectstart', prevenir);
-        document.removeEventListener('contextmenu', prevenir);
         document.removeEventListener('copy', prevenir);
         document.removeEventListener('cut', prevenir);
         document.removeEventListener('paste', prevenir);
-        document.removeEventListener('dragstart', prevenir);
-        document.removeEventListener('keydown', prevenirTeclado);
+        document.removeEventListener('contextmenu', prevenir);
       };
     }
   }, [examenIniciado, examenTerminado]);
-
-  // Timer effect
-  useEffect(() => {
-    if (examenIniciado && tiempoRestante > 0 && !examenTerminado) {
-      const timer = setInterval(() => {
-        setTiempoRestante(prev => {
-          if (prev <= 1) {
-            finalizarExamen();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [examenIniciado, tiempoRestante, examenTerminado]);
-
-  const iniciarExamen = () => {
-    if (intentoUsado) return; // Prevenir inicio si ya se usó el intento
-    
-    setExamenIniciado(true);
-    setTiempoRestante(examenDatos.duracion * 60); // Convertir minutos a segundos
-    setPreguntaActual(0);
-    setRespuestas({});
-    setExamenTerminado(false);
-    setResultado(null);
-    convertirPreguntasAImagenes();
-  };
-
-  const convertirPreguntasAImagenes = async () => {
-    console.log('Convirtiendo preguntas a imágenes...');
-    setImagenesGenerandose(true);
-    setProgresoConversion(5);
-    
-    const imagenesGeneradas = {};
-    
-    // Solo convertir la primera pregunta para empezar más rápido
-    const pregunta = examenDatos.preguntas[preguntaActual];
-    
-    // Crear elemento temporal para la pregunta
-    const tempDiv = document.createElement('div');
-    tempDiv.style.cssText = `
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
-      width: 800px;
-      padding: 30px;
-      background: white;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      color: #2c3e50;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    `;
-    
-    tempDiv.innerHTML = `
-      <div style="margin-bottom: 25px;">
-        <div style="background: #F9D122; color: white; display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 20px;">
-          Pregunta ${preguntaActual + 1}
-        </div>
-        <h3 style="color: #2c3e50; font-size: 1.3em; margin-bottom: 25px; font-weight: 600; line-height: 1.5;">
-          ${pregunta.texto}
-        </h3>
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-          ${pregunta.opciones.map(opcion => `
-            <div style="display: flex; align-items: center; padding: 18px; border: 2px solid #ecf0f1; border-radius: 12px; background: #fafafa;">
-              <div style="width: 24px; height: 24px; border: 2px solid #bdc3c7; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; background: white;"></div>
-              <span style="font-weight: 700; color: #7f8c8d; margin-right: 15px; font-size: 1.1em;">${opcion.id.toUpperCase()})</span>
-              <span style="color: #2c3e50; line-height: 1.4;">${opcion.texto}</span>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(tempDiv);
-    
-    try {
-      const canvas = await html2canvas(tempDiv, {
-        backgroundColor: 'white',
-        scale: 1.2,
-        useCORS: true,
-        allowTaint: true,
-        width: 800,
-        height: tempDiv.offsetHeight,
-        logging: false
-      });
-      
-      imagenesGeneradas[pregunta.id] = canvas.toDataURL('image/png', 0.9);
-      console.log(`Imagen generada para pregunta ${pregunta.id}`);
-      setProgresoConversion(30);
-    } catch (error) {
-      console.error('Error generando imagen para pregunta', pregunta.id, error);
-    }
-    
-    document.body.removeChild(tempDiv);
-    
-    setPreguntasComoImagenes(imagenesGeneradas);
-    setImagenesGenerandose(false);
-    
-    // Convertir el resto de preguntas en segundo plano
-    setTimeout(() => convertirRestoPreguntasAImagenes(), 1000);
-  };
 
   const convertirRestoPreguntasAImagenes = async () => {
     const imagenesAdicionales = {};
@@ -296,7 +60,6 @@ const ExamenPrueba = () => {
       if (i === preguntaActual) continue; // Ya convertida
       
       const pregunta = examenDatos.preguntas[i];
-      
       const tempDiv = document.createElement('div');
       tempDiv.style.cssText = `
         position: absolute;
@@ -312,7 +75,7 @@ const ExamenPrueba = () => {
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       `;
-      
+      // Renderizar solo el texto si no hay opciones
       tempDiv.innerHTML = `
         <div style="margin-bottom: 25px;">
           <div style="background: #F9D122; color: white; display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 20px;">
@@ -321,15 +84,13 @@ const ExamenPrueba = () => {
           <h3 style="color: #2c3e50; font-size: 1.3em; margin-bottom: 25px; font-weight: 600; line-height: 1.5;">
             ${pregunta.texto}
           </h3>
-          <div style="display: flex; flex-direction: column; gap: 15px;">
-            ${pregunta.opciones.map(opcion => `
-              <div style="display: flex; align-items: center; padding: 18px; border: 2px solid #ecf0f1; border-radius: 12px; background: #fafafa;">
-                <div style="width: 24px; height: 24px; border: 2px solid #bdc3c7; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; background: white;"></div>
-                <span style="font-weight: 700; color: #7f8c8d; margin-right: 15px; font-size: 1.1em;">${opcion.id.toUpperCase()})</span>
-                <span style="color: #2c3e50; line-height: 1.4;">${opcion.texto}</span>
+          ${pregunta.opciones ? `<div style='display: flex; flex-direction: column; gap: 15px;'>${pregunta.opciones.map(opcion => `
+              <div style='display: flex; align-items: center; padding: 18px; border: 2px solid #ecf0f1; border-radius: 12px; background: #fafafa;'>
+                <div style='width: 24px; height: 24px; border: 2px solid #bdc3c7; border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; background: white;'></div>
+                <span style='font-weight: 700; color: #7f8c8d; margin-right: 15px; font-size: 1.1em;'>${opcion.id.toUpperCase()})</span>
+                <span style='color: #2c3e50; line-height: 1.4;'>${opcion.texto}</span>
               </div>
-            `).join('')}
-          </div>
+            `).join('')}</div>` : ''}
         </div>
       `;
       
