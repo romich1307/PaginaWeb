@@ -532,6 +532,8 @@ def admin_preguntas(request):
         preguntas_data.append({
             'id': pregunta.id,
             'texto': pregunta.texto_pregunta,
+            'tipo': pregunta.tipo,
+            'respuesta_correcta': pregunta.respuesta_correcta,
             'opciones': opciones,
             'examen_id': pregunta.examen.id if pregunta.examen else None,
             'examen_titulo': pregunta.examen.nombre if pregunta.examen else 'Sin examen',
