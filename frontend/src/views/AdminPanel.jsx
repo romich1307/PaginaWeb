@@ -1,4 +1,4 @@
-// Helper para construir la URL completa de la imagen de la pregunta
+  // Helper para construir la URL completa de la imagen de la pregunta
   const getImagenUrl = (img) => {
     if (!img) return null;
     if (img.startsWith('http')) return img;
@@ -113,7 +113,7 @@ function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mostrarFormularioCurso, setMostrarFormularioCurso] = useState(false);
-  
+
   // Estados para la gestión de estudiantes
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [busqueda, setBusqueda] = useState('');
@@ -123,7 +123,7 @@ function AdminPanel() {
   const [estudianteDetalle, setEstudianteDetalle] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [modalListaEstudiantes, setModalListaEstudiantes] = useState({ abierto: false, estudiantes: [], cursoId: null });
-  
+
   const [nuevoCurso, setNuevoCurso] = useState({
     nombre: '',
     descripcion: '',
@@ -176,7 +176,7 @@ function AdminPanel() {
       setError('No tienes permisos de administrador.');
       return;
     }
-    
+
     console.log('AdminPanel: Usuario autenticado y es admin, cargando datos...');
     loadData();
   }, [isAuthenticated, isAdmin, isLoading]);
@@ -184,50 +184,50 @@ function AdminPanel() {
   const loadData = async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const token = localStorage.getItem('authToken'); // Usar 'authToken' consistentemente
       console.log('Token:', token);
-      
+
       if (!token) {
         setError('No estás logueado. Por favor inicia sesión primero.');
         return;
       }
-      
+
       // Primero verificar si el token es válido obteniendo el perfil del usuario
       const profileResponse = await fetchWithAuth(`${API_BASE_URL}/profile/`);
       console.log('Profile response status:', profileResponse.status);
-      
+
       if (profileResponse.status === 401 || profileResponse.status === 403) {
         setError('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
         localStorage.removeItem('authToken'); // Cambiar de 'token' a 'authToken'
         return;
       }
-      
+
       if (!profileResponse.ok) {
         const errorText = await profileResponse.text();
         console.log('Profile response error:', errorText);
         setError(`Error de autenticación: ${profileResponse.status}`);
         return;
       }
-      
+
       const profileData = await profileResponse.json();
       console.log('User profile:', profileData);
-      
+
       // Verificar si es admin
       const adminResponse = await fetchWithAuth(`${API_BASE_URL}/admin/is-admin/`);
       console.log('Admin response status:', adminResponse.status);
-      
+
       if (!adminResponse.ok) {
         const errorText = await adminResponse.text();
         console.log('Admin response error:', errorText);
         setError(`Error verificando permisos: ${adminResponse.status}`);
         return;
       }
-      
+
       const adminData = await adminResponse.json();
       console.log('Admin data:', adminData);
-      
+
       if (!adminData.is_admin) {
         setError(`No tienes permisos de administrador. Email actual: ${profileData.user?.email || 'No disponible'}. Se requiere: jiji@gmail.com`);
         return;
@@ -329,7 +329,7 @@ function AdminPanel() {
               : inscripcion
           )
         );
-        
+
         // Mostrar notificación sutil
         mostrarNotificacion(`${campo.replace('_', ' ')} actualizada correctamente`);
       } else {
@@ -344,24 +344,24 @@ function AdminPanel() {
   // Función para construir URL completa del comprobante
   const construirUrlComprobante = (comprobante) => {
     if (!comprobante) return null;
-    
+
     // Si ya es una URL completa, usarla tal como está
     if (comprobante.startsWith('http://') || comprobante.startsWith('https://')) {
       return comprobante;
     }
-    
+
     // Si ya empieza con /media/, solo agregar el dominio base
     if (comprobante.startsWith('/media/')) {
       const baseUrl = API_BASE_URL.replace('/api', ''); // Remover /api para archivos media
       return `${baseUrl}${comprobante}`;
     }
-    
+
     // Si es una ruta relativa que empieza con 'comprobantes/', construir URL completa
     if (comprobante.startsWith('comprobantes/')) {
       const baseUrl = API_BASE_URL.replace('/api', ''); // Remover /api para archivos media
       return `${baseUrl}/media/${comprobante}`;
     }
-    
+
     // Si es solo un nombre de archivo, asumir que está en comprobantes/
     const baseUrl = API_BASE_URL.replace('/api', ''); // Remover /api para archivos media
     return `${baseUrl}/media/comprobantes/${comprobante}`;
@@ -370,7 +370,7 @@ function AdminPanel() {
   // Función para ver comprobante de pago
   const verComprobante = async (urlComprobante) => {
     console.log('🔍 DEBUG: verComprobante llamado con:', urlComprobante);
-    
+
     if (!urlComprobante) {
       alert('No hay comprobante disponible');
       return;
@@ -378,7 +378,7 @@ function AdminPanel() {
 
     const urlCompleta = construirUrlComprobante(urlComprobante);
     console.log('🔍 DEBUG: URL construida:', urlCompleta);
-    
+
     if (!urlCompleta) {
       alert('Error al construir la URL del comprobante');
       return;
@@ -409,21 +409,21 @@ function AdminPanel() {
     // Crear modal para mostrar el comprobante
     const modal = document.createElement('div');
     modal.className = 'comprobante-modal';
-    
+
     const modalContent = document.createElement('div');
     modalContent.className = 'comprobante-modal-content';
-    
+
     const header = document.createElement('div');
     header.className = 'comprobante-header';
     header.innerHTML = `
       <h3>Comprobante de Pago</h3>
       <button class="close-comprobante">×</button>
     `;
-    
+
     const viewer = document.createElement('div');
     viewer.className = 'comprobante-viewer';
     viewer.innerHTML = getComprobanteViewer(urlCompleta, urlComprobante);
-    
+
     const actions = document.createElement('div');
     actions.className = 'comprobante-actions';
     actions.innerHTML = `
@@ -431,26 +431,26 @@ function AdminPanel() {
       <button class="btn-copy">Copiar URL</button>
       <button class="btn-info">Ver información técnica</button>
     `;
-    
+
     modalContent.appendChild(header);
     modalContent.appendChild(viewer);
     modalContent.appendChild(actions);
     modal.appendChild(modalContent);
-    
+
     // Event listeners
     const closeBtn = header.querySelector('.close-comprobante');
     closeBtn.addEventListener('click', () => modal.remove());
-    
+
     const downloadBtn = actions.querySelector('.btn-download');
     downloadBtn.addEventListener('click', () => window.open(urlCompleta, '_blank'));
-    
+
     const copyBtn = actions.querySelector('.btn-copy');
     copyBtn.addEventListener('click', () => {
       navigator.clipboard.writeText(urlCompleta).then(() => {
         mostrarNotificacion('URL copiada al portapapeles');
       });
     });
-    
+
     const infoBtn = actions.querySelector('.btn-info');
     infoBtn.addEventListener('click', () => {
       const infoModal = `
@@ -473,14 +473,14 @@ function AdminPanel() {
       `;
       alert(infoModal);
     });
-    
+
     // Cerrar modal al hacer clic fuera
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.remove();
       }
     });
-    
+
     // Cerrar con tecla Escape
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
@@ -489,7 +489,7 @@ function AdminPanel() {
       }
     };
     document.addEventListener('keydown', handleEscape);
-    
+
     document.body.appendChild(modal);
   };
 
@@ -497,7 +497,7 @@ function AdminPanel() {
   const getComprobanteViewer = (url, archivoOriginal) => {
     const extension = url.split('.').pop().toLowerCase();
     const fileName = url.split('/').pop();
-    
+
     if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
       return `
         <div class="image-container">
@@ -547,9 +547,9 @@ function AdminPanel() {
   // Función para obtener el icono del archivo
   const getFileIcon = (url) => {
     if (!url) return <span className="no-file">Sin archivo</span>;
-    
+
     const extension = url.split('.').pop().toLowerCase();
-    
+
     switch (extension) {
       case 'pdf':
         return <span className="file-icon pdf" title="PDF">PDF</span>;
@@ -572,12 +572,12 @@ function AdminPanel() {
     const notificacion = document.createElement('div');
     notificacion.className = 'notificacion-sutil';
     notificacion.textContent = mensaje;
-    
+
     document.body.appendChild(notificacion);
-    
+
     // Animación de entrada
     setTimeout(() => notificacion.classList.add('mostrar'), 100);
-    
+
     // Remover después de 3 segundos
     setTimeout(() => {
       notificacion.classList.remove('mostrar');
@@ -588,7 +588,7 @@ function AdminPanel() {
   // Función para manejar el envío del formulario de nuevo curso
   const handleCrearCurso = async (e) => {
     e.preventDefault();
-    
+
     // Validaciones básicas
     if (!nuevoCurso.nombre || !nuevoCurso.descripcion || !nuevoCurso.precio) {
       alert('Por favor completa al menos el nombre, descripción y precio del curso');
@@ -823,7 +823,7 @@ const eliminarPregunta = async (preguntaId) => {
     // Buscar el examen en la estructura de cursos
     let examenEncontrado = null;
     let cursoNombre = '';
-    
+
     for (const curso of examenes) {
       const examen = curso.examenes.find(e => e.id === examenId);
       if (examen) {
@@ -832,7 +832,7 @@ const eliminarPregunta = async (preguntaId) => {
         break;
       }
     }
-    
+
     if (!examenEncontrado) {
       alert('Examen no encontrado');
       return;
@@ -894,10 +894,10 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Actualizar la lista de pendientes removiendo el item actualizado
         setExamenesPracticosPendientes(prev => prev.filter(item => item.id !== intentoId));
-        
+
         // Actualizar la lista de exámenes para remover el intento evaluado
         setExamenes(prev => prev.map(curso => ({
           ...curso,
@@ -908,7 +908,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
             ) || []
           }))
         })));
-        
+
         alert(`Resultado actualizado: ${resultado.toUpperCase()}`);
       } else {
         console.error('Error al actualizar resultado práctico');
@@ -926,7 +926,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
     if (!evaluador) return;
 
     const observaciones = prompt('Observaciones adicionales (opcional):') || '';
-    
+
     actualizarResultadoPractico(intentoId, resultado, observaciones, evaluador);
   };
 
@@ -946,7 +946,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
       if (response.ok) {
         const data = await response.json();
         alert(`Examen programado exitosamente: ${data.message}`);
-        
+
         // Recargar datos de exámenes pendientes
         loadData();
       } else {
@@ -975,7 +975,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
       if (response.ok) {
         const data = await response.json();
         alert(`¡Examen activado exitosamente!\n${data.message}\nIntentos creados: ${data.intentos_creados}\nIntentos actualizados: ${data.intentos_actualizados}`);
-        
+
         // Recargar datos
         loadData();
       } else {
@@ -989,7 +989,55 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
   };
 
   // Mostrar loading mientras se verifica la autenticación
-const renderEstudiantes = () => {
+  if (isLoading) {
+    return (
+      <div className="admin-panel">
+        <div className="admin-header">
+          <h1>Verificando autenticación...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="admin-panel">
+        <div className="admin-header">
+          <h1>Cargando panel de administración...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="admin-panel">
+        <div className="admin-header">
+          <h1>Panel de Administración</h1>
+          <div className="error-message" style={{color: 'red', padding: '20px', textAlign: 'center'}}>
+            {error}
+            <br />
+            <div style={{marginTop: '15px'}}>
+              <button 
+                onClick={loadData} 
+                style={{marginRight: '10px', padding: '8px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                Reintentar
+              </button>
+              <button 
+                onClick={() => window.location.href = '/login'} 
+                style={{padding: '8px 15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                Ir a Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const renderEstudiantes = () => {
     const elementosPorPagina = 10;
 
     // Función para verificar si un estudiante tiene cursos comprados
@@ -1017,7 +1065,7 @@ const renderEstudiantes = () => {
         const coincideBusqueda = `${estudiante.nombres} ${estudiante.apellidos} ${estudiante.email} ${estudiante.dni}`
           .toLowerCase()
           .includes(busqueda.toLowerCase());
-        
+
         if (filtroEstado === 'activos') return esActivo && coincideBusqueda;
         if (filtroEstado === 'inactivos') return !esActivo && coincideBusqueda;
         return coincideBusqueda;
@@ -1069,15 +1117,15 @@ const renderEstudiantes = () => {
 
         console.log('Iniciando generación de PDF mejorado...');
         const doc = new jsPDF();
-        
+
         // Configurar fuente para caracteres especiales
         doc.setFont('helvetica');
-        
+
         // ENCABEZADO PROFESIONAL
         // Fondo azul para el encabezado
         doc.setFillColor(45, 170, 225);
         doc.rect(0, 0, 210, 50, 'F');
-        
+
         // Título principal
         doc.setFontSize(24);
         doc.setTextColor(255, 255, 255);
@@ -1085,11 +1133,11 @@ const renderEstudiantes = () => {
           ? 'REPORTE DE ESTUDIANTES SELECCIONADOS'
           : 'REPORTE DE ESTUDIANTES';
         doc.text(tituloReporte, 20, 25);
-        
+
         // Subtítulo
         doc.setFontSize(12);
         doc.text('Sistema de Gestión Académica', 20, 35);
-        
+
         // Fecha de generación
         doc.setFontSize(10);
         const fechaActual = new Date().toLocaleDateString('es-ES', {
@@ -1100,24 +1148,24 @@ const renderEstudiantes = () => {
           minute: '2-digit'
         });
         doc.text(`Generado: ${fechaActual}`, 20, 43);
-        
+
         // SECCIÓN DE ESTADÍSTICAS
         let yPosition = 65;
         doc.setTextColor(33, 37, 41);
         doc.setFontSize(16);
         doc.text('RESUMEN EJECUTIVO', 20, yPosition);
-        
+
         // Línea decorativa
         doc.setDrawColor(45, 170, 225);
         doc.setLineWidth(2);
         doc.line(20, yPosition + 3, 190, yPosition + 3);
-        
+
         yPosition += 15;
-        
+
         // Estadísticas en cajas basadas en los estudiantes a exportar
         const estudiantesActivosCount = estudiantesParaExportar.filter(est => tieneCompraVerificada(est.id)).length;
         const estudiantesInactivosCount = estudiantesParaExportar.filter(est => !tieneCompraVerificada(est.id)).length;
-        
+
         // Caja 1: Total en reporte
         doc.setFillColor(248, 249, 250);
         doc.rect(20, yPosition, 40, 25, 'F');
@@ -1130,7 +1178,7 @@ const renderEstudiantes = () => {
         doc.setTextColor(108, 117, 125);
         const etiquetaTotal = estudiantesSeleccionados.length > 0 ? 'SELECCIONADOS' : 'EN REPORTE';
         doc.text(etiquetaTotal, 25, yPosition + 22);
-        
+
         // Caja 2: Activos
         doc.setFillColor(248, 249, 250);
         doc.rect(70, yPosition, 40, 25, 'F');
@@ -1141,7 +1189,7 @@ const renderEstudiantes = () => {
         doc.setFontSize(8);
         doc.setTextColor(108, 117, 125);
         doc.text('ACTIVOS', 85, yPosition + 22);
-        
+
         // Caja 3: Inactivos
         doc.setFillColor(248, 249, 250);
         doc.rect(120, yPosition, 40, 25, 'F');
@@ -1152,7 +1200,7 @@ const renderEstudiantes = () => {
         doc.setFontSize(8);
         doc.setTextColor(108, 117, 125);
         doc.text('INACTIVOS', 135, yPosition + 22);
-        
+
         // Caja 4: Porcentaje de activos
         doc.setFillColor(248, 249, 250);
         doc.rect(170, yPosition, 40, 25, 'F');
@@ -1166,16 +1214,16 @@ const renderEstudiantes = () => {
         doc.setFontSize(8);
         doc.setTextColor(108, 117, 125);
         doc.text('% ACTIVOS', 180, yPosition + 22);
-        
+
         yPosition += 40;
-        
+
         // Información de filtros si aplica
         if (filtroEstado !== 'todos' || busqueda !== '') {
           doc.setFillColor(255, 243, 205);
           doc.rect(20, yPosition, 170, 12, 'F');
           doc.setDrawColor(255, 193, 7);
           doc.rect(20, yPosition, 170, 12);
-          
+
           doc.setFontSize(9);
           doc.setTextColor(133, 100, 4);
           let filtrosTexto = 'FILTROS APLICADOS: ';
@@ -1188,25 +1236,25 @@ const renderEstudiantes = () => {
           doc.text(filtrosTexto, 25, yPosition + 7);
           yPosition += 20;
         }
-        
+
         // TABLA DE DATOS
         doc.setFontSize(14);
         doc.setTextColor(33, 37, 41);
         doc.text('DETALLE DE ESTUDIANTES', 20, yPosition);
-        
+
         // Línea decorativa
         doc.setDrawColor(45, 170, 225);
         doc.setLineWidth(1);
         doc.line(20, yPosition + 3, 190, yPosition + 3);
-        
+
         yPosition += 10;
-        
+
         // Preparar datos para la tabla
         console.log('Preparando datos para la tabla...');
         const datosTabla = estudiantesParaExportar.map(estudiante => {
           const esActivo = tieneCompraVerificada(estudiante.id);
           const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
-          
+
           return [
             `${estudiante.nombres || ''} ${estudiante.apellidos || ''}`.trim(),
             estudiante.email || 'No disponible',
@@ -1216,9 +1264,9 @@ const renderEstudiantes = () => {
             cursosEstudiante.length > 0 ? `${cursosEstudiante.length} curso(s)` : 'Sin cursos'
           ];
         });
-        
+
         console.log('Datos preparados:', datosTabla.length, 'filas');
-        
+
         // Configurar la tabla con diseño mejorado
         autoTable(doc, {
           startY: yPosition,
@@ -1280,23 +1328,23 @@ const renderEstudiantes = () => {
           pageBreak: 'auto',
           showHead: 'everyPage'
         });
-        
+
         // PIE DE PÁGINA PROFESIONAL
         const totalPages = doc.internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
           doc.setPage(i);
-          
+
           const pageHeight = doc.internal.pageSize.height;
-          
+
           // Fondo del pie
           doc.setFillColor(248, 249, 250);
           doc.rect(0, pageHeight - 25, 210, 25, 'F');
-          
+
           // Línea superior
           doc.setDrawColor(45, 170, 225);
           doc.setLineWidth(1);
           doc.line(15, pageHeight - 25, 195, pageHeight - 25);
-          
+
           // Información del pie
           doc.setFontSize(8);
           doc.setTextColor(108, 117, 125);
@@ -1305,22 +1353,22 @@ const renderEstudiantes = () => {
           doc.text(`Total de registros: ${estudiantesFiltrados.length}`, 15, pageHeight - 8);
           doc.text(new Date().toLocaleString('es-ES'), 165, pageHeight - 8);
         }
-        
+
         console.log('PDF generado exitosamente');
-        
+
         // Descargar el PDF
         const tipoReporte = estudiantesSeleccionados.length > 0 ? 'Seleccionados' : 'Todos';
         const nombreArchivo = `Reporte_Estudiantes_${tipoReporte}_${new Date().toISOString().split('T')[0]}.pdf`;
         console.log('Descargando archivo:', nombreArchivo);
-        
+
         doc.save(nombreArchivo);
-        
+
         // Mostrar mensaje de éxito
         const mensaje = estudiantesSeleccionados.length > 0 
           ? `PDF generado con ${estudiantesParaExportar.length} estudiantes seleccionados: ${nombreArchivo}`
           : `PDF profesional generado: ${nombreArchivo}`;
         alert(mensaje);
-        
+
       } catch (error) {
         console.error('Error al generar PDF:', error);
         alert(`Error al generar el PDF: ${error.message}`);
@@ -1331,7 +1379,7 @@ const renderEstudiantes = () => {
     const mostrarDetalles = (estudiante) => {
       const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
       const inscripcionesEstudiante = inscripciones.filter(ins => ins.usuario === estudiante.id);
-      
+
       setEstudianteDetalle({
         ...estudiante,
         cursos: cursosEstudiante,
