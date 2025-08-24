@@ -1364,7 +1364,7 @@ const renderEstudiantes = () => {
         const datos = estudiantesParaExportar.map(estudiante => {
           const esActivo = tieneCompraVerificada(estudiante.id);
           const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
-          
+
           return [
             `${estudiante.nombres || ''} ${estudiante.apellidos || ''}`.trim(),
             estudiante.email || 'No disponible',
@@ -1374,40 +1374,40 @@ const renderEstudiantes = () => {
             cursosEstudiante.length > 0 ? cursosEstudiante.join(' | ') : 'Sin cursos'
           ];
         });
-        
+
         // Usar punto y coma como delimitador (mejor para Excel en español)
         const delimiter = ';';
         const headers = ['Nombre', 'Email', 'DNI', 'Fecha de Registro', 'Estado', 'Cursos Comprados'];
-        
+
         // Función para escapar celdas correctamente
         const escaparCelda = (valor) => {
           if (valor == null) return '';
           let valorStr = String(valor).trim();
-          
+
           // Escapar comillas dobles duplicándolas
           valorStr = valorStr.replace(/"/g, '""');
-          
+
           // Encerrar en comillas si contiene delimitador, comillas o saltos de línea
           if (valorStr.includes(delimiter) || valorStr.includes('"') || valorStr.includes('\n') || valorStr.includes('\r')) {
             valorStr = `"${valorStr}"`;
           }
-          
+
           return valorStr;
         };
-        
+
         // Construir el CSV línea por línea
         let csvContent = headers.map(escaparCelda).join(delimiter) + '\r\n';
-        
+
         datos.forEach(fila => {
           csvContent += fila.map(escaparCelda).join(delimiter) + '\r\n';
         });
-        
+
         // Agregar BOM para UTF-8 y crear blob
         const BOM = '\uFEFF';
         const blob = new Blob([BOM + csvContent], { 
           type: 'text/csv;charset=utf-8;' 
         });
-        
+
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1417,13 +1417,13 @@ const renderEstudiantes = () => {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
-        
+
         // Mostrar mensaje de éxito
         const mensaje = estudiantesSeleccionados.length > 0 
           ? `CSV generado con ${estudiantesParaExportar.length} estudiantes seleccionados`
           : `CSV generado correctamente con ${estudiantesParaExportar.length} estudiantes`;
         alert(mensaje);
-        
+
         alert('Archivo CSV descargado exitosamente');
       } catch (error) {
         console.error('Error al exportar CSV:', error);
@@ -1467,7 +1467,7 @@ const renderEstudiantes = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Estadísticas */}
         <div className="stats-container">
           <div className="stat-item">
@@ -1502,7 +1502,7 @@ const renderEstudiantes = () => {
               className="search-input"
             />
           </div>
-          
+
           <div className="filters-container">
             <select 
               value={filtroEstado} 
@@ -1516,7 +1516,7 @@ const renderEstudiantes = () => {
               <option value="activos">Solo Activos</option>
               <option value="inactivos">Solo Inactivos</option>
             </select>
-            
+
             <select 
               value={ordenPor} 
               onChange={(e) => setOrdenPor(e.target.value)}
@@ -1572,7 +1572,7 @@ const renderEstudiantes = () => {
               {estudiantesPaginados.map(estudiante => {
                 const esActivo = tieneCompraVerificada(estudiante.id);
                 const cursosEstudiante = obtenerCursosEstudiante(estudiante.id);
-                
+
                 return (
                   <tr key={estudiante.id} className={estudiantesSeleccionados.includes(estudiante.id) ? 'selected' : ''}>
                     <td>
@@ -1632,7 +1632,7 @@ const renderEstudiantes = () => {
             >
               Anterior
             </button>
-            
+
             <div className="pagination-info">
               <span>
                 Página {paginaActual} de {totalPaginas}
@@ -1641,7 +1641,7 @@ const renderEstudiantes = () => {
                 ({estudiantesFiltrados.length} estudiantes total)
               </span>
             </div>
-            
+
             <button 
               className="pagination-btn"
               onClick={() => setPaginaActual(prev => Math.min(prev + 1, totalPaginas))}
@@ -1651,7 +1651,7 @@ const renderEstudiantes = () => {
             </button>
           </div>
         )}
-        
+
         {/* Modal de detalles del estudiante */}
         {mostrarModal && estudianteDetalle && (
           <div className="modal-overlay" onClick={cerrarModal}>
@@ -1660,7 +1660,7 @@ const renderEstudiantes = () => {
                 <h3>Detalles del Estudiante</h3>
                 <button className="modal-close" onClick={cerrarModal}>×</button>
               </div>
-              
+
               <div className="modal-body">
                 <div className="student-info-grid">
                   <div className="info-section">
@@ -1692,7 +1692,7 @@ const renderEstudiantes = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="courses-section-modal">
                     <h4>Trayectoria de Cursos</h4>
                     {estudianteDetalle.inscripciones.length > 0 ? (
@@ -1820,7 +1820,6 @@ const renderEstudiantes = () => {
                 </td>
                 <td>
                   <input
-
                     type="date"
                     value={inscripcion.fecha_examen_teorico || ''}
                     onChange={(e) => actualizarFechaInscripcion(inscripcion.id, 'fecha_examen_teorico', e.target.value)}
@@ -2099,7 +2098,7 @@ const renderEstudiantes = () => {
                     <option value={false}>Inactivo</option>
                   </select>
                 </td>
-         
+
                 {/* ...el bloque correcto de acciones ya está abajo... */}
                 <td>
   <div style={{ display: 'flex', gap: '8px' }}>
@@ -2136,7 +2135,7 @@ const renderEstudiantes = () => {
   const renderExamenes = () => (
     <div style={{ padding: '20px' }}>
       <h2 style={{ marginBottom: '20px', color: '#333' }}>Gestión de Exámenes</h2>
-      
+
 
       {/* Tabs para examenes */}
       <div style={{ marginBottom: '20px' }}>
@@ -2356,7 +2355,8 @@ const renderEstudiantes = () => {
                         ) : (
                           // Para exámenes teóricos: botones normales
                           <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-            
+
+                          
                             <button
                               onClick={async () => {
                                 setLoading(true);
@@ -2414,7 +2414,7 @@ const renderEstudiantes = () => {
               </table>
             </div>
           ))}
-          
+
           {examenes.length === 0 && (
             <div style={{ 
               textAlign: 'center', 
@@ -2875,119 +2875,123 @@ const renderEstudiantes = () => {
         </div>
       )}
 
-      {/* Modal/tarjeta de estudiantes */}
-      {modalListaEstudiantes.abierto && modalListaEstudiantes.estudiantes && (
-        <div className="modal-overlay" onClick={() => setModalListaEstudiantes({ abierto: false, estudiantes: [], examenId: null })}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Notas de Estudiantes</h3>
-              <button className="modal-close" onClick={() => setModalListaEstudiantes({ abierto: false, estudiantes: [], examenId: null })}>×</button>
-            </div>
-            <div className="modal-body">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>DNI</th>
-                    <th>Puntaje</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {modalListaEstudiantes.estudiantes.map(est => (
-                    est.intentos.map(intento => (
-                      <tr key={intento.id}>
-                        <td>{est.nombre}</td>
-                        <td>{est.email}</td>
-                        <td>{est.dni}</td>
-                        <td>{typeof intento.puntaje_obtenido === 'number' ? `${intento.puntaje_obtenido.toFixed(1)}%` : '-'}</td>
-                        <td>{intento.aprobado ? 'Aprobado' : 'No aprobado'}</td>
-                        <td>
-                          <button
-                            className="btn-details"
-                            onClick={() => verDetalleRespuestasAlumno(intento.id, est)}
-                            style={{ padding: '6px 12px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                          >
-                            Ver detalle de respuestas
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+    </div>
+  );
 
-      {/* Modal para mostrar detalle de respuestas */}
-      {modalDetalleRespuestas.abierto && modalDetalleRespuestas.detalle && (
-        <div className="modal-overlay" onClick={() => setModalDetalleRespuestas({ abierto: false, detalle: null, alumno: null })}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Detalle de Respuestas</h3>
-              <button className="modal-close" onClick={() => setModalDetalleRespuestas({ abierto: false, detalle: null, alumno: null })}>×</button>
-            </div>
-            <div className="modal-body">
-              <div style={{ marginBottom: '10px', fontWeight: 'bold', color: '#007bff' }}>
-                Alumno: {modalDetalleRespuestas.alumno?.nombre} | Email: {modalDetalleRespuestas.alumno?.email}
-              </div>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Pregunta</th>
-                    <th>Respuesta Correcta</th>
-                    <th>Respuesta Alumno</th>
-                    <th>¿Correcta?</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {modalDetalleRespuestas.detalle.detalle_preguntas.map((preg, idx) => (
-                    <tr key={preg.id}>
-                      <td>{idx + 1}</td>
-                      <td>{preg.texto_pregunta}</td>
-                      <td>{preg.opciones.find(o => o.id === preg.respuesta_correcta)?.texto_opcion || preg.respuesta_correcta}</td>
-                      <td>{preg.opciones.find(o => o.id === preg.respuesta_alumno)?.texto_opcion || preg.respuesta_alumno}</td>
-                      <td>
-                        {preg.fue_correcta ? <span style={{ color: 'green', fontWeight: 'bold' }}>✔</span> : <span style={{ color: 'red', fontWeight: 'bold' }}>✘</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+  return (
+    <div className="admin-panel">
+      <div className="admin-header">
+        <div className="logo-section">
+          <img src="/LogoPagina.png" alt="CertifiKT" className="admin-logo" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
+          <h1>Panel de Administración</h1>
+        </div>
+        <button 
+          onClick={() => {
+            logout();
+            window.location.href = '/login';
+          }}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          Cerrar Sesión
+        </button>
+      </div>
+
+      <div className="admin-tabs">
+        <button 
+          className={`tab-button ${activeTab === 'estudiantes' ? 'active' : ''}`}
+          onClick={() => setActiveTab('estudiantes')}
+        >
+          Estudiantes
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'inscripciones' ? 'active' : ''}`}
+          onClick={() => setActiveTab('inscripciones')}
+        >
+          Inscripciones y Pagos
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'cursos' ? 'active' : ''}`}
+          onClick={() => setActiveTab('cursos')}
+        >
+          Gestión de Cursos
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'examenes' ? 'active' : ''}`}
+          onClick={() => setActiveTab('examenes')}
+        >
+          Exámenes
+        </button>
+      </div>
+
+      <div className="admin-content">
+        {activeTab === 'estudiantes' && renderEstudiantes()}
+        {activeTab === 'inscripciones' && renderInscripciones()}
+        {activeTab === 'cursos' && renderCursos()}
+        {activeTab === 'examenes' && renderExamenes()}
+      </div>
+
+      {/* Modal/tarjeta de estudiantes */}
+      {modalListaEstudiantes.abierto && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.4)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>
+          <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', padding: '32px', minWidth: '350px', maxWidth: '90vw', maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ marginBottom: '18px', textAlign: 'center', color: '#007bff' }}>Estudiantes inscritos</h2>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {modalListaEstudiantes.estudiantes.map(est => (
+                <li key={est.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>
+                  <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{est.nombre}</span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {/* Estado actual de aprobación */}
+                    {typeof est.aceptado_admin !== 'undefined' && (
+                      <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
+                        {est.aceptado_admin === true && <span style={{ color: 'green' }}>Aprobado</span>}
+                        {est.aceptado_admin === false && <span style={{ color: 'red' }}>Desaprobado</span>}
+                        {(est.aceptado_admin === null || est.aceptado_admin === undefined) && <span style={{ color: 'orange' }}>Pendiente</span>}
+                      </span>
+                    )}
+                    <button
+                      style={{ padding: '6px 14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                      onClick={async () => {
+                        await aprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
+                        setModalListaEstudiantes(prev => ({
+                          ...prev,
+                          estudiantes: prev.estudiantes.map(e =>
+                            e.id === est.id ? { ...e, aceptado_admin: true } : e
+                          )
+                        }));
+                      }}
+                    >Aprobar</button>
+                    <button
+                      style={{ padding: '6px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                      onClick={async () => {
+                        await desaprobarEstudiante(est.id, modalListaEstudiantes.cursoId);
+                        setModalListaEstudiantes(prev => ({
+                          ...prev,
+                          estudiantes: prev.estudiantes.map(e =>
+                            e.id === est.id ? { ...e, aceptado_admin: false } : e
+                          )
+                        }));
+                      }}
+                    >Desaprobar</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div style={{ textAlign: 'center', marginTop: '18px' }}>
+              <button style={{ padding: '8px 22px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setModalListaEstudiantes({ ...modalListaEstudiantes, abierto: false })}>Cerrar</button>
             </div>
           </div>
         </div>
       )}
     </div>
   );
-
-  
-  // Render principal con tabs y contenido completo
-  return (
-    <div className="admin-panel-container">
-      <div className="admin-header">
-        <h1>Panel de Administración</h1>
-        <div className="admin-tabs">
-          <button className={activeTab === 'estudiantes' ? 'active' : ''} onClick={() => setActiveTab('estudiantes')}>Estudiantes</button>
-          <button className={activeTab === 'inscripciones' ? 'active' : ''} onClick={() => setActiveTab('inscripciones')}>Inscripciones</button>
-          <button className={activeTab === 'cursos' ? 'active' : ''} onClick={() => setActiveTab('cursos')}>Cursos</button>
-          <button className={activeTab === 'examenes' ? 'active' : ''} onClick={() => setActiveTab('examenes')}>Exámenes</button>
-        </div>
-      </div>
-      {/* <div className="admin-content">
-        {activeTab === 'estudiantes' && renderEstudiantes()}
-        {activeTab === 'inscripciones' && renderInscripciones && renderInscripciones()}
-        {activeTab === 'cursos' && renderCursos && renderCursos()}
-        {activeTab === 'examenes' && renderExamenes  && renderExamenes()}
-      </div> */}
-      </div>
-  )
 }
 
 export default AdminPanel;
-
