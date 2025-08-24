@@ -2965,14 +2965,14 @@ const renderEstudiantes = () => {
       )}
     </div>
   );
-}
+
       <div className="admin-content">
         {activeTab === 'estudiantes' && renderEstudiantes()}
         {activeTab === 'inscripciones' && renderInscripciones()}
         {activeTab === 'cursos' && renderCursos()}
         {activeTab === 'examenes' && renderExamenes() && renderExamenes()}
       </div>
-
+}
 
 export default AdminPanel;
 
