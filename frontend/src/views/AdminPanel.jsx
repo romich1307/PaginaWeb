@@ -2003,7 +2003,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                   onChange={(e) => setNuevoCurso({ ...nuevoCurso, nivel: e.target.value })}
                   style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                 >
-                  <option value="basico">Básico</option>
+                  <option value="principiante">Principiante</option>
                   <option value="intermedio">Intermedio</option>
                   <option value="avanzado">Avanzado</option>
                 </select>
