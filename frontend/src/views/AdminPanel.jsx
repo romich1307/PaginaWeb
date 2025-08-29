@@ -599,15 +599,15 @@ function AdminPanel() {
     if (exito) {
       // Limpiar el formulario
       setNuevoCurso({
-        nombre: '',
-        descripcion: '',
-        instructor: '',
-        ubicacion: '',
-        horario: '',
-        precio: '',
-        duracion_semanas: '',
-        nivel: 'basico',
-        activo: true
+  nombre: '',
+  descripcion: '',
+  instructor: '',
+  ubicacion: '',
+  horario: '',
+  precio: '',
+  duracion_semanas: '',
+  nivel: 'principiante',
+  activo: true
       });
       setMostrarFormularioCurso(false);
     }
@@ -626,10 +626,19 @@ function AdminPanel() {
         alert('Curso creado exitosamente');
         return true;
       } else {
-        const errorData = await response.json();
-        console.error('Error al crear curso:', errorData);
-        setError(`Error al crear curso: ${JSON.stringify(errorData)}`);
-        return false;
+          const errorData = await response.json();
+          console.error('Error al crear curso:', errorData);
+          let mensaje = 'Error al crear curso:';
+          if (typeof errorData === 'object' && errorData !== null) {
+            for (const campo in errorData) {
+              mensaje += `\n${campo}: ${errorData[campo]}`;
+            }
+          } else {
+            mensaje += `\n${errorData}`;
+          }
+          alert(mensaje);
+          setError(mensaje);
+          return false;
       }
     } catch (error) {
       console.error('Error:', error);
