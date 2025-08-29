@@ -7,3 +7,4 @@ dj-database-url==3.0.1
 Pillow==10.4.0
 gunicorn
 whitenoise
+requests
