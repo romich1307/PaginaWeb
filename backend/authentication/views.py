@@ -127,6 +127,20 @@ def crear_inscripcion(request):
         # El usuario debe estar autenticado pero no necesita ser admin
         inscripcion_data = request.data.copy()
         inscripcion_data['usuario'] = request.user.id
+        # Subir comprobante_pago a Supabase si se envía archivo
+        comprobante_pago = request.FILES.get('comprobante_pago', None)
+        supabase_url = None
+        if comprobante_pago:
+            file_path = f"/tmp/{comprobante_pago.name}"
+            with open(file_path, 'wb+') as destination:
+                for chunk in comprobante_pago.chunks():
+                    destination.write(chunk)
+            supabase_url = upload_file_to_supabase(file_path, comprobante_pago.name)
+        # Crear dict limpio para el serializer
+        data_serializer = dict(inscripcion_data)
+        if supabase_url:
+            data_serializer['comprobante_pago'] = supabase_url
+        serializer = InscripcionCreateSerializer(data=data_serializer)
         
         # Validar que el curso existe y está activo
         try:
