@@ -119,6 +119,8 @@ def crear_inscripcion(request):
     """
     Vista pública para que los usuarios autenticados puedan inscribirse a cursos
     """
+    print("FILES:", request.FILES)
+    print("DATA:", request.data)
     try:
         print("FILES:", request.FILES)
         print("DATA:", request.data)
