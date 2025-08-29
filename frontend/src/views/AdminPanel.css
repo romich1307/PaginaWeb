@@ -1,3 +1,35 @@
+.admin-tabs {
+  display: flex;
+  gap: 18px;
+  justify-content: flex-start;
+  margin-bottom: 32px;
+}
+.admin-tab-btn {
+  background: linear-gradient(135deg, #fff 60%, #e3eafc 100%);
+  color: #1976D2;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 28px;
+  font-size: 1.08em;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(45,170,225,0.08);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+  outline: none;
+}
+.admin-tab-btn:not(.active):hover {
+  background: linear-gradient(135deg, #e3eafc 0%, #fff 100%);
+  color: #1565C0;
+  box-shadow: 0 4px 16px rgba(45,170,225,0.12);
+  transform: translateY(-2px) scale(1.04);
+}
+.admin-tab-btn.active {
+  background: linear-gradient(135deg, #2DAAE1 0%, #1976D2 100%);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(45,170,225,0.18);
+  transform: scale(1.08);
+}
 /* Tablas del Admin */
 .table-container {
   background: rgba(255, 255, 255, 0.1);
