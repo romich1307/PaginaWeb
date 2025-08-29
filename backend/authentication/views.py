@@ -17,6 +17,7 @@ from .serializers import (
 import json
 from django.db import transaction
 import random
+from supabase_upload import upload_file_to_supabase
 
 # Create your views here.
 
@@ -136,6 +137,15 @@ def crear_inscripcion(request):
             return Response({
                 'error': 'Ya estás inscrito en este curso'
             }, status=status.HTTP_400_BAD_REQUEST)
+        # Subir comprobante_pago a Supabase si se envía archivo
+        comprobante_pago = request.FILES.get('comprobante_pago', None)
+        if comprobante_pago:
+            file_path = f"/tmp/{comprobante_pago.name}"
+            with open(file_path, 'wb+') as destination:
+                for chunk in comprobante_pago.chunks():
+                    destination.write(chunk)
+            supabase_url = upload_file_to_supabase(file_path, comprobante_pago.name)
+            inscripcion_data['comprobante_pago'] = supabase_url
         
         serializer = InscripcionCreateSerializer(data=inscripcion_data)
         if serializer.is_valid():
@@ -472,6 +482,15 @@ def admin_preguntas(request):
         opcion_d = data.get('opcion_d', '')
         respuesta_correcta = data.get('respuesta_correcta', '')
         imagen_pregunta = files.get('imagen_pregunta', None)
+        # Subir imagen a Supabase si se envía archivo
+        if imagen_pregunta:
+            from supabase_upload import upload_file_to_supabase
+            file_path = f"/tmp/{imagen_pregunta.name}"
+            with open(file_path, 'wb+') as destination:
+                for chunk in imagen_pregunta.chunks():
+                    destination.write(chunk)
+            supabase_url = upload_file_to_supabase(file_path, imagen_pregunta.name)
+            imagen_pregunta = supabase_url
         # Buscar examen teórico del curso
         from .models import Curso
         try:

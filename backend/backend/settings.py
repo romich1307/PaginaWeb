@@ -104,6 +104,9 @@ elif os.getenv('DB_HOST'):
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'OPTIONS': {
+                'driver': 'pg8000',
+            },
         }
     }
 else:
