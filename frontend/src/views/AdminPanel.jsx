@@ -2238,7 +2238,7 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 alignItems: 'center'
               }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '20px' }}>📚 {curso.nombre}</h3>
+                  <h3 style={{ margin: 0, fontSize: '20px' }}> {curso.nombre}</h3>
                   <p style={{ margin: '5px 0 0 0', opacity: 0.9 }}>
                     {curso.instructor} •  {curso.estudiantes_inscritos} estudiantes inscritos
                   </p>
