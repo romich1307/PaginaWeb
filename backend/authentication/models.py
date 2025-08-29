@@ -115,7 +115,7 @@ class Inscripcion(models.Model):
     
     # Información de pago
     metodo_pago = models.CharField(max_length=20, choices=METODO_PAGO_CHOICES, verbose_name="Método de Pago")
-    comprobante_pago = models.URLField(blank=True, null=True, verbose_name="Comprobante de Pago")
+    comprobante_pago = models.FileField(upload_to='comprobantes/', blank=True, null=True, verbose_name="Comprobante de Pago")
     comentarios = models.TextField(blank=True, null=True, verbose_name="Comentarios")
     
     # Estado y fechas
