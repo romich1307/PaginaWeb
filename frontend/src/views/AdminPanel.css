@@ -5,30 +5,30 @@
   margin-bottom: 32px;
 }
 .admin-tab-btn {
-  background: linear-gradient(135deg, #fff 60%, #e3eafc 100%);
-  color: #1976D2;
+  background: linear-gradient(135deg, #2DAAE1 0%, #1976D2 100%);
+  color: #fff;
   border: none;
   border-radius: 12px;
   padding: 12px 28px;
   font-size: 1.08em;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(45,170,225,0.08);
+  box-shadow: 0 2px 12px rgba(45,170,225,0.13);
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.5px;
   outline: none;
 }
 .admin-tab-btn:not(.active):hover {
-  background: linear-gradient(135deg, #e3eafc 0%, #fff 100%);
-  color: #1565C0;
-  box-shadow: 0 4px 16px rgba(45,170,225,0.12);
-  transform: translateY(-2px) scale(1.04);
+  background: linear-gradient(135deg, #1976D2 0%, #2DAAE1 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(45,170,225,0.18);
+  transform: translateY(-2px) scale(1.07);
 }
 .admin-tab-btn.active {
-  background: linear-gradient(135deg, #2DAAE1 0%, #1976D2 100%);
+  background: linear-gradient(135deg, #1976D2 0%, #2DAAE1 100%);
   color: #fff;
-  box-shadow: 0 6px 24px rgba(45,170,225,0.18);
-  transform: scale(1.08);
+  box-shadow: 0 8px 32px rgba(45,170,225,0.22);
+  transform: scale(1.12);
 }
 /* Tablas del Admin */
 .table-container {
