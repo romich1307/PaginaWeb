@@ -125,12 +125,9 @@ def crear_inscripcion(request):
     print("FILES:", request.FILES)
     print("DATA:", request.data)
     try:
-        print("FILES:", request.FILES)
-        print("DATA:", request.data)
-        # El usuario debe estar autenticado pero no necesita ser admin
         inscripcion_data = request.data.copy()
         inscripcion_data['usuario'] = request.user.id
-        # Subir comprobante_pago a Supabase si se envía archivo
+        data_serializer = dict(inscripcion_data)
         comprobante_pago = request.FILES.get('comprobante_pago', None)
         supabase_url = None
         if comprobante_pago:
@@ -139,21 +136,13 @@ def crear_inscripcion(request):
                 for chunk in comprobante_pago.chunks():
                     destination.write(chunk)
             supabase_url = upload_file_to_supabase(file_path, comprobante_pago.name)
-        # Crear dict limpio para el serializer
-        data_serializer = dict(inscripcion_data)
         if supabase_url:
             data_serializer['comprobante_pago'] = supabase_url
         else:
-            # Si no hay archivo, pero el campo existe, asegúrate de que sea string o vacío
             if 'comprobante_pago' in data_serializer and not isinstance(data_serializer['comprobante_pago'], str):
                 data_serializer['comprobante_pago'] = ''
-        serializer = InscripcionCreateSerializer(data=data_serializer)
         print("Datos para serializer:", data_serializer)
-        data_serializer = dict(inscripcion_data)
-        if supabase_url:
-            data_serializer['comprobante_pago'] = supabase_url
         serializer = InscripcionCreateSerializer(data=data_serializer)
-        
         # Validar que el curso existe y está activo
         try:
             curso = Curso.objects.get(id=inscripcion_data['curso'], activo=True)
@@ -161,23 +150,11 @@ def crear_inscripcion(request):
             return Response({
                 'error': 'El curso no existe o no está disponible'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
         # Verificar si el usuario ya está inscrito en este curso
         if Inscripcion.objects.filter(usuario=request.user, curso=curso).exists():
             return Response({
                 'error': 'Ya estás inscrito en este curso'
             }, status=status.HTTP_400_BAD_REQUEST)
-        # Subir comprobante_pago a Supabase si se envía archivo
-        comprobante_pago = request.FILES.get('comprobante_pago', None)
-        if comprobante_pago:
-            file_path = f"/tmp/{comprobante_pago.name}"
-            with open(file_path, 'wb+') as destination:
-                for chunk in comprobante_pago.chunks():
-                    destination.write(chunk)
-            supabase_url = upload_file_to_supabase(file_path, comprobante_pago.name)
-            inscripcion_data['comprobante_pago'] = supabase_url
-        
-        serializer = InscripcionCreateSerializer(data=inscripcion_data)
         if serializer.is_valid():
             inscripcion = serializer.save()
             return Response({
@@ -189,7 +166,6 @@ def crear_inscripcion(request):
                 'error': 'Datos inválidos',
                 'details': serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
-            
     except Exception as e:
         return Response({
             'error': f'Error al crear inscripción: {str(e)}'
