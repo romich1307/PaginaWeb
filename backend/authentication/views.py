@@ -17,7 +17,6 @@ from .serializers import (
 import json
 from django.db import transaction
 import random
-from backend.supabase_upload import upload_file_to_supabase
 
 # Create your views here.
 
@@ -32,13 +31,13 @@ def register(request):
         user = serializer.save()
         # Create token
         token, created = Token.objects.get_or_create(user=user)
-        
+
         return Response({
             'user': UserSerializer(user).data,
             'token': token.key,
             'message': 'Usuario registrado exitosamente'
         }, status=status.HTTP_201_CREATED)
-    
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -49,7 +48,7 @@ def login(request):
     """
     email = request.data.get('email')
     password = request.data.get('password')
-    
+
     if email and password:
         user = authenticate(username=email, password=password)
         if user:
@@ -63,7 +62,7 @@ def login(request):
             return Response({
                 'error': 'Email o contraseña incorrectos'
             }, status=status.HTTP_401_UNAUTHORIZED)
-    
+
     return Response({
         'error': 'Email y contraseña son requeridos'
     }, status=status.HTTP_400_BAD_REQUEST)
@@ -116,10 +115,14 @@ def cursos_publicos(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def crear_inscripcion(request):
+    """
+    Vista pública para que los usuarios autenticados puedan inscribirse a cursos
+    """
     try:
+        # El usuario debe estar autenticado pero no necesita ser admin
         inscripcion_data = request.data.copy()
         inscripcion_data['usuario'] = request.user.id
-        serializer = InscripcionCreateSerializer(data=inscripcion_data)
+
         # Validar que el curso existe y está activo
         try:
             curso = Curso.objects.get(id=inscripcion_data['curso'], activo=True)
@@ -127,11 +130,14 @@ def crear_inscripcion(request):
             return Response({
                 'error': 'El curso no existe o no está disponible'
             }, status=status.HTTP_400_BAD_REQUEST)
+
         # Verificar si el usuario ya está inscrito en este curso
         if Inscripcion.objects.filter(usuario=request.user, curso=curso).exists():
             return Response({
                 'error': 'Ya estás inscrito en este curso'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = InscripcionCreateSerializer(data=inscripcion_data)
         if serializer.is_valid():
             inscripcion = serializer.save()
             return Response({
@@ -143,6 +149,7 @@ def crear_inscripcion(request):
                 'error': 'Datos inválidos',
                 'details': serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
+
     except Exception as e:
         return Response({
             'error': f'Error al crear inscripción: {str(e)}'
@@ -183,7 +190,7 @@ def is_admin_user(request):
     Verificar si el usuario es administrador
     """
     is_admin = request.user.email == 'jiji@gmail.com' or request.user.is_staff
-    
+
     return Response({
         'is_admin': is_admin,
         'user_email': request.user.email,
@@ -200,12 +207,12 @@ def admin_inscripciones(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     if request.method == 'GET':
         inscripciones = Inscripcion.objects.all().order_by('-fecha_inscripcion')
         serializer = InscripcionSerializer(inscripciones, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     elif request.method == 'POST':
         serializer = InscripcionCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -223,23 +230,23 @@ def admin_inscripcion_detail(request, pk):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     try:
         inscripcion = Inscripcion.objects.get(pk=pk)
     except Inscripcion.DoesNotExist:
         return Response({'error': 'Inscripción no encontrada'}, status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == 'GET':
         serializer = InscripcionSerializer(inscripcion)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     elif request.method == 'PUT':
         serializer = InscripcionSerializer(inscripcion, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     elif request.method == 'DELETE':
         inscripcion.delete()
         return Response({'message': 'Inscripción eliminada'}, status=status.HTTP_204_NO_CONTENT)
@@ -254,12 +261,12 @@ def admin_cursos(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     if request.method == 'GET':
         cursos = Curso.objects.all().order_by('nombre')
         serializer = CursoSerializer(cursos, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     elif request.method == 'POST':
         serializer = CursoSerializer(data=request.data)
         if serializer.is_valid():
@@ -277,16 +284,16 @@ def admin_curso_detail(request, pk):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     try:
         curso = Curso.objects.get(pk=pk)
     except Curso.DoesNotExist:
         return Response({'error': 'Curso no encontrado'}, status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == 'GET':
         serializer = CursoSerializer(curso)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     elif request.method in ['PUT', 'PATCH']:
         # PATCH permite actualizaciones parciales, PUT requiere todos los campos
         partial = request.method == 'PATCH'
@@ -295,7 +302,7 @@ def admin_curso_detail(request, pk):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     elif request.method == 'DELETE':
         curso.delete()
         return Response({'message': 'Curso eliminado'}, status=status.HTTP_204_NO_CONTENT)
@@ -310,7 +317,7 @@ def admin_estudiantes(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     estudiantes = CustomUser.objects.filter(is_staff=False).order_by('-date_joined')
     serializer = UserSerializer(estudiantes, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -376,7 +383,7 @@ def admin_examenes(request):
         })
         # Contar estudiantes inscritos en el curso
         estudiantes_inscritos = curso.inscripcion_set.filter(estado_pago='verificado').count()
-        
+
         cursos_con_examenes.append({
             'id': curso.id,
             'nombre': curso.nombre,
@@ -386,7 +393,7 @@ def admin_examenes(request):
             'examenes': examenes_data,
             'total_examenes': len(examenes_data),
         })
-    
+
     return Response(cursos_con_examenes, status=status.HTTP_200_OK)
 
 
@@ -399,14 +406,14 @@ def admin_examen_detalle(request, examen_id):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     from .models import Examen
-    
+
     try:
         examen = Examen.objects.get(id=examen_id)
     except Examen.DoesNotExist:
         return Response({'error': 'Examen no encontrado'}, status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == 'GET':
         data = {
             'id': examen.id,
@@ -419,7 +426,7 @@ def admin_examen_detalle(request, examen_id):
             'activo': examen.activo,
         }
         return Response(data, status=status.HTTP_200_OK)
-    
+
     elif request.method == 'PATCH':
         # Mapear campos frontend a backend
         field_mapping = {
@@ -427,14 +434,14 @@ def admin_examen_detalle(request, examen_id):
             'duracion_minutos': 'tiempo_limite',
             'numero_preguntas': 'cantidad_preguntas'
         }
-        
+
         # Actualizar campos proporcionados
         for field, value in request.data.items():
             # Usar el mapeo si existe, si no usar el campo directamente
             backend_field = field_mapping.get(field, field)
             if hasattr(examen, backend_field):
                 setattr(examen, backend_field, value)
-        
+
         examen.save()
         return Response({'message': 'Examen actualizado correctamente'}, status=status.HTTP_200_OK)
 
@@ -465,15 +472,6 @@ def admin_preguntas(request):
         opcion_d = data.get('opcion_d', '')
         respuesta_correcta = data.get('respuesta_correcta', '')
         imagen_pregunta = files.get('imagen_pregunta', None)
-        # Subir imagen a Supabase si se envía archivo
-        if imagen_pregunta:
-            from supabase_upload import upload_file_to_supabase
-            file_path = f"/tmp/{imagen_pregunta.name}"
-            with open(file_path, 'wb+') as destination:
-                for chunk in imagen_pregunta.chunks():
-                    destination.write(chunk)
-            supabase_url = upload_file_to_supabase(file_path, imagen_pregunta.name)
-            imagen_pregunta = supabase_url
         # Buscar examen teórico del curso
         from .models import Curso
         try:
@@ -559,14 +557,14 @@ def admin_pregunta_detalle(request, pregunta_id):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
             return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     from .models import Pregunta
-    
+
     try:
         pregunta = Pregunta.objects.get(id=pregunta_id)
     except Pregunta.DoesNotExist:
         return Response({'error': 'Pregunta no encontrada'}, status=status.HTTP_404_NOT_FOUND)
-    
+
     if request.method == 'GET':
         data = {
             'id': pregunta.id,
@@ -586,22 +584,22 @@ def admin_pregunta_detalle(request, pregunta_id):
             for idx, opcion in enumerate(opciones):
                 data[f'opcion_{chr(97+idx)}'] = opcion.texto_opcion
         return Response(data, status=status.HTTP_200_OK)
-    
+
     elif request.method == 'PATCH':
         # Mapear campos frontend a backend
         field_mapping = {
             'texto': 'texto_pregunta'
         }
-        
+
         # Actualizar campos proporcionados
         for field, value in request.data.items():
             backend_field = field_mapping.get(field, field)
             if hasattr(pregunta, backend_field):
                 setattr(pregunta, backend_field, value)
-        
+
         pregunta.save()
         return Response({'message': 'Pregunta actualizada correctamente'}, status=status.HTTP_200_OK)
-    
+
     elif request.method == 'DELETE':
         pregunta.delete()
         return Response({'message': 'Pregunta eliminada correctamente'}, status=status.HTTP_200_OK)
@@ -616,16 +614,16 @@ def admin_intentos_examen(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     from .models import IntentarExamen
-    
+
     intentos = IntentarExamen.objects.select_related('usuario', 'examen').all().order_by('-fecha_inicio')
     intentos_data = []
-    
+
     for intento in intentos:
         # Verificar si el intento está completado
         completado = intento.estado == 'completado'
-        
+
         intentos_data.append({
             'id': intento.id,
             'usuario_id': intento.usuario.id,
@@ -638,7 +636,7 @@ def admin_intentos_examen(request):
             'puntaje': intento.puntaje_obtenido,  # Usar 'puntaje_obtenido'
             'preguntas_seleccionadas': intento.preguntas_seleccionadas,
         })
-    
+
     return Response(intentos_data, status=status.HTTP_200_OK)
 
 
@@ -651,18 +649,18 @@ def admin_examen_practico_resultado(request, intento_id):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     from .models import IntentarExamen
-    
+
     try:
         intento = IntentarExamen.objects.select_related('usuario', 'examen').get(id=intento_id)
     except IntentarExamen.DoesNotExist:
         return Response({'error': 'Intento de examen no encontrado'}, status=status.HTTP_404_NOT_FOUND)
-    
+
     # Verificar que sea un examen práctico
     if intento.examen.tipo != 'practico':
         return Response({'error': 'Este endpoint es solo para exámenes prácticos'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     if request.method == 'GET':
         data = {
             'id': intento.id,
@@ -676,29 +674,29 @@ def admin_examen_practico_resultado(request, intento_id):
             'fecha_evaluacion_practica': intento.fecha_evaluacion_practica,
         }
         return Response(data, status=status.HTTP_200_OK)
-    
+
     elif request.method == 'PATCH':
         # Actualizar resultado del examen práctico
         resultado = request.data.get('resultado_practico')
         observaciones = request.data.get('observaciones_practico', '')
         evaluador = request.data.get('evaluador', '')
-        
+
         if resultado in ['aprobado', 'desaprobado']:
             intento.resultado_practico = resultado
             intento.observaciones_practico = observaciones
             intento.evaluador = evaluador
             intento.fecha_evaluacion_practica = timezone.now()
             intento.estado = 'completado'
-            
+
             # Establecer aprobación basada en el resultado
             intento.aprobado = (resultado == 'aprobado')
-            
+
             # Para exámenes prácticos, el puntaje es binario: 100 si aprobado, 0 si desaprobado
             intento.puntaje_obtenido = 100.0 if resultado == 'aprobado' else 0.0
             intento.fecha_finalizacion = timezone.now()
-            
+
             intento.save()
-            
+
             return Response({
                 'message': f'Resultado actualizado a: {resultado}',
                 'resultado': resultado,
@@ -719,16 +717,16 @@ def admin_examenes_practicos_pendientes(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     from .models import IntentarExamen
     from django.utils import timezone
     from django.db import models
     from django.db.models import Q
     from datetime import date
-    
+
     # Obtener la fecha de hoy
     hoy = date.today()
-    
+
     # Obtener intentos de exámenes prácticos pendientes o programados para hoy
     intentos_pendientes = IntentarExamen.objects.select_related('usuario', 'examen', 'examen__curso').filter(
         examen__tipo='practico',
@@ -738,12 +736,12 @@ def admin_examenes_practicos_pendientes(request):
         Q(fecha_programada_practica=hoy) | 
         Q(fecha_programada_practica__isnull=True)
     ).order_by('-fecha_inicio')
-    
+
     intentos_data = []
     for intento in intentos_pendientes:
         # Determinar si es programado para hoy
         es_hoy = intento.fecha_programada_practica == hoy if intento.fecha_programada_practica else False
-        
+
         intentos_data.append({
             'id': intento.id,
             'usuario_id': intento.usuario.id,
@@ -758,7 +756,7 @@ def admin_examenes_practicos_pendientes(request):
             'resultado_practico': intento.resultado_practico or 'pendiente',
             'evaluador': intento.evaluador,
         })
-    
+
     return Response(intentos_data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -770,30 +768,30 @@ def programar_examen_practico(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     from .models import IntentarExamen
     from datetime import datetime, time
-    
+
     try:
         intento_id = request.data.get('intento_id')
         fecha_programada = request.data.get('fecha_programada')
         hora_programada = request.data.get('hora_programada')  # Format: "HH:MM"
         duracion_programada = request.data.get('duracion_programada')  # En minutos
-        
+
         if not intento_id or not fecha_programada:
             return Response({
                 'error': 'Se requiere intento_id y fecha_programada'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Obtener el intento
         intento = IntentarExamen.objects.get(
             id=intento_id,
             examen__tipo='practico'
         )
-        
+
         # Convertir fecha string a date object
         fecha_obj = datetime.strptime(fecha_programada, '%Y-%m-%d').date()
-        
+
         # Convertir hora string a time object si se proporciona
         hora_obj = None
         if hora_programada:
@@ -803,7 +801,7 @@ def programar_examen_practico(request):
                 return Response({
                     'error': 'Formato de hora inválido. Use HH:MM'
                 }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Actualizar los campos
         intento.fecha_programada_practica = fecha_obj
         if hora_obj:
@@ -811,7 +809,7 @@ def programar_examen_practico(request):
         if duracion_programada:
             intento.duracion_programada = int(duracion_programada)
         intento.save()
-        
+
         return Response({
             'message': f'Examen práctico programado para {fecha_programada}' + 
                       (f' a las {hora_programada}' if hora_programada else '') +
@@ -821,7 +819,7 @@ def programar_examen_practico(request):
             'hora_programada': hora_programada,
             'duracion_programada': duracion_programada
         }, status=status.HTTP_200_OK)
-        
+
     except IntentarExamen.DoesNotExist:
         return Response({
             'error': 'Intento de examen no encontrado'
@@ -845,27 +843,27 @@ def activar_examen_para_curso(request):
     # Verificar si es admin
     if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
-    
+
     from .models import Examen, IntentarExamen, Inscripcion
     from datetime import datetime, time
-    
+
     try:
         examen_id = request.data.get('examen_id')
         fecha_programada = request.data.get('fecha_programada')
         hora_programada = request.data.get('hora_programada')  # Format: "HH:MM"
         duracion_programada = request.data.get('duracion_programada')  # En minutos
-        
+
         if not examen_id or not fecha_programada:
             return Response({
                 'error': 'Se requiere examen_id y fecha_programada'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Obtener el examen
         examen = Examen.objects.get(id=examen_id, tipo='practico')
-        
+
         # Convertir fecha string a date object
         fecha_obj = datetime.strptime(fecha_programada, '%Y-%m-%d').date()
-        
+
         # Convertir hora string a time object si se proporciona
         hora_obj = None
         if hora_programada:
@@ -875,23 +873,23 @@ def activar_examen_para_curso(request):
                 return Response({
                     'error': 'Formato de hora inválido. Use HH:MM'
                 }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Obtener todos los estudiantes inscritos en el curso
         inscripciones = Inscripcion.objects.filter(
             curso=examen.curso,
             estado='aprobado'
         )
-        
+
         intentos_creados = 0
         intentos_actualizados = 0
-        
+
         for inscripcion in inscripciones:
             # Verificar si ya existe un intento para este estudiante y examen
             intento_existente = IntentarExamen.objects.filter(
                 usuario=inscripcion.usuario,
                 examen=examen
             ).first()
-            
+
             if intento_existente:
                 # Actualizar intento existente
                 intento_existente.fecha_programada_practica = fecha_obj
@@ -913,7 +911,7 @@ def activar_examen_para_curso(request):
                     resultado_practico='pendiente'
                 )
                 intentos_creados += 1
-        
+
         return Response({
             'message': f'Examen activado para {inscripciones.count()} estudiantes',
             'intentos_creados': intentos_creados,
@@ -924,7 +922,7 @@ def activar_examen_para_curso(request):
             'curso': examen.curso.nombre,
             'examen': examen.nombre
         }, status=status.HTTP_200_OK)
-        
+
     except Examen.DoesNotExist:
         return Response({
             'error': 'Examen no encontrado'
@@ -949,22 +947,22 @@ def examenes_disponibles(request, curso_id):
     """
     try:
         from .models import Examen, Inscripcion
-        
+
         # Verificar que el usuario esté inscrito en el curso
         inscripcion = Inscripcion.objects.filter(
             usuario=request.user, 
             curso_id=curso_id, 
             estado_pago='verificado'
         ).first()
-        
+
         if not inscripcion:
             return Response({
                 'error': 'No estás inscrito en este curso o tu inscripción no está verificada'
             }, status=status.HTTP_403_FORBIDDEN)
-        
+
         # Obtener exámenes activos del curso
         examenes = Examen.objects.filter(curso_id=curso_id, activo=True)
-        
+
         examenes_data = []
         for examen in examenes:
             total_preguntas = examen.preguntas.filter(activo=True).count()
@@ -978,9 +976,9 @@ def examenes_disponibles(request, curso_id):
                 'tiempo_limite': examen.tiempo_limite,
                 'puntaje_minimo': examen.puntaje_minimo,
             })
-        
+
         return Response(examenes_data, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
         return Response({
             'error': f'Error al obtener exámenes: {str(e)}'
@@ -995,12 +993,12 @@ def mis_examenes_programados(request):
     """
     try:
         from .models import IntentarExamen
-        
+
         # Obtener intentos de examen del usuario con información de programación
         intentos = IntentarExamen.objects.filter(
             usuario=request.user
         ).select_related('examen', 'examen__curso')
-        
+
         examenes_data = []
         for intento in intentos:
                 # Obtener la inscripción del usuario para el curso de este examen
@@ -1032,9 +1030,9 @@ def mis_examenes_programados(request):
                     'aceptado_admin': getattr(inscripcion, 'aceptado_admin', None) if inscripcion else None,
                 }
                 examenes_data.append(examen_info)
-        
+
         return Response(examenes_data, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
         return Response({
             'error': f'Error al obtener exámenes programados: {str(e)}'
@@ -1049,31 +1047,31 @@ def iniciar_examen(request, examen_id):
     """
     try:
         from .models import Examen, IntentarExamen, Inscripcion
-        
+
         # Verificar que el examen existe
         examen = Examen.objects.get(id=examen_id, activo=True)
-        
+
         # Verificar que el usuario esté inscrito en el curso
         inscripcion = Inscripcion.objects.filter(
             usuario=request.user, 
             curso=examen.curso, 
             estado_pago='verificado'
         ).first()
-        
+
         if not inscripcion:
             return Response({
                 'error': 'No estás inscrito en este curso'
             }, status=status.HTTP_403_FORBIDDEN)
-        
+
         # Verificar si ya tiene un intento completado
         from django.utils import timezone
         from datetime import timedelta
-        
+
         intento_existente = IntentarExamen.objects.filter(
             usuario=request.user,
             examen=examen
         ).order_by('-fecha_inicio').first()
-        
+
         if intento_existente:
             # Si ya tiene un intento completado, no permitir otro
             if intento_existente.estado == 'completado':
@@ -1085,11 +1083,11 @@ def iniciar_examen(request, examen_id):
                         'fecha_finalizacion': intento_existente.fecha_finalizacion
                     }
                 }, status=status.HTTP_400_BAD_REQUEST)
-            
+
             # Si el intento es reciente (menos de 24 horas) y está iniciado
             elif (intento_existente.estado == 'iniciado' and 
                   timezone.now() - intento_existente.fecha_inicio < timedelta(hours=24)):
-                
+
                 return Response({
                     'intento': {
                         'id': intento_existente.id,
@@ -1105,22 +1103,22 @@ def iniciar_examen(request, examen_id):
                     },
                     'message': 'Continuando con intento existente'
                 }, status=status.HTTP_200_OK)
-            
+
             # Si el intento anterior está iniciado pero es muy antiguo, marcar como abandonado
             elif intento_existente.estado == 'iniciado':
                 intento_existente.estado = 'abandonado'
                 intento_existente.fecha_finalizacion = timezone.now()
                 intento_existente.save()
-        
+
         # Crear nuevo intento
         nuevo_intento = IntentarExamen.objects.create(
             usuario=request.user,
             examen=examen
         )
-        
+
         # Seleccionar preguntas aleatorias
         preguntas_seleccionadas = nuevo_intento.seleccionar_preguntas_aleatorias()
-        
+
         return Response({
             'intento': {
                 'id': nuevo_intento.id,
@@ -1136,7 +1134,7 @@ def iniciar_examen(request, examen_id):
             },
             'message': f'Examen iniciado. Se han seleccionado {len(preguntas_seleccionadas)} preguntas.'
         }, status=status.HTTP_201_CREATED)
-        
+
     except Examen.DoesNotExist:
         return Response({
             'error': 'Examen no encontrado'
@@ -1155,17 +1153,17 @@ def obtener_preguntas_examen(request, intento_id):
     """
     try:
         from .models import IntentarExamen, OpcionRespuesta
-        
+
         # Verificar que el intento pertenece al usuario
         intento = IntentarExamen.objects.get(
             id=intento_id,
             usuario=request.user,
             estado='iniciado'
         )
-        
+
         # Obtener las preguntas específicas de este intento
         preguntas = intento.obtener_preguntas_del_intento()
-        
+
         preguntas_data = []
         for i, pregunta in enumerate(preguntas, 1):
             pregunta_info = {
@@ -1177,7 +1175,7 @@ def obtener_preguntas_examen(request, intento_id):
                 'imagen_pregunta': pregunta.imagen_pregunta.url if pregunta.imagen_pregunta else None,
                 'opciones': []
             }
-            
+
             # Agregar opciones si es pregunta de opción múltiple
             if pregunta.tipo in ['multiple', 'multiple_choice']:
                 opciones = OpcionRespuesta.objects.filter(pregunta=pregunta).order_by('orden')
@@ -1193,9 +1191,9 @@ def obtener_preguntas_examen(request, intento_id):
                     {'id': 'verdadero', 'texto_opcion': 'Verdadero', 'orden': 1},
                     {'id': 'falso', 'texto_opcion': 'Falso', 'orden': 2}
                 ]
-            
+
             preguntas_data.append(pregunta_info)
-        
+
         return Response({
             'intento_id': intento.id,
             'examen_nombre': intento.examen.nombre,
@@ -1203,7 +1201,7 @@ def obtener_preguntas_examen(request, intento_id):
             'preguntas': preguntas_data,
             'total_preguntas': len(preguntas_data)
         }, status=status.HTTP_200_OK)
-        
+
     except IntentarExamen.DoesNotExist:
         return Response({
             'error': 'Intento de examen no encontrado o no tienes permisos'
@@ -1223,28 +1221,28 @@ def enviar_respuestas_examen(request, intento_id):
     try:
         from .models import IntentarExamen, OpcionRespuesta
         from django.utils import timezone
-        
+
         # Verificar que el intento pertenece al usuario
         intento = IntentarExamen.objects.get(
             id=intento_id,
             usuario=request.user,
             estado='iniciado'
         )
-        
+
         respuestas = request.data.get('respuestas', {})
-        
+
         # Calcular puntaje
         puntaje_total = 0
         puntaje_maximo = 0
         respuestas_correctas = 0
         total_preguntas = 0
-        
+
         preguntas = intento.obtener_preguntas_del_intento()
-        
+
         for pregunta in preguntas:
             total_preguntas += 1
             puntaje_maximo += float(pregunta.puntaje)
-            
+
             respuesta_usuario = respuestas.get(str(pregunta.id), '')
                 # DEBUG: Log respuesta recibida y respuesta correcta
             import logging
@@ -1263,6 +1261,7 @@ def enviar_respuestas_examen(request, intento_id):
                         respuestas_correctas += 1
                 except (ValueError, OpcionRespuesta.DoesNotExist):
                     pass
+            
 
             elif pregunta.tipo == 'verdadero_falso':
                 # Para verdadero/falso, necesitamos configurar la respuesta correcta
@@ -1271,11 +1270,30 @@ def enviar_respuestas_examen(request, intento_id):
                     pregunta=pregunta, 
                     es_correcta=True
                 ).first()
-                
+
                 if opcion_correcta and respuesta_usuario.lower() == opcion_correcta.texto_opcion.lower():
                     puntaje_total += float(pregunta.puntaje)
                     respuestas_correctas += 1
 
+                elif pregunta.tipo in ['completar', 'abierta', 'texto']:
+                    # Corrección automática robusta para preguntas abiertas/completar
+                    import unicodedata
+                    def normalizar(texto):
+                        if not texto:
+                            return ''
+                        texto = str(texto).strip().lower()
+                        texto = unicodedata.normalize('NFD', texto)
+                        texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+                        texto = ' '.join(texto.split())
+                        return texto
+                    respuesta_correcta = normalizar(pregunta.respuesta_correcta)
+                    respuesta_usuario_normalizada = normalizar(respuesta_usuario)
+                    # Logging para depuración
+                    iguales = respuesta_correcta == respuesta_usuario_normalizada
+                    logger.warning(f"[CORRECCION TEXTO] Pregunta {pregunta.id}: usuario='{respuesta_usuario}' (normalizada='{respuesta_usuario_normalizada}'), correcta='{pregunta.respuesta_correcta}' (normalizada='{respuesta_correcta}'), iguales={iguales}, puntaje={pregunta.puntaje}")
+                    if respuesta_correcta and iguales:
+                        puntaje_total += float(pregunta.puntaje)
+                        respuestas_correctas += 1
             if pregunta.tipo in ['completar', 'abierta', 'texto']:
                 # Corrección automática robusta para preguntas abiertas/completar
                 import unicodedata
@@ -1295,24 +1313,24 @@ def enviar_respuestas_examen(request, intento_id):
                 if respuesta_correcta and iguales:
                     puntaje_total += float(pregunta.puntaje)
                     respuestas_correctas += 1
-        
+
         # Calcular porcentaje
         porcentaje = (puntaje_total / puntaje_maximo * 100) if puntaje_maximo > 0 else 0
         aprobado = porcentaje >= float(intento.examen.puntaje_minimo)
-        
+
         # Actualizar intento
         intento.estado = 'completado'
         intento.fecha_finalizacion = timezone.now()
         intento.puntaje_obtenido = porcentaje
         intento.aprobado = aprobado
         intento.respuestas = respuestas
-        
+
         # Calcular tiempo utilizado
         tiempo_usado = (intento.fecha_finalizacion - intento.fecha_inicio).total_seconds() / 60
         intento.tiempo_utilizado = int(tiempo_usado)
-        
+
         intento.save()
-        
+
         return Response({
             'message': 'Examen completado exitosamente',
             'puntaje_obtenido': float(porcentaje),
@@ -1323,7 +1341,7 @@ def enviar_respuestas_examen(request, intento_id):
             'tiempo_utilizado': intento.tiempo_utilizado,
             'fecha_finalizacion': intento.fecha_finalizacion.isoformat()
         }, status=status.HTTP_200_OK)
-        
+
     except IntentarExamen.DoesNotExist:
         return Response({
             'error': 'Intento de examen no encontrado'
@@ -1346,41 +1364,41 @@ def obtener_examenes_curso(request, curso_id):
             curso_id=curso_id, 
             estado_pago='verificado'
         )
-        
+
         # Obtener los exámenes del curso
         examenes = Examen.objects.filter(curso_id=curso_id).order_by('tipo', 'fecha_creacion')
-        
+
         # Obtener intentos previos del usuario
         intentos = IntentarExamen.objects.filter(
             usuario=request.user,
             examen__curso_id=curso_id
         ).values('examen_id', 'aprobado', 'puntaje_obtenido', 'fecha_finalizacion')
-        
+
         # Crear un diccionario de intentos por examen
         intentos_dict = {}
         for intento in intentos:
             if intento['examen_id'] not in intentos_dict or intento['fecha_finalizacion'] > intentos_dict[intento['examen_id']]['fecha_finalizacion']:
                 intentos_dict[intento['examen_id']] = intento
-        
+
         # Serializar exámenes con información de intentos
         examenes_data = []
         for examen in examenes:
             examen_serializer = ExamenListSerializer(examen)
             examen_data = examen_serializer.data
-            
+
             # Agregar información del último intento
             if examen.id in intentos_dict:
                 examen_data['ultimo_intento'] = intentos_dict[examen.id]
             else:
                 examen_data['ultimo_intento'] = None
-                
+
             examenes_data.append(examen_data)
-        
+
         return Response({
             'curso': CursoSerializer(inscripcion.curso).data,
             'examenes': examenes_data
         }, status=status.HTTP_200_OK)
-        
+
     except Inscripcion.DoesNotExist:
         return Response({
             'error': 'No estás inscrito en este curso o tu pago no ha sido verificado'
@@ -1400,7 +1418,7 @@ def obtener_examenes_asignados(request):
     try:
         usuario = request.user
         examenes_asignados = ExamenUsuario.objects.filter(usuario=usuario).order_by('fecha_programada', 'hora_inicio')
-        
+
         examenes_data = []
         for examen_asignado in examenes_asignados:
             examen_data = {
@@ -1421,11 +1439,11 @@ def obtener_examenes_asignados(request):
                 'fecha_realizacion': examen_asignado.fecha_realizacion
             }
             examenes_data.append(examen_data)
-        
+
         return Response({
             'examenes_asignados': examenes_data
         }, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
         return Response({
             'error': f'Error al obtener exámenes asignados: {str(e)}'
@@ -1440,42 +1458,42 @@ def iniciar_examen_asignado(request, examen_asignado_id):
     """
     try:
         from datetime import datetime, time
-        
+
         usuario = request.user
         examen_asignado = ExamenUsuario.objects.get(id=examen_asignado_id, usuario=usuario)
-        
+
         # Verificar si es el momento correcto para realizar el examen
         ahora = timezone.now()
         fecha_actual = ahora.date()
         hora_actual = ahora.time()
-        
+
         # Verificar fecha
         if fecha_actual != examen_asignado.fecha_programada:
             return Response({
                 'error': f'El examen está programado para {examen_asignado.fecha_programada}, no para hoy.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Verificar hora (permitir un margen de 10 minutos antes)
         hora_limite = time(
             examen_asignado.hora_inicio.hour,
             max(0, examen_asignado.hora_inicio.minute - 10)
         )
-        
+
         if hora_actual < hora_limite:
             return Response({
                 'error': f'El examen inicia a las {examen_asignado.hora_inicio}. Puedes acceder 10 minutos antes.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Verificar si el examen ya fue realizado
         if examen_asignado.estado == 'completado':
             return Response({
                 'error': 'Ya has completado este examen.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Marcar como activo y crear intento
         examen_asignado.estado = 'activo'
         examen_asignado.save()
-        
+
         # Crear o obtener intento de examen
         intento, created = IntentarExamen.objects.get_or_create(
             usuario=usuario,
@@ -1486,19 +1504,19 @@ def iniciar_examen_asignado(request, examen_asignado_id):
                 'estado': 'en_progreso'
             }
         )
-        
+
         if not created and intento.estado == 'finalizado':
             return Response({
                 'error': 'Ya has completado este examen.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Seleccionar preguntas aleatorias si es un nuevo intento
         if created:
             intento.seleccionar_preguntas_aleatorias()
-        
+
         # Obtener las preguntas del intento
         preguntas = intento.obtener_preguntas_del_intento()
-        
+
         # Serializar preguntas con opciones
         preguntas_data = []
         for pregunta in preguntas:
@@ -1508,13 +1526,13 @@ def iniciar_examen_asignado(request, examen_asignado_id):
                     'id': opcion.id,
                     'texto': opcion.texto_opcion
                 })
-            
+
             preguntas_data.append({
                 'id': pregunta.id,
                 'texto': pregunta.texto_pregunta,
                 'opciones': opciones_data
             })
-        
+
         return Response({
             'intento_id': intento.id,
             'examen': {
@@ -1526,7 +1544,7 @@ def iniciar_examen_asignado(request, examen_asignado_id):
             'preguntas': preguntas_data,
             'tiempo_limite': examen_asignado.duracion_minutos
         }, status=status.HTTP_200_OK)
-        
+
     except ExamenUsuario.DoesNotExist:
         return Response({
             'error': 'Examen asignado no encontrado.'
@@ -1548,21 +1566,21 @@ def crear_intento_examen_practico(request):
         return Response({
             'error': 'Solo los administradores pueden crear intentos de exámenes prácticos.'
         }, status=status.HTTP_403_FORBIDDEN)
-    
+
     try:
         usuario_id = request.data.get('usuario_id')
         examen_id = request.data.get('examen_id')
-        
+
         # Validar que existan el usuario y el examen
         usuario = CustomUser.objects.get(id=usuario_id)
         examen = Examen.objects.get(id=examen_id, tipo='practico')
-        
+
         # Verificar que no exista ya un intento para este examen
         intento_existente = IntentarExamen.objects.filter(
             usuario=usuario,
             examen=examen
         ).first()
-        
+
         if intento_existente:
             return Response({
                 'error': f'El usuario {usuario.get_full_name()} ya tiene un intento registrado para este examen.',
@@ -1573,7 +1591,7 @@ def crear_intento_examen_practico(request):
                     'fecha_inicio': intento_existente.fecha_inicio
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Crear el intento de examen práctico
         intento = IntentarExamen.objects.create(
             usuario=usuario,
@@ -1583,7 +1601,7 @@ def crear_intento_examen_practico(request):
             puntaje_obtenido=0,
             aprobado=False
         )
-        
+
         return Response({
             'message': f'Intento de examen práctico creado exitosamente para {usuario.get_full_name()}',
             'intento': {
@@ -1594,7 +1612,7 @@ def crear_intento_examen_practico(request):
                 'fecha_inicio': intento.fecha_inicio
             }
         }, status=status.HTTP_201_CREATED)
-        
+
     except CustomUser.DoesNotExist:
         return Response({
             'error': 'Usuario no encontrado.'
@@ -1619,20 +1637,20 @@ def lista_usuarios_examenes(request):
         return Response({
             'error': 'Solo los administradores pueden acceder a esta información.'
         }, status=status.HTTP_403_FORBIDDEN)
-    
+
     try:
         # Obtener todos los usuarios con sus intentos de examen
         usuarios_data = []
         usuarios = CustomUser.objects.all().order_by('apellidos', 'nombres')
-        
+
         for usuario in usuarios:
             # Obtener cursos en los que está inscrito
             inscripciones = Inscripcion.objects.filter(usuario=usuario, estado_pago='verificado', aceptado_admin=True)
             cursos_inscritos = [inscripcion.curso for inscripcion in inscripciones]
-            
+
             # Obtener intentos de examen del usuario
             intentos = IntentarExamen.objects.filter(usuario=usuario).order_by('-fecha_inicio')
-            
+
             intentos_data = []
             for intento in intentos:
                 intentos_data.append({
@@ -1649,7 +1667,7 @@ def lista_usuarios_examenes(request):
                     'fecha_inicio': intento.fecha_inicio,
                     'fecha_finalizacion': intento.fecha_finalizacion
                 })
-            
+
             cursos_data = []
             for curso in cursos_inscritos:
                 cursos_data.append({
@@ -1657,7 +1675,7 @@ def lista_usuarios_examenes(request):
                     'nombre': curso.nombre,
                     'nivel': curso.nivel
                 })
-            
+
             usuarios_data.append({
                 'id': usuario.id,
                 'nombres': usuario.nombres,
@@ -1670,12 +1688,12 @@ def lista_usuarios_examenes(request):
                 'examenes_aprobados': len([i for i in intentos_data if i['aprobado']]),
                 'examenes_reprobados': len([i for i in intentos_data if not i['aprobado'] and i['estado'] == 'completado'])
             })
-        
+
         return Response({
             'usuarios': usuarios_data,
             'total_usuarios': len(usuarios_data)
         }, status=status.HTTP_200_OK)
-        
+
     except Exception as e:
         return Response({
             'error': f'Error al obtener información de usuarios: {str(e)}'
