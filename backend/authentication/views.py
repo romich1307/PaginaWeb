@@ -116,7 +116,7 @@ def cursos_publicos(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def crear_inscripcion(request):
-    print("URL final comprobante:", supabase_url)
+    print("URL final comprobante:", supabase_url if 'supabase_url' in locals() else None)
     print("Datos para serializer:", data_serializer)
     """
     Vista pública para que los usuarios autenticados puedan inscribirse a cursos
