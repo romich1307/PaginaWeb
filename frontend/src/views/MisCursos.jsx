@@ -271,8 +271,8 @@ function MisCursos() {
                   <input type="text" placeholder="Tu nombre completo" required />
                 </div>
                 <div className="form-group">
-                  <label>Cédula de Identidad</label>
-                  <input type="text" placeholder="Número de cédula" required />
+                  <label>DNI</label>
+                  <input type="text" placeholder="Número de DNI" required />
                 </div>
                 <div className="form-group">
                   <label>Email de Confirmación</label>
@@ -297,14 +297,14 @@ function MisCursos() {
                   <div className="payment-info">
                     <div className="bank-details">
                       <h4>Información de Pago</h4>
-                      <p><strong>Banco:</strong> Banco Nacional de Costa Rica</p>
+                      <p><strong>Banco:</strong> Banco Nacional del Perú</p>
                       <p><strong>Cuenta Corriente:</strong> 200-01-000-123456</p>
                       <p><strong>Cuenta IBAN:</strong> CR05015202001000123456</p>
                       <p><strong>Titular:</strong> TechPro Education S.A.</p>
                       <p><strong>Cédula Jurídica:</strong> 3-101-123456</p>
                       <hr />
                       <p><strong>Para consultas:</strong></p>
-                      <p><strong>Teléfono:</strong> +506 2234-5678</p>
+                      <p><strong>Teléfono:</strong> +51 987144925</p>
                       <p><strong>WhatsApp:</strong> +506 8765-4321</p>
                       <p><strong>Email:</strong> pagos@techproeducation.com</p>
                     </div>
@@ -318,6 +318,23 @@ function MisCursos() {
                         onChange={(e) => setReceiptFile(e.target.files[0])}
                       />
                       <small>Formatos aceptados: JPG, PNG, PDF (Máx. 5MB)</small>
+                      <a
+                        href="https://wa.me/51987144925"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-block',
+                          background: '#25D366',
+                          color: 'white',
+                          padding: '10px 20px',
+                          borderRadius: '8px',
+                          fontWeight: 'bold',
+                          textDecoration: 'none',
+                          marginTop: '15px'
+                        }}
+                      >
+                        💬 Consultar por WhatsApp
+                      </a>
                     </div>
 
                     <div className="form-group">
