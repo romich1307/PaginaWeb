@@ -120,7 +120,7 @@ function MisCursosInscritos() {
           <div key={inscripcion.id} className="curso-inscrito-card">
             <div className="curso-imagen">
               <img 
-                src={inscripcion.curso_info?.imagen || "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=200&fit=crop"} 
+                src={inscripcion.curso_info?.imagen || "/Cursos.jpg"} 
                 alt={inscripcion.curso_info?.nombre || 'Curso'} 
               />
               <div className="progreso-overlay">
