@@ -159,7 +159,11 @@ class ExamenUsuarioAdmin(admin.ModelAdmin):
         return obj.resultado if obj.resultado else "(Sin resultado)"
 
     def nota_final_safe(self, obj):
-        return obj.nota_final if obj.nota_final is not None else "(Sin nota)"
+        if obj.nota_final is not None:
+            # Si la nota está sobre 100, la mostramos sobre 20
+            nota_20 = round(float(obj.nota_final) * 20 / 100, 2)
+            return f"{nota_20} / 20"
+        return "(Sin nota)"
 
     list_display = ['usuario_safe', 'examen_safe', 'fecha_programada_safe', 'hora_inicio_safe', 'estado_safe', 'resultado_safe', 'nota_final_safe']
     list_filter = ['estado', 'resultado', 'fecha_programada', 'examen__curso']
