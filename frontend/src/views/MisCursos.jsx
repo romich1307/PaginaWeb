@@ -190,7 +190,7 @@ function MisCursos() {
           {cursos.map((curso) => (
             <div key={curso.id} className="curso-card" onClick={() => handleCourseClick(curso)}>
               <div className="curso-imagen">
-                <img src={curso.imagen || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=200&fit=crop"} alt={curso.nombre} />
+                <img src={curso.imagen || "/LogoPagina.png"} alt={curso.nombre} />
               <div className="curso-nivel" style={{backgroundColor: getNivelColor(curso.nivel)}}>
                 {curso.nivel}
               </div>
