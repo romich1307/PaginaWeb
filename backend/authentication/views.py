@@ -17,7 +17,7 @@ from .serializers import (
 import json
 from django.db import transaction
 import random
-from supabase_upload import upload_file_to_supabase
+from backend.supabase_upload import upload_file_to_supabase
 
 # Create your views here.
 
@@ -116,33 +116,10 @@ def cursos_publicos(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def crear_inscripcion(request):
-    print("URL final comprobante:", supabase_url if 'supabase_url' in locals() else None)
-    serializer = InscripcionCreateSerializer(data=data_serializer)
-    print("Datos para serializer:", data_serializer)
-    """
-    Vista pública para que los usuarios autenticados puedan inscribirse a cursos
-    """
-    print("FILES:", request.FILES)
-    print("DATA:", request.data)
     try:
         inscripcion_data = request.data.copy()
         inscripcion_data['usuario'] = request.user.id
-        data_serializer = dict(inscripcion_data)
-        comprobante_pago = request.FILES.get('comprobante_pago', None)
-        supabase_url = None
-        if comprobante_pago:
-            file_path = f"/tmp/{comprobante_pago.name}"
-            with open(file_path, 'wb+') as destination:
-                for chunk in comprobante_pago.chunks():
-                    destination.write(chunk)
-            supabase_url = upload_file_to_supabase(file_path, comprobante_pago.name)
-        if supabase_url:
-            data_serializer['comprobante_pago'] = supabase_url
-        else:
-            if 'comprobante_pago' in data_serializer and not isinstance(data_serializer['comprobante_pago'], str):
-                data_serializer['comprobante_pago'] = ''
-        print("Datos para serializer:", data_serializer)
-        serializer = InscripcionCreateSerializer(data=data_serializer)
+        serializer = InscripcionCreateSerializer(data=inscripcion_data)
         # Validar que el curso existe y está activo
         try:
             curso = Curso.objects.get(id=inscripcion_data['curso'], activo=True)
