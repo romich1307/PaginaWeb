@@ -1,9 +1,9 @@
 import requests
 
 # Configura estos valores con los datos de tu proyecto Supabase
-SUPABASE_URL = "https://<tu-proyecto>.supabase.co"  # Ejemplo: https://abcd1234.supabase.co
+SUPABASE_URL = "https://cmfyuqfevyzesbqfzmbx.supabase.co"  # URL real de tu proyecto
 SUPABASE_BUCKET = "media"  # El nombre del bucket que creaste
-SUPABASE_API_KEY = "<TU_API_KEY>"  # Usa la API Key de servicio (service_role)
+SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtZnl1cWZldnl6ZXNicWZ6bWJ4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDk2MTc2NywiZXhwIjoyMDcwNTM3NzY3fQ.UF5ypJSRj33yJhPj5fLmkKWTDpYnVXJfKFrZn25J0xY"  # API Key real
 
 def upload_file_to_supabase(file_path, file_name):
     """
