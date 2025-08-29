@@ -132,7 +132,7 @@ function AdminPanel() {
     horario: '',
     precio: '',
     duracion_semanas: '',
-    nivel: 'basico',
+    nivel: 'principiante',
     activo: true
   });
 
