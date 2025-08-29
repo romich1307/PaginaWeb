@@ -143,6 +143,15 @@ def crear_inscripcion(request):
         data_serializer = dict(inscripcion_data)
         if supabase_url:
             data_serializer['comprobante_pago'] = supabase_url
+        else:
+            # Si no hay archivo, pero el campo existe, asegúrate de que sea string o vacío
+            if 'comprobante_pago' in data_serializer and not isinstance(data_serializer['comprobante_pago'], str):
+                data_serializer['comprobante_pago'] = ''
+        serializer = InscripcionCreateSerializer(data=data_serializer)
+        print("Datos para serializer:", data_serializer)
+        data_serializer = dict(inscripcion_data)
+        if supabase_url:
+            data_serializer['comprobante_pago'] = supabase_url
         serializer = InscripcionCreateSerializer(data=data_serializer)
         
         # Validar que el curso existe y está activo
