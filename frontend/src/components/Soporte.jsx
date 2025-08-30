@@ -3,7 +3,7 @@ import "./Soporte.css";
 
 function Soporte() {
   const handleWhatsAppClick = () => {
-    const whatsappNumber = "51930995746";
+    const whatsappNumber = "51910588685";
     const whatsappMessage =
       "Hola! Necesito ayuda con la plataforma CONSMIN. ¿Podrían asistirme por favor?";
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
@@ -18,7 +18,8 @@ function Soporte() {
     const subject = "Solicitud de Soporte - CONSMIN";
     const body =
       "Hola,\n\nNecesito ayuda con:\n\n[Describe tu problema aquí]\n\nGracias.";
-    const mailtoUrl = `mailto:soporte@consmin.com?subject=${encodeURIComponent(
+    // Usar ambos correos en el mailto
+    const mailtoUrl = `mailto:ventas@qsconsmin.com,jarizabal@qsconsmin.com?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
 
@@ -82,7 +83,7 @@ function Soporte() {
                 </div>
                 <div className="contacto-info">
                   <h4>WhatsApp</h4>
-                  <p>+51 930 995 746</p>
+                  <p>+51 910 588 685</p>
                   <span>Respuesta dentro de horario de atención</span>
                 </div>
                 <button className="btn-whatsapp" onClick={handleWhatsAppClick}>
@@ -108,7 +109,8 @@ function Soporte() {
                 </div>
                 <div className="contacto-info">
                   <h4>Email</h4>
-                  <p>soporte@consmin.com</p>
+                  <p>ventas@qsconsmin.com</p>
+                  <p>jarizabal@qsconsmin.com</p>
                   <span>Respuesta en 24 horas</span>
                 </div>
                 <button className="btn-email" onClick={handleEmailClick}>

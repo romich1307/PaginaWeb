@@ -305,7 +305,7 @@ function MisCursos() {
                       <hr />
                       <p><strong>Para consultas:</strong></p>
                       <p><strong>Teléfono:</strong> +51 987144925</p>
-                      <p><strong>WhatsApp:</strong> +506 8765-4321</p>
+                      <p><strong>WhatsApp:</strong> +51 910 588 685</p>
                       <p><strong>Email:</strong> pagos@techproeducation.com</p>
                     </div>
                     
@@ -319,7 +319,7 @@ function MisCursos() {
                       />
                       <small>Formatos aceptados: JPG, PNG, PDF (Máx. 5MB)</small>
                       <a
-                        href="https://wa.me/51987144925"
+                        href="https://wa.me/51910588685"
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{

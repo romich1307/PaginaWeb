@@ -189,7 +189,8 @@ def is_admin_user(request):
     """
     Verificar si el usuario es administrador
     """
-    is_admin = request.user.email == 'jiji@gmail.com' or request.user.is_staff
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    is_admin = request.user.email in admin_emails or request.user.is_staff
 
     return Response({
         'is_admin': is_admin,
@@ -205,7 +206,8 @@ def admin_inscripciones(request):
     Gestionar inscripciones desde el panel admin
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
@@ -228,7 +230,8 @@ def admin_inscripcion_detail(request, pk):
     Gestionar una inscripción específica
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -259,7 +262,8 @@ def admin_cursos(request):
     Gestionar cursos desde el panel admin
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
@@ -282,7 +286,8 @@ def admin_curso_detail(request, pk):
     Gestionar un curso específico
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -315,7 +320,8 @@ def admin_estudiantes(request):
     Obtener lista de todos los estudiantes
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     estudiantes = CustomUser.objects.filter(is_staff=False).order_by('-date_joined')
@@ -404,7 +410,8 @@ def admin_examen_detalle(request, examen_id):
     Obtener o actualizar un examen específico
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     from .models import Examen
@@ -453,7 +460,8 @@ def admin_preguntas(request):
     Obtener lista de todas las preguntas para administración
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     from .models import Pregunta, Examen
@@ -555,7 +563,8 @@ def admin_pregunta_detalle(request, pregunta_id):
     Obtener, actualizar o eliminar una pregunta específica
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
             return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     from .models import Pregunta
@@ -612,7 +621,8 @@ def admin_intentos_examen(request):
     Obtener lista de todos los intentos de examen para administración
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     from .models import IntentarExamen
@@ -647,7 +657,8 @@ def admin_examen_practico_resultado(request, intento_id):
     Gestionar resultados de exámenes prácticos (solo para administradores)
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     from .models import IntentarExamen
@@ -715,7 +726,8 @@ def admin_examenes_practicos_pendientes(request):
     Obtener lista de exámenes prácticos pendientes de evaluación
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     from .models import IntentarExamen
@@ -766,7 +778,8 @@ def programar_examen_practico(request):
     Programar un examen práctico para una fecha específica
     """
     # Verificar si es admin
-    if not (request.user.email == 'jiji@gmail.com' or request.user.is_staff):
+    admin_emails = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com']
+    if not (request.user.email in admin_emails or request.user.is_staff):
         return Response({'error': 'No tienes permisos de administrador'}, status=status.HTTP_403_FORBIDDEN)
 
     from .models import IntentarExamen
