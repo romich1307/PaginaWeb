@@ -91,6 +91,7 @@ def user_profile(request):
     """
     return Response({
         'user': UserSerializer(request.user).data,
+        'is_staff': request.user.is_staff,
     }, status=status.HTTP_200_OK)
 
 
