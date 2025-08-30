@@ -185,6 +185,16 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
+# Permitir CORS en métodos PATCH, PUT y DELETE
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS"
+]
+
 ALLOWED_HOSTS = [
     "paginaweb-n9ex.onrender.com",
     "examenes.qsconsmin.com",
