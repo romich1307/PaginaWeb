@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
         console.log('AuthContext: is_staff del usuario:', userData.user.is_staff);
         
         // Verificación temporal: cualquier usuario con is_staff=True es admin
-        const isAdminUser = userData.user.email === ADMIN_EMAIL || userData.user.is_staff;
+        const isAdminUser = userData.user.email === ADMIN_EMAIL || userData.is_staff;
         setIsAdmin(isAdminUser);
         console.log('AuthContext: Usuario es admin (verificación temporal)?', isAdminUser);
       } else {
