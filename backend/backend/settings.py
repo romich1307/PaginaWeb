@@ -177,15 +177,21 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings for React frontend
-try:
-    CORS_ALLOWED_ORIGINS = json.loads(os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:5173", "https://majestic-mooncake-e39ab7.netlify.app"]'))
-except Exception:
-    CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "https://majestic-mooncake-e39ab7.netlify.app"]
 
+# Permitir el frontend en el subdominio y el backend en Render
+CORS_ALLOWED_ORIGINS = [
+    "https://examenes.qsconsmin.com",
+    "http://localhost:5173"
+]
 CORS_ALLOW_CREDENTIALS = True
 
-# Allow all hosts for development
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
+ALLOWED_HOSTS = [
+    "paginaweb-n9ex.onrender.com",
+    "examenes.qsconsmin.com",
+    "localhost",
+    "127.0.0.1",
+    "*"
+]
 
 # Custom user model
 AUTH_USER_MODEL = 'authentication.CustomUser'
