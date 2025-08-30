@@ -178,10 +178,9 @@ REST_FRAMEWORK = {
 
 # CORS settings for React frontend
 
-# Permitir el frontend en el subdominio y el backend en Render
+# Permitir solo el frontend en el subdominio y el local
 CORS_ALLOWED_ORIGINS = [
     "https://examenes.qsconsmin.com",
-    "https://majestic-mooncake-e39ab7.netlify.app",
     "http://localhost:5173"
 ]
 CORS_ALLOW_CREDENTIALS = True
@@ -189,10 +188,8 @@ CORS_ALLOW_CREDENTIALS = True
 ALLOWED_HOSTS = [
     "paginaweb-n9ex.onrender.com",
     "examenes.qsconsmin.com",
-    "majestic-mooncake-e39ab7.netlify.app",
     "localhost",
-    "127.0.0.1",
-    "*"
+    "127.0.0.1"
 ]
 
 # Custom user model
