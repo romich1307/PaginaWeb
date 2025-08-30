@@ -480,7 +480,11 @@ def admin_preguntas(request):
         opcion_c = data.get('opcion_c', '')
         opcion_d = data.get('opcion_d', '')
         respuesta_correcta = data.get('respuesta_correcta', '')
+        # Permitir imagen_pregunta como archivo o como URL (string)
         imagen_pregunta = files.get('imagen_pregunta', None)
+        if not imagen_pregunta:
+            # Si no hay archivo, buscar en data como string
+            imagen_pregunta = data.get('imagen_pregunta', None)
         # Buscar examen teórico del curso
         from .models import Curso
         try:
@@ -513,7 +517,7 @@ def admin_preguntas(request):
             puntaje=1.0,
             orden=nuevo_orden,
             activo=True,
-            imagen_pregunta=imagen_pregunta,
+            imagen_pregunta=imagen_pregunta if imagen_pregunta else None,
             respuesta_correcta=respuesta_correcta if tipo == 'texto' else None
         )
         # Solo crear opciones si la pregunta es de opción múltiple o verdadero/falso
