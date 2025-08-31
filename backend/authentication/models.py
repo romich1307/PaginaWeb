@@ -192,7 +192,7 @@ class Pregunta(models.Model):
     orden = models.PositiveIntegerField(verbose_name="Orden en el Examen")
     
     # Para preguntas con imagen
-    imagen_pregunta = models.URLField(blank=True, null=True, verbose_name="Imagen de la Pregunta")
+    imagen_pregunta = models.URLField(max_length=500, blank=True, null=True, verbose_name="Imagen de la Pregunta")
     activo = models.BooleanField(default=True, verbose_name="Pregunta Activa")
     
     class Meta:
