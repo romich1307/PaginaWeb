@@ -1190,7 +1190,7 @@ def obtener_preguntas_examen(request, intento_id):
                 'texto_pregunta': pregunta.texto_pregunta,
                 'tipo': pregunta.tipo,
                 'puntaje': float(pregunta.puntaje),
-                'imagen_pregunta': pregunta.imagen_pregunta.url if pregunta.imagen_pregunta else None,
+                'imagen_pregunta': pregunta.imagen_pregunta if pregunta.imagen_pregunta else None,
                 'opciones': []
             }
 
