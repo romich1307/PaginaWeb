@@ -94,7 +94,7 @@ class Pregunta(models.Model):
     activo = models.BooleanField(default=True, verbose_name="Pregunta Activa")
     
     # Para preguntas con imagen
-    imagen_pregunta = models.ImageField(upload_to='preguntas/', blank=True, null=True, verbose_name="Imagen de la Pregunta")
+    imagen_pregunta = models.URLField(max_length=500, blank=True, null=True, verbose_name="Imagen de la Pregunta")
 
     # Para preguntas de completar (texto libre)
     respuesta_correcta = models.TextField(blank=True, null=True, verbose_name="Respuesta Correcta (solo para preguntas de texto)")
