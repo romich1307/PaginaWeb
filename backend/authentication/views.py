@@ -556,7 +556,7 @@ def admin_preguntas(request):
             'examen_id': pregunta.examen.id if pregunta.examen else None,
             'examen_titulo': pregunta.examen.nombre if pregunta.examen else 'Sin examen',
             'activo': pregunta.activo,
-            'imagen_pregunta': pregunta.imagen_pregunta.url if pregunta.imagen_pregunta else None,
+            'imagen_pregunta': pregunta.imagen_pregunta if pregunta.imagen_pregunta else None,
         })
     return Response(preguntas_data, status=status.HTTP_200_OK)
 
