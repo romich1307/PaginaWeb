@@ -1,11 +1,15 @@
   // Helper para construir la URL completa de la imagen de la pregunta
   const getImagenUrl = (img) => {
     if (!img) return null;
-    if (img.startsWith('http')) return img;
-  if (img.startsWith('/media/')) return `${import.meta.env.VITE_API_URL.replace('/api','')}${img}`;
-  return `${import.meta.env.VITE_API_URL.replace('/api','')}/media/preguntas/${img}`;
+    // Si la imagen es una URL pública (Supabase), úsala directamente
+    if (img.startsWith('http://') || img.startsWith('https://')) {
+      return img;
+    }
+    // Si no hay URL pública, no mostrar nada
+    return null;
   };
 import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { useAuth } from '../context/AuthContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -2646,15 +2650,42 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
             <form onSubmit={async (e) => {
               e.preventDefault();
               setErrorPregunta('');
-              // Ya no es necesario buscar el examen teórico, el backend lo crea automáticamente si no existe
               // Validaciones básicas
               if (!nuevaPregunta.texto.trim()) {
                 setErrorPregunta('El texto de la pregunta es obligatorio.');
                 return;
               }
-              // Crear pregunta en backend
               try {
                 const token = localStorage.getItem('authToken');
+                let imagenUrl = '';
+                if (nuevaPregunta.imagen_pregunta) {
+                  // Subir imagen a Supabase Storage
+                  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
+                  if (!supabaseUrl || !supabaseAnonKey) {
+                    setErrorPregunta('Supabase URL o anon key no configurados');
+                    return;
+                  }
+                  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+                  const file = nuevaPregunta.imagen_pregunta;
+                  const fileExt = file.name.split('.').pop();
+                  const fileName = `pregunta_${Date.now()}.${fileExt}`;
+                  const { data, error } = await supabase.storage.from('media').upload(`preguntas/${fileName}`, file);
+                  console.log('Resultado subida imagen:', { data, error });
+                  if (error) {
+                    setErrorPregunta('Error al subir la imagen a Supabase: ' + error.message);
+                    return;
+                  }
+                  // Obtener URL pública
+                  const { data: urlData, error: urlError } = supabase.storage.from('media').getPublicUrl(`preguntas/${fileName}`);
+                  console.log('Resultado URL pública:', { urlData, urlError });
+                  if (urlError || !urlData || !urlData.publicUrl) {
+                    setErrorPregunta('No se pudo obtener la URL pública de la imagen.');
+                    return;
+                  }
+                  imagenUrl = urlData.publicUrl;
+                }
+                // Usar FormData para enviar la pregunta
                 const formData = new FormData();
                 formData.append('texto', nuevaPregunta.texto);
                 formData.append('tipo', nuevaPregunta.tipo || 'multiple');
@@ -2662,18 +2693,17 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 formData.append('opcion_b', nuevaPregunta.opcion_b || '');
                 formData.append('opcion_c', nuevaPregunta.opcion_c || '');
                 formData.append('opcion_d', nuevaPregunta.opcion_d || '');
-                formData.append('respuesta_correcta', nuevaPregunta.respuesta_correcta || '');
+                formData.append('respuesta_correcta', nuevaPregunta.respuesta_esperada || nuevaPregunta.respuesta_correcta || '');
                 formData.append('curso_id', cursoPreguntasId);
-                if (nuevaPregunta.imagen_pregunta) {
-                  formData.append('imagen_pregunta', nuevaPregunta.imagen_pregunta);
+                if (imagenUrl) {
+                  formData.append('imagen_pregunta', imagenUrl);
                 }
-                if (nuevaPregunta.respuesta_esperada) {
-                  formData.append('respuesta_correcta', nuevaPregunta.respuesta_esperada);
-                }
+                console.log('FormData enviado:', Array.from(formData.entries()));
                 const res = await fetch(`${API_BASE_URL}/admin/preguntas/`, {
                   method: 'POST',
                   headers: {
                     'Authorization': `Token ${token}`,
+                    // No pongas 'Content-Type', deja que el navegador lo ponga
                   },
                   body: formData
                 });
@@ -2689,7 +2719,8 @@ Estado: ${intento.estado === 'completado' ? 'Completado' : 'En progreso'}`);
                 // Recargar preguntas
                 loadData();
               } catch (err) {
-                setErrorPregunta('Error de conexión al crear la pregunta');
+                console.error('Error al crear la pregunta:', err);
+                setErrorPregunta('Error de conexión al crear la pregunta: ' + (err?.message || err));
               }
             }}>
               <div style={{ marginBottom: '12px' }}>

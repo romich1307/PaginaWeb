@@ -1,14 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { useAuth } from '../context/AuthContext';
 import './MisCursos.css';
 
 function MisCursos() {
+  // Supabase config
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
   const { user } = useAuth();
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
   const [courseToEnroll, setCourseToEnroll] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
+  const [nombreCompleto, setNombreCompleto] = useState('');
+  const [dni, setDni] = useState('');
+  const [emailConfirmacion, setEmailConfirmacion] = useState('');
+  const [telefonoContacto, setTelefonoContacto] = useState('');
+  const [comentarios, setComentarios] = useState('');
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,42 +90,70 @@ function MisCursos() {
     setCourseToEnroll(null);
     setPaymentMethod('');
     setReceiptFile(null);
+    setNombreCompleto('');
+    setDni('');
+    setEmailConfirmacion('');
+    setTelefonoContacto('');
+    setComentarios('');
   };
 
-  // Función para procesar la inscripción
+  // Función para procesar la inscripción con subida a Supabase
   const handleInscripcion = async (e) => {
     e.preventDefault();
-    
     console.log('Iniciando proceso de inscripción...');
     console.log('Usuario:', user);
     console.log('Curso a inscribir:', courseToEnroll);
-    
+
     if (!user) {
       alert('Debes estar logueado para inscribirte');
       return;
     }
-
-    if (!paymentMethod || !receiptFile) {
+    if (!paymentMethod || !receiptFile || !nombreCompleto || !dni || !emailConfirmacion || !telefonoContacto) {
       alert('Por favor completa todos los campos requeridos');
       return;
     }
 
     try {
-      // Crear FormData para enviar archivo
-      const formData = new FormData();
-      formData.append('curso', courseToEnroll.id);
-      formData.append('metodo_pago', paymentMethod);
-      formData.append('comprobante_pago', receiptFile);
-      formData.append('comentarios', '');
-      formData.append('estado_pago', 'pendiente');
+      // 1. Subir comprobante a Supabase Storage
+      const fileExt = receiptFile.name.split('.').pop();
+      const fileName = `comprobantes/${user.id}_${Date.now()}.${fileExt}`;
+      const { data, error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(fileName, receiptFile);
 
-      console.log('FormData creado con archivo:', receiptFile.name);
-      console.log('URL del endpoint:', `${API_BASE_URL}/inscripciones/`);
+      if (uploadError) {
+        console.error('Error al subir comprobante:', uploadError.message);
+        alert('Error al subir el comprobante. Intenta nuevamente.');
+        return;
+      }
+
+      // 2. Obtener URL pública del comprobante
+      const { data: publicUrlData } = supabase.storage
+        .from('media')
+        .getPublicUrl(fileName);
+      const comprobanteUrl = publicUrlData?.publicUrl;
+
+      if (!comprobanteUrl) {
+        alert('No se pudo obtener el URL del comprobante.');
+        return;
+      }
+
+      // 3. Enviar inscripción al backend con el URL y datos personales
+      const inscripcionPayload = {
+        curso: courseToEnroll.id,
+        metodo_pago: paymentMethod,
+        comprobante_pago: comprobanteUrl,
+        comentarios,
+        estado_pago: 'pendiente',
+        nombre_completo: nombreCompleto,
+        dni,
+        email_confirmacion: emailConfirmacion,
+        telefono_contacto: telefonoContacto,
+      };
 
       const response = await fetchWithAuth(`${API_BASE_URL}/inscripciones/`, {
         method: 'POST',
-        body: formData, // Enviar FormData en lugar de JSON
-        // No incluir Content-Type header, se establece automáticamente para FormData
+        body: JSON.stringify(inscripcionPayload),
       });
 
       console.log('Respuesta del servidor:', response.status);
@@ -128,8 +166,6 @@ function MisCursos() {
       } else {
         const errorData = await response.json();
         console.error('Error en inscripción:', errorData);
-        console.error('Detalles del error:', errorData.details);
-        
         let errorMessage = 'Error al procesar la inscripción:\n';
         if (errorData.error) {
           errorMessage += errorData.error + '\n';
@@ -268,19 +304,19 @@ function MisCursos() {
               <form onSubmit={handleInscripcion}>
                 <div className="form-group">
                   <label>Nombre Completo</label>
-                  <input type="text" placeholder="Tu nombre completo" required />
+                  <input type="text" placeholder="Tu nombre completo" required value={nombreCompleto} onChange={e => setNombreCompleto(e.target.value)} />
                 </div>
                 <div className="form-group">
                   <label>DNI</label>
-                  <input type="text" placeholder="Número de DNI" required />
+                  <input type="text" placeholder="Número de DNI" required value={dni} onChange={e => setDni(e.target.value)} />
                 </div>
                 <div className="form-group">
                   <label>Email de Confirmación</label>
-                  <input type="email" placeholder="tu@email.com" required />
+                  <input type="email" placeholder="tu@email.com" required value={emailConfirmacion} onChange={e => setEmailConfirmacion(e.target.value)} />
                 </div>
                 <div className="form-group">
                   <label>Teléfono de Contacto</label>
-                  <input type="tel" placeholder="Tu número de teléfono" required />
+                  <input type="tel" placeholder="Tu número de teléfono" required value={telefonoContacto} onChange={e => setTelefonoContacto(e.target.value)} />
                 </div>
                 
                 <h3>Método de Pago</h3>
@@ -342,6 +378,8 @@ function MisCursos() {
                       <textarea 
                         placeholder="Alguna consulta o comentario especial..."
                         rows="3"
+                        value={comentarios}
+                        onChange={e => setComentarios(e.target.value)}
                       ></textarea>
                     </div>
                   </div>
