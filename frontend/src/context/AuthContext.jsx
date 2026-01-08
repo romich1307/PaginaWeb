@@ -16,8 +16,8 @@ export const AuthProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Email específico para el administrador
-  const ADMIN_EMAIL = 'jiji@gmail.com';
+  // Emails específicos para administradores
+  const ADMIN_EMAILS = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com'];
 
   // Verificar si hay un token guardado al cargar la aplicación
   useEffect(() => {
@@ -50,13 +50,13 @@ export const AuthProvider = ({ children }) => {
         
         // Debug detallado para verificar el email
         console.log('AuthContext: Email del usuario recibido:', `"${userData.user.email}"`);
-        console.log('AuthContext: ADMIN_EMAIL configurado:', `"${ADMIN_EMAIL}"`);
+        console.log('AuthContext: ADMIN_EMAILS configurados:', ADMIN_EMAILS);
         console.log('AuthContext: is_staff del usuario:', userData.user.is_staff);
         
-        // Verificación temporal: cualquier usuario con is_staff=True es admin
-        const isAdminUser = userData.user.email === ADMIN_EMAIL || userData.is_staff;
+        // Verificar si el usuario es admin por email o por is_staff
+        const isAdminUser = ADMIN_EMAILS.includes(userData.user.email) || userData.user.is_staff;
         setIsAdmin(isAdminUser);
-        console.log('AuthContext: Usuario es admin (verificación temporal)?', isAdminUser);
+        console.log('AuthContext: Usuario es admin?', isAdminUser);
       } else {
         // Token inválido, eliminarlo
         console.log('AuthContext: Token inválido, eliminando...');
@@ -99,14 +99,13 @@ export const AuthProvider = ({ children }) => {
         
         // Debug detallado para verificar el email
         console.log('AuthContext: Email del usuario recibido:', `"${data.user.email}"`);
-        console.log('AuthContext: ADMIN_EMAIL configurado:', `"${ADMIN_EMAIL}"`);
-        console.log('AuthContext: Comparación exacta:', data.user.email === ADMIN_EMAIL);
-        
-        // Verificación temporal: cualquier usuario con is_staff=True es admin
-        const isAdminUser = data.user.email === ADMIN_EMAIL || data.user.is_staff;
-        setIsAdmin(isAdminUser);
-        console.log('AuthContext: Usuario es admin (verificación temporal)?', isAdminUser);
+        console.log('AuthContext: ADMIN_EMAILS configurados:', ADMIN_EMAILS);
         console.log('AuthContext: is_staff del usuario:', data.user.is_staff);
+        
+        // Verificar si el usuario es admin por email o por is_staff
+        const isAdminUser = ADMIN_EMAILS.includes(data.user.email) || data.user.is_staff;
+        setIsAdmin(isAdminUser);
+        console.log('AuthContext: Usuario es admin?', isAdminUser);
         
         return { success: true, isAdmin: isAdminUser };
       } else {
@@ -144,7 +143,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('authToken', data.token);
         setUser(data.user);
         setIsAuthenticated(true);
-        setIsAdmin(data.user.email === ADMIN_EMAIL);
+        setIsAdmin(ADMIN_EMAILS.includes(data.user.email) || data.user.is_staff);
         return { success: true };
       } else {
         console.error('Registration failed:', data);
