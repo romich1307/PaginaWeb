@@ -30,9 +30,13 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-(vg7gr-vt*ry)uhyk0d8v^s&ef
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "paginaweb-n9ex.onrender.com",
+    "examenes.qsconsmin.com",
+    "localhost",
+    "127.0.0.1"
+]
 
 
 # Application definition
@@ -197,11 +201,17 @@ CORS_ALLOW_METHODS = [
     "OPTIONS"
 ]
 
-ALLOWED_HOSTS = [
-    "paginaweb-n9ex.onrender.com",
-    "examenes.qsconsmin.com",
-    "localhost",
-    "127.0.0.1"
+# Headers permitidos en CORS
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 # Custom user model
