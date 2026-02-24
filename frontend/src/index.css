@@ -1,11 +1,18 @@
 :root {
+  --color-primary: #26a9e0;
+  --color-bg: #242424;
+  --color-text: #26a9e0;
+  --max-width: 1200px;
+  --gap: 16px;
+  --radius: 8px;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  font-size: clamp(14px, 1.2vw + 12px, 18px);
 
   color-scheme: light dark;
-  color: #26a9e0;
-  background-color: #242424;
+  color: var(--color-text);
+  background-color: var(--color-bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,7 +22,7 @@
 
 a {
   font-weight: 500;
-  color:  #26a9e0;
+  color: var(--color-primary);
   text-decoration: inherit;
 }
 a:hover {
@@ -24,10 +31,10 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 h1 {
@@ -57,12 +64,50 @@ button:focus-visible {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #26a9e0;
+    background-color: var(--color-primary);
   }
   a:hover {
     color: #ccccd4;
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+/* Global responsive utilities */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: calc(var(--gap));
+  padding-right: calc(var(--gap));
+}
+
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.responsive-table-wrapper {
+  overflow-x: auto;
+}
+
+/* Breakpoints */
+@media (max-width: 768px) {
+  :root {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    font-size: 14px;
   }
 }
