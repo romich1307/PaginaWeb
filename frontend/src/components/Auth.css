@@ -336,33 +336,36 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .auth-card {
-    max-width: 450px;
-    margin: 20px;
-    min-height: 600px;
+    max-width: 100%;
+    margin: 20px 10px;
+    min-height: auto;
   }
   
   .form-container {
     flex-direction: column;
     height: auto;
+    width: 100%;
+    transform: none !important;
   }
   
-  .form-container.show-login {
-    transform: translateY(0);
-  }
-  
+  .form-container.show-login,
   .form-container.show-register {
-    transform: translateY(-50%);
+    transform: none !important;
   }
   
   .form-panel {
     width: 100%;
     flex-direction: column;
+    min-height: auto;
   }
   
   .login-panel .welcome-section,
-  .login-panel .form-section,
-  .register-panel .form-section,
   .register-panel .welcome-section {
+    display: none;
+  }
+  
+  .login-panel .form-section,
+  .register-panel .form-section {
     width: 100%;
     padding: 50px 40px;
     height: auto;
@@ -387,5 +390,36 @@
     top: 15px;
     right: 15px;
     left: auto;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 10px;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0;
+    min-height: auto;
+  }
+  .form {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+  .form-input {
+    font-size: 0.85rem;
+  }
+  .submit-btn {
+    padding: 10px 25px;
+    font-size: 0.85rem;
+  }
+  .welcome-section,
+  .form-section {
+    padding: 30px 20px;
+  }
+  .welcome-section h2 {
+    font-size: 1.6rem;
   }
 }
