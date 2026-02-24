@@ -25,8 +25,8 @@ const Auth = () => {
           {/* Panel de Login */}
           <div className="form-panel login-panel">
             <div className="welcome-section">
-              <h2>¡Bienvenido de nuevo!</h2>
-              <p>Para mantenerte conectado con nosotros, por favor inicia sesión con tu información personal</p>
+              <h2>¡Holaaaa!</h2>
+              <p>Para mantenaerte conectado con nosotros, por favor inicia sesión con tu información personal</p>
               <button 
                 className="switch-btn"
                 onClick={switchToRegister}
