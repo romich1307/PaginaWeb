@@ -389,3 +389,34 @@
     left: auto;
   }
 }
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 10px;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0;
+    min-height: auto;
+  }
+  .form {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+  .form-input {
+    font-size: 0.85rem;
+  }
+  .submit-btn {
+    padding: 10px 25px;
+    font-size: 0.85rem;
+  }
+  .welcome-section,
+  .form-section {
+    padding: 30px 20px;
+  }
+  .welcome-section h2 {
+    font-size: 1.6rem;
+  }
+}
