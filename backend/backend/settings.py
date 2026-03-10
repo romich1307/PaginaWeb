@@ -217,6 +217,20 @@ CORS_ALLOW_HEADERS = [
 # Custom user model
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
+# -----------------------------------------------------------------------------
+# Email configuration (añadir variables de entorno en .env para pruebas)
+# Para desarrollo local puedes usar la consola:
+#   EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+# o configurar un SMTP real con las siguientes opciones.
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'no-reply@example.com')
+# -----------------------------------------------------------------------------
+
 
 # Configuración para archivos multimedia (imágenes de preguntas, comprobantes, etc.)
 MEDIA_URL = '/media/'

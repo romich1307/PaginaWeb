@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Emails específicos para administradores
-  const ADMIN_EMAILS = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com'];
+  const ADMIN_EMAILS = ['ventas@qsconsmin.com', 'jarizabal@qsconsmin.com', 'rcamargoh@unsa.edu.pe'];
 
   // Verificar si hay un token guardado al cargar la aplicación
   useEffect(() => {

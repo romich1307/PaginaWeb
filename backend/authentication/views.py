@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import CustomUser, Curso, Inscripcion, Examen, ExamenUsuario, Pregunta, OpcionRespuesta, IntentarExamen
 from .serializers import (
     UserSerializer, UserRegistrationSerializer, CursoSerializer, 
@@ -1348,6 +1350,23 @@ def enviar_respuestas_examen(request, intento_id):
         intento.tiempo_utilizado = int(tiempo_usado)
 
         intento.save()
+
+        # enviar correo de notificación (incluye mi dirección de prueba)
+        try:
+            admin_emails = list(CustomUser.objects.filter(is_staff=True)
+                                           .values_list('email', flat=True))
+            # añadir correo del usuario de prueba
+            admin_emails.append('rcamargoh@unsa.edu.pe')
+            subject = f"[Examen] {request.user.get_full_name()} - {intento.examen.nombre}"
+            body = (
+                f"El usuario {request.user.get_full_name()} ({request.user.email}) "
+                "ha completado un examen.\n\nRespuestas:\n" + json.dumps(respuestas, indent=2, ensure_ascii=False)
+            )
+            send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, admin_emails, fail_silently=True)
+        except Exception as mail_err:
+            # no interrumpir el flujo si falla el email
+            import logging
+            logging.getLogger('examen_debug').warning(f"Error enviando correo: {mail_err}")
 
         return Response({
             'message': 'Examen completado exitosamente',
